@@ -1,0 +1,52 @@
+# .NET Core build output
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.sln.ide
+
+# NuGet packages
+*.nupkg
+
+# User-specific files
+*.user
+*.suo
+*.userprefs
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+AnyCPU/
+*.exe
+*.pdb
+*.dll
+*.msi
+*.tmp/
+*.resources
+
+# Entity Framework Core migrations
+**/Migrations/*.cs
+**/Migrations/*.resx
+**/Migrations/*.Designer.cs
+
+# IDE files
+.vscode/
+*.sln.dotsettings.user
+*.sln.dotsettings
+
+# Test Results
+[TestResults|_TestResults]/
+
+# .NET Core CLI tools
+.nuget/
+
+# Other generated files
+_ReSharper*/
+*.DotSettings
+*.swp
