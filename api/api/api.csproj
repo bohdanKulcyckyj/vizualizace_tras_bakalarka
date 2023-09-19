@@ -7,7 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Jwt.Refresh.Token.Cosmos" Version="2.0.3-preview" />
+    <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.35.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Cosmos" Version="7.0.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\NováSložka1\" />
+    <Folder Include="Controllers\NováSložka\" />
   </ItemGroup>
 
 </Project>
