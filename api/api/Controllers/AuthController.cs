@@ -3,13 +3,16 @@ using api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
 using System.Security.Cryptography.Xml;
 
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
+    public readonly ApplicationDbContext _context;
+
+    /*private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
 
     public AuthController(
@@ -19,29 +22,49 @@ public class AuthController : ControllerBase
         _userManager = userManager;
         _signInManager = signInManager;
     }
+    */
+
+    public AuthController()
+    {
+        this._context = new ApplicationDbContext();
+    }
 
     [HttpGet("getUsers")]
-    public async IAsyncEnumerable<ApplicationUser> GetUsers()
+    public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetUsers()
     {
-        using(var myDbContext = new ApplicationDbContext())
+        List<ApplicationUser> applicationUsers = new List<ApplicationUser>();
+        int count = 0;
+        using(_context)
         {
-            if(myDbContext.applicationUsers != null)
+            if(_context.applicationUsers != null)
             {
-                var users = await myDbContext.applicationUsers.ToListAsync();
-
+                var users = await _context.applicationUsers.ToListAsync();
+                
                 foreach(var user in users)
                 {
+                    count++;
                     if(user != null)
                     {
-                        yield return user;
+                        applicationUsers.Add(user);
                     }
-                    yield break;
                 }
-                yield break;
             }
         }
-        yield break;
+        ApplicationUser user1 = new ApplicationUser()
+        {
+            Id = count.ToString(),
+            Name = "bohdan",
+            Email = "bohdan.kulchytskyy@seznam.cz",
+            Password = "123456789Bk",
+            Maps = new List<Map>()
+        };
+        applicationUsers.Add(user1);
+
+        return Ok(applicationUsers);
     }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register()
 
     /*[HttpPost("register")]
     public async Task<IActionResult> Register(string model)

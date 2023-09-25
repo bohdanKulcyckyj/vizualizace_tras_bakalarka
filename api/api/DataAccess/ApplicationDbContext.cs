@@ -6,7 +6,7 @@ namespace api.DataAccess
 {
     public class ApplicationDbContext : DbContext
     {
-        public DbSet<ApplicationUser> applicationUsers { get; set; }
+        public DbSet<ApplicationUser>? applicationUsers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -21,7 +21,10 @@ namespace api.DataAccess
         {
             modelBuilder.Entity<ApplicationUser>()
                 .ToContainer("Accounts")
-                .HasKey(e => e.Id);
+                .HasPartitionKey(e => e.Id);
+
+            modelBuilder.Entity<ApplicationUser>()
+                .OwnsMany(p => p.Maps);
         }
     }
 }

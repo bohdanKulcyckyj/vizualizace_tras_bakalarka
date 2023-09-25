@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 
 const PageLayout: React.FC = () => {
   return (
-    <main>
+    <main className="main-content">
         <Outlet />
     </main>
   )
