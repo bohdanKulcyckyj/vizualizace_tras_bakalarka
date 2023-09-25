@@ -1,30 +1,33 @@
 ﻿using api.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Cosmos;
+using Microsoft.Azure.Cosmos;
 
 namespace api.DataAccess
 {
     public class ApplicationDbContext : DbContext
     {
-        public DbSet<ApplicationUser>? applicationUsers { get; set; }
+        private readonly IConfiguration _configuration;
+        private readonly string _databaseName;
+        private readonly string _containerName;
+        private readonly string _cosmosDbEndpoint;
+        private readonly string _cosmosDbPrimaryKey;
+        private readonly CosmosClient _cosmosClient;
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public ApplicationDbContext(IConfiguration configuration)
         {
-            optionsBuilder.UseCosmos(
-                "https://wander-map-3d.documents.azure.com:443/",
-                "ThxeaseQFCRGDTSlcn1139Er82Z9dNB6Iu6WdTUNZeT7sngcLJxLCl48wU34xGP3YGfQD6JrYLYNACDbztMsvQ==",
-                "WanderMap3D"
-            );
+            _configuration = configuration;
+            _databaseName = _configuration["CosmosDb:DatabaseName"];
+            _containerName = _configuration["CosmosDb:ContainerName"];
+            _cosmosDbEndpoint = _configuration["CosmosDb:EndpointUri"];
+            _cosmosDbPrimaryKey = _configuration["CosmosDb:PrimaryKey"];
+
+            _cosmosClient = new CosmosClient(_cosmosDbEndpoint, _cosmosDbPrimaryKey);
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public Container GetContainer()
         {
-            modelBuilder.Entity<ApplicationUser>()
-                .ToContainer("Accounts")
-                .HasPartitionKey(e => e.Id);
-
-            modelBuilder.Entity<ApplicationUser>()
-                .OwnsMany(p => p.Maps);
+            var database = _cosmosClient.GetDatabase(_databaseName);
+            return database.GetContainer(_containerName);
         }
     }
 }

@@ -2,6 +2,7 @@
 using api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Security.Cryptography.Xml;
@@ -24,57 +25,27 @@ public class AuthController : ControllerBase
     }
     */
 
-    public AuthController()
+    public AuthController(ApplicationDbContext context)
     {
-        this._context = new ApplicationDbContext();
+        this._context = context;
     }
 
     [HttpGet("getUsers")]
-    public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetUsers()
+    public async Task<IActionResult> GetUsers()
     {
-        List<ApplicationUser> applicationUsers = new List<ApplicationUser>();
-        int count = 0;
-        using(_context)
+        var container = _context.GetContainer();
+        var sqlQueryText = "SELECT * FROM c";
+        var queryDefinition = new QueryDefinition(sqlQueryText);
+
+        var queryResultSetIterator = container.GetItemQueryIterator<ApplicationUser>(queryDefinition);
+
+        var items = new List<ApplicationUser>();
+        while (queryResultSetIterator.HasMoreResults)
         {
-            if(_context.applicationUsers != null)
-            {
-                var users = await _context.applicationUsers.ToListAsync();
-                
-                foreach(var user in users)
-                {
-                    count++;
-                    if(user != null)
-                    {
-                        applicationUsers.Add(user);
-                    }
-                }
-            }
+            var currentResultSet = await queryResultSetIterator.ReadNextAsync();
+            items.AddRange(currentResultSet);
         }
-        ApplicationUser user1 = new ApplicationUser()
-        {
-            Id = count.ToString(),
-            Name = "bohdan",
-            Email = "bohdan.kulchytskyy@seznam.cz",
-            Password = "123456789Bk",
-            Maps = new List<Map>()
-        };
-        applicationUsers.Add(user1);
 
-        return Ok(applicationUsers);
+        return Ok(items);
     }
-
-    [HttpPost("register")]
-    public async Task<IActionResult> Register()
-
-    /*[HttpPost("register")]
-    public async Task<IActionResult> Register(string model)
-    {
-        // Validace, vytvoření uživatele, uložení do databáze
-    }
-
-    [HttpPost("login")]
-    public async Task<IActionResult> Login(string model)
-    {
-        // Validace, přihlášení uživatele
-    }*/
 }

@@ -11,7 +11,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<ApplicationDbContext>();
+//builder.Services.AddDbContext<ApplicationDbContext>();
+builder.Services.AddSingleton<ApplicationDbContext>();
+
 //builder.Services.AddIdentityCore<ApplicationUser>().AddUserStore<ApplicationUser>();
 var provider = builder.Services.BuildServiceProvider();
 var configuration = provider.GetService<IConfiguration>();

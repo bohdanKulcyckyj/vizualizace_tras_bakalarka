@@ -4,12 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace api.Models
 {
-    public class ApplicationUser
+    public class ApplicationUser : IdentityUser
     {
         [JsonProperty("id")]
-        public string? Id { get; set; }
+        public override string? Id { get; set; }
         [JsonProperty("email")]
-        public string? Email { get; set; }
+        public override string? Email { get; set; }
         [JsonProperty("password")]
         public string? Password { get; set; }
         [JsonProperty("name")]
