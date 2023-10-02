@@ -22,7 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         "WanderMap3D");
 });
 
-builder.Services.AddSingleton<ApplicationDbContext>();
+//builder.Services.AddSingleton<ApplicationDbContext>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     // Nastavení hesla

@@ -17,7 +17,7 @@ namespace api.DataAccess
 
         public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<IdentityRole> Roles { get; set; }
-        public ApplicationDbContext(IConfiguration configuration)
+        public ApplicationDbContext(IConfiguration configuration) : base()
         {
             _configuration = configuration;
             _databaseName = _configuration["CosmosDb:DatabaseName"];
@@ -34,7 +34,15 @@ namespace api.DataAccess
             modelBuilder.Entity<ApplicationUser>().OwnsMany(p => p.Maps);
             modelBuilder.Entity<ApplicationUser>().HasPartitionKey(e => e.Id);
             modelBuilder.Entity<ApplicationUser>().ToContainer(_userContainerName);
-            modelBuilder.Entity<IdentityRole>().ToContainer(_roleContainerName);
+
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<IdentityRole>()
+            .HasIndex(r => r.Name)
+            .IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }

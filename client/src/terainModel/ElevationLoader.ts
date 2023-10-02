@@ -1,19 +1,17 @@
-
-function rgbToHeight(r: number, g: number, b: number) {
+function rgbToHeight(r: number, g: number, b: number): number {
     return -10000 + ((r * 256 * 256 + g * 256 + b) * 0.1);
 }
 
-
 export class ElevationLoader {
 
-    public static async load(url: string): Promise<{ size: number; heights: number[]; }> {
+    public static async load(url: string): Promise<{ size: number; heights: number[] }> {
         const pixels = await ElevationLoader.getPixels(url);
 
         const planeSize = Math.sqrt(pixels.length / 4);
 
         const heights: number[] = [];
         for (let i = 0; i < pixels.length; i += 4) {
-            const r = pixels[i + 0];
+            const r = pixels[i];
             const g = pixels[i + 1];
             const b = pixels[i + 2];
             const val = rgbToHeight(r, g, b);
@@ -21,7 +19,7 @@ export class ElevationLoader {
         }
         return {
             size: planeSize,
-            heights: heights
+            heights: heights,
         };
     }
 
@@ -35,19 +33,23 @@ export class ElevationLoader {
             img.src = url;
 
             img.onload = () => {
-                canvas.width = img.width;
-                canvas.height = img.width;
+                if (context) {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
 
-                context.drawImage(img, 0, 0, img.width, img.width);
+                    context.drawImage(img, 0, 0, img.width, img.height);
 
-                const imgData = context.getImageData(0, 0, img.width, img.height);
+                    const imgData = context.getImageData(0, 0, img.width, img.height);
 
-                resolve(imgData.data);
+                    resolve(imgData.data);
+                } else {
+                    reject(new Error("Canvas context not available"));
+                }
             };
 
             img.onerror = (e) => {
                 reject(e);
-            }
+            };
         });
     }
 }
