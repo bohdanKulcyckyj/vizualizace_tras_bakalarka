@@ -1,6 +1,8 @@
 import React, { useState} from 'react';
 import { Link } from 'react-router-dom';
-import Logo from '../../public/assets/logo-short.svg' 
+import Logo from '../assets/images/logo-short.svg';
+import { FaUserCircle } from 'react-icons/fa';
+import { IconContext } from 'react-icons';
 
 const Header: React.FC = (props: any) => {
   const [isMenuOpened, setIsMenuOpened] = useState(false);
@@ -8,9 +10,9 @@ const Header: React.FC = (props: any) => {
   return (
     <header className="header fixed top-0 left-0 w-full">
         <div className="header__container mx-auto px-[1.5rem] md:px-[4rem] py-6 w-full">
-            <a href="{{ route('homePage') }}" className="header__logo">
-                <img className="w-auto object-cover" src="{{ asset('images/icons/logo-fk.svg') }}" alt="Fredy Krigl - logo" />
-            </a>
+            <Link to="/" className="header__logo">
+                <img className="w-auto object-cover" src={Logo} alt="WanderMap3D logo" />
+            </Link>
 
             <div className="header__mobile-icon">
                 <div className="header__mobile-lines"></div>
@@ -27,28 +29,14 @@ const Header: React.FC = (props: any) => {
                         <Link to="/dashboard" className="tracking-widest lg:tracking-wider w-full header__nav-link header__nav-link--account">
                         </Link>
                     </li>
-                    <li>
-                        <a href="{{ route('homePage') }}" className="tracking-widest lg:tracking-wider w-full px-3 xl:mx-2 header__nav-link">Domu</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('aboutMePage') }}" className="tracking-widest lg:tracking-wider w-full px-3 xl:mx-2 header__nav-link">O mně</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('servicePage') }}" className="tracking-widest lg:tracking-wider w-full px-3 xl:mx-2 header__nav-link">Služby</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('productPage') }}" className="tracking-widest lg:tracking-wider w-full px-3 xl:mx-2 header__nav-link">Produkty</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('blog') }}" className="tracking-widest lg:tracking-wider w-full px-3 xl:mx-2 header__nav-link">Blog</a>
-                    </li>
-                    <li>
-                        <a href="{{ route('vipSection') }}" className="tracking-widest lg:tracking-wider w-full px-3 xl:mx-2 header__nav-link">Vip sekce</a>
-                    </li>
                     <li className="px-3 lg:px-4">
-                        <a href="{{ route('loginPage') }}" className="tracking-widest lg:tracking-wider w-full header__nav-link header__nav-link--account">
-                            <AccountIcon id="fa-account-icon"></AccountIcon>
-                        </a>
+                        <Link to="/prihlaseni" className="tracking-widest lg:tracking-wider w-full header__nav-link header__nav-link--account">
+                            <IconContext.Provider value={{ size: "2em", className: "account-icon" }}>
+                                <div>
+                                    <FaUserCircle />
+                                </div>
+                            </IconContext.Provider>
+                        </Link>
                     </li>
                 </ul>
             </nav>
