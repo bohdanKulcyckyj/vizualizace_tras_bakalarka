@@ -108,6 +108,60 @@ public class AuthController : ControllerBase
         return BadRequest(ModelState);
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordVewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user != null)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                // Odešlete e-mail s tokenem a instrukcemi pro obnovu hesla
+                // ...
+                return Ok(new { Message = "E-mail pro obnovu hesla byl odeslán. ", Token = token });
+            }
+            else
+            {
+                return BadRequest(new { Message = "Uživatel s tímto e-mailem neexistuje." });
+            }
+        }
+
+        return BadRequest(ModelState);
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordVeiwModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user != null)
+            {
+                var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+                if (result.Succeeded)
+                {
+                    return Ok(new { Message = "Heslo bylo úspěšně obnoveno." });
+                }
+                else
+                {
+                    return BadRequest(new { Errors = result.Errors });
+                }
+            }
+            else
+            {
+                return BadRequest(new { Message = "Uživatel s tímto e-mailem neexistuje." });
+            }
+        }
+
+        return BadRequest(ModelState);
+    }
+
+
+
     private string GenerateJwtToken(ApplicationUser user)
     {
         var claims = new[]
@@ -117,14 +171,14 @@ public class AuthController : ControllerBase
                 new Claim(JwtRegisteredClaimNames.NameId, user.Id),
             };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("A247DB24-C8AE-4B8A-8CB2-59637754BF2F"));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             _configuration["JwtIssuer"],
             _configuration["JwtIssuer"],
             claims,
-            expires: DateTime.Now.AddMinutes(30), // Nastavte platnost tokenu dle vašich potřeb
+            expires: DateTime.Now.AddMinutes(30),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
