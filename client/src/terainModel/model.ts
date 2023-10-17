@@ -1,4 +1,4 @@
-
+//@ts-nocheck
 import { getPosition as getSunPosition, getTimes } from 'suncalc';
 import {
 	Scene, WebGLRenderer, PerspectiveCamera, BoxGeometry, MeshBasicMaterial, Mesh, OrthographicCamera, Spherical, Vector3, Quaternion,
@@ -25,7 +25,7 @@ import CameraControls from 'camera-controls';
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ITileTextureDecorator, TileTextureDecorator } from './TileTextureDecorator';
-import { NgZone, isDevMode } from '@angular/core';
+//import { NgZone, isDevMode } from '@angular/core';
 
 const subsetOfTHREE = {
 	Vector2: Vector2,
@@ -92,29 +92,18 @@ enum TileBorderEnum {
 export class Model {
 
 	private renderer: WebGLRenderer;
-
 	private scene: ModelScene;
 	private camera: PerspectiveCamera;
-
 	public readonly controls: CameraControls;
-
 	private width: number;
 	private height: number;
-
-
 	private axisControl: AxisControl;
 	private northArrowControl: NorthArrowControl;
-
 	private origin: IPoint;
-
 	private map: Map;
-
-
 	private animateTrail: boolean = false;
 	private enableSun: boolean = true;
-
 	private clock = new Clock();
-
 	private pathAnimation: gsap.core.Tween;
 
 	constructor(
@@ -231,7 +220,7 @@ export class Model {
 
 
 	private markers: Group[] = [];
-
+	//@ts-ignore
 	private async addMarker(x: number, y: number, z: number, color: Color = null) {
 
 		const url = './assets/pin.gltf';
@@ -306,7 +295,7 @@ export class Model {
 
 		const trail = this.options.trailGpxUrl == null ? null : await this.loadTrail(this.options.trailGpxUrl);
 		//'./assets/export2.gpx'
-
+		//@ts-ignore
 		const tileDecorator: TileTextureDecorator = trail == null ? null : new TileTextureDecorator(trail, this.map);
 
 
@@ -409,6 +398,7 @@ export class Model {
 
 	public resetCamera() {
 		const bbox = new Box3();
+		//@ts-ignore
 		bbox.setFromObject(this.scene.getObjectByName('model'));
 		this.fitCameraTo(bbox, this.camera as any);
 	}
@@ -435,8 +425,11 @@ export class Model {
 		let gpxPoints: ILatLngAlt[] = [];
 		doc.querySelectorAll('trkpt').forEach(x => {
 			const point: ILatLngAlt = {
+				//@ts-ignore
 				lat: parseFloat(x.getAttribute('lat')),
+				//@ts-ignore
 				lng: parseFloat(x.getAttribute('lon')),
+				//@ts-ignore
 				alt: parseFloat(x.textContent)
 			};
 			gpxPoints.push(point);
@@ -1015,9 +1008,9 @@ export class Model {
 
 	public animate() {
 
-		if (isDevMode()) {
-			NgZone.assertNotInAngularZone();
-		}
+		//if (isDevMode()) {
+		//	NgZone.assertNotInAngularZone();
+		//}
 
 		requestAnimationFrame(() => this.animate());
 

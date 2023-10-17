@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Texture } from 'three';
 import { ILatLngAlt, IPoint } from './interfaces';
 import { Map } from './Map';

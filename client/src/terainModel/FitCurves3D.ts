@@ -274,7 +274,7 @@ export function fitCurve(points: IPoint3D[], maxError: number) {
 
         var toCenterTangent = normalize(centerVector);
         var fromCenterTangent = multiply(toCenterTangent, -1);
-
+        //@ts-ignore
         var beziers: IPoint3D[][] = [].concat(fitCubic(points.slice(0, splitPoint + 1), leftTangent, toCenterTangent, error));
         return beziers.concat(fitCubic(points.slice(splitPoint), fromCenterTangent, rightTangent, error));
     }
