@@ -1,6 +1,7 @@
 ﻿using api.DataAccess;
 using api.Models;
 using api.Models.Forms;
+using api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -21,14 +22,15 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly EmailSender _emailSender;
 
-
-    public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, ApplicationDbContext context)
+    public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, ApplicationDbContext context, EmailSender emailSender)
     {
         this._context = context;
         this._configuration = configuration;
         this._userManager = userManager;
         this._signInManager = signInManager;
+        this._emailSender = emailSender;
     }
 
     [HttpGet("get-users")]
@@ -67,8 +69,7 @@ public class AuthController : ControllerBase
             if (result.Succeeded)
             {
                 // Vytvoření uživatele bylo úspěšné, můžeme uložit uživatele do Cosmos DB
-                await _context.GetUserContainer().CreateItemAsync(user);
-
+                //await _context.GetUserContainer().CreateItemAsync(user);
                 // Nyní můžeme generovat a vrátit JWT token
                 var token = GenerateJwtToken(user);
 
@@ -118,8 +119,21 @@ public class AuthController : ControllerBase
             if (user != null)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                // Odešlete e-mail s tokenem a instrukcemi pro obnovu hesla
-                // ...
+
+                var emailSubject = "Obnova hesla";
+                var emailMessage = $"Pro obnovu hesla použijte tento token: {token}";
+
+                try
+                {
+                    await _emailSender.SendEmailAsync(model.Email, emailSubject, emailMessage);
+                    return Ok(new { Message = "E-mail pro obnovu hesla byl odeslán.", Token = token });
+                }
+                catch (Exception ex)
+                {
+                    // Zpracování chyby při odesílání e-mailu
+                    return BadRequest(new { Message = $"Nepodařilo se odeslat e-mail: {ex.Message}" });
+                }
+
                 return Ok(new { Message = "E-mail pro obnovu hesla byl odeslán. ", Token = token });
             }
             else

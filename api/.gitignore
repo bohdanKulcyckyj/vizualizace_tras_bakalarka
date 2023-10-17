@@ -45,7 +45,8 @@ AnyCPU/
 
 # .NET Core CLI tools
 .nuget/
-
+api/appsettings.json
+api/appsettings.Development.json
 # Other generated files
 _ReSharper*/
 *.DotSettings

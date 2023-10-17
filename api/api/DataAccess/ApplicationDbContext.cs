@@ -32,9 +32,9 @@ namespace api.DataAccess
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseCosmos(
-                "https://wander-map-3d.documents.azure.com:443/",
-                "ThxeaseQFCRGDTSlcn1139Er82Z9dNB6Iu6WdTUNZeT7sngcLJxLCl48wU34xGP3YGfQD6JrYLYNACDbztMsvQ==",
-                "WanderMap3D"
+                _cosmosDbEndpoint,
+                _cosmosDbPrimaryKey,
+                _databaseName
             );
             base.OnConfiguring(optionsBuilder);
         }
