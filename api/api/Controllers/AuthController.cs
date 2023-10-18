@@ -5,6 +5,7 @@ using api.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -68,20 +69,15 @@ public class AuthController : ControllerBase
 
             if (result.Succeeded)
             {
-                // Vytvoření uživatele bylo úspěšné, můžeme uložit uživatele do Cosmos DB
-                //await _context.GetUserContainer().CreateItemAsync(user);
-                // Nyní můžeme generovat a vrátit JWT token
                 var token = GenerateJwtToken(user);
 
                 return Ok(new { token });
             }
             else
             {
-                // Registrace selhala, vrátit chybové zprávy
                 return BadRequest(new { Errors = result.Errors });
             }
         }
-
         return BadRequest(ModelState);
     }
 
@@ -94,14 +90,12 @@ public class AuthController : ControllerBase
 
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                // Uživatel byl úspěšně přihlášen, generovat a vrátit JWT token
                 var token = GenerateJwtToken(user);
 
                 return Ok(new { token });
             }
             else
             {
-                // Přihlášení selhalo, vrátit chybovou zprávu
                 return BadRequest(new { Message = "Nesprávné přihlašovací údaje." });
             }
         }
@@ -119,18 +113,18 @@ public class AuthController : ControllerBase
             if (user != null)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
+                var resetToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+                var resetLink = $"http://localhost:3000/obnova-hesla?token={resetToken}&email={model.Email}";
                 var emailSubject = "Obnova hesla";
-                var emailMessage = $"Pro obnovu hesla použijte tento token: {token}";
+                var emailMessage = $"Pro obnovu hesla použijte tento odkaz: {resetLink}";
 
                 try
                 {
                     await _emailSender.SendEmailAsync(model.Email, emailSubject, emailMessage);
-                    return Ok(new { Message = "E-mail pro obnovu hesla byl odeslán.", Token = token });
+                    return Ok(new { Message = "E-mail pro obnovu hesla byl odeslán." });
                 }
                 catch (Exception ex)
                 {
-                    // Zpracování chyby při odesílání e-mailu
                     return BadRequest(new { Message = $"Nepodařilo se odeslat e-mail: {ex.Message}" });
                 }
 
@@ -151,10 +145,12 @@ public class AuthController : ControllerBase
         if (ModelState.IsValid)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
+            var tokenBytes = WebEncoders.Base64UrlDecode(model.Token);
+            var token = Encoding.UTF8.GetString(tokenBytes);
 
             if (user != null)
             {
-                var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+                var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
 
                 if (result.Succeeded)
                 {
@@ -173,8 +169,6 @@ public class AuthController : ControllerBase
 
         return BadRequest(ModelState);
     }
-
-
 
     private string GenerateJwtToken(ApplicationUser user)
     {
