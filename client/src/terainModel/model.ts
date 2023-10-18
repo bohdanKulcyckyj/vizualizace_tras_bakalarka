@@ -124,9 +124,9 @@ export class Model {
 		// this.renderer.physicallyCorrectLights=true;
 
 		this.camera = this.buildCamera();
-
+		console.log(this.camera);
 		this.scene = new ModelScene();
-
+		
 		this.controls = this.initOrbitControls(this.camera, this.renderer.domElement);
 		// this.controls.update(delta );
 

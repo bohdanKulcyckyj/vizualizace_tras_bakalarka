@@ -2,7 +2,6 @@ import { WebGLRenderer, Camera, Clock } from 'three';
 import { ViewHelper } from './ViewHelper';
 import { Model } from './model';
 
-
 export class AxisControl {
 
 	private viewHelper: ViewHelper;
