@@ -48,7 +48,8 @@ function App() {
             {/* auth */}
             <Route path="/prihlaseni" element={<Login />} />
             <Route path="/registrace" element={<Registration />} />
-            <Route path="/restore-password" element={<Home />} />
+            <Route path="/zapomenute-heslo" element={<Home />} />
+            <Route path="/obnova-hesla" element={<Home />} />
           </Route>
           {/* Dashboard */}
           <Route path="/administrace" element={
