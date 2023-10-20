@@ -6,15 +6,10 @@ namespace api.Models
 {
     public class ApplicationUser : IdentityUser
     {
-        [JsonProperty("id")]
         public override string? Id { get; set; }
-        [JsonProperty("email")]
         public override string? Email { get; set; }
-        [JsonProperty("password")]
-        public string? Password { get; set; }
-        [JsonProperty("name")]
+        public string? RoleId { get; set; }
         public string? Name { get; set; }
-        [JsonProperty("maps")]
         public List<Map>? Maps { get; set; }
     }
 }

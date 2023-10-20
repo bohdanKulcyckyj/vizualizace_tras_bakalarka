@@ -1,12 +1,14 @@
 ﻿using api.DataAccess;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography.Xml;
 
 namespace api.Models
 {
     public class ApplicationUserStore : IUserStore<ApplicationUser>,
         IUserPasswordStore<ApplicationUser>,
-        IUserEmailStore<ApplicationUser>
+        IUserEmailStore<ApplicationUser>,
+        IUserRoleStore<ApplicationUser>
     {
         private readonly ApplicationDbContext _context;
 
@@ -141,5 +143,79 @@ namespace api.Models
             return Task.CompletedTask;
         }
 
+        public async Task AddToRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
+        {
+            var role = await _context.Roles
+            .Where(r => r.NormalizedName == roleName)
+            .FirstOrDefaultAsync(cancellationToken);
+
+            if (role != null)
+            {
+                user.RoleId = role.Id;
+                await _context.SaveChangesAsync(cancellationToken);
+            } else
+            {
+                throw new Exception($"Roli se nepodařilo přidat.");
+            }
+        }
+
+        public async Task RemoveFromRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
+        {
+            var role = await _context.Roles
+            .Where(r => r.NormalizedName == roleName)
+            .FirstOrDefaultAsync(cancellationToken);
+
+            if (role != null && user?.RoleId == role.Id)
+            {
+
+                if (role != null)
+                {
+                    user.RoleId = null;
+                    await _context.SaveChangesAsync(cancellationToken);
+                    return;
+                }
+            }
+
+            throw new Exception("Roli se nepodařilo odebrat");
+        }
+
+        public async Task<IList<string>> GetRolesAsync(ApplicationUser user, CancellationToken cancellationToken)
+        {
+            if(user.RoleId == null) return await Task.FromResult<IList<string>>(new List<string>());
+
+            var role = await _context.Roles
+            .Where(r => r.Id == user.RoleId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+            if(role == null) return await Task.FromResult<IList<string>>(new List<string>());
+
+            return await Task.FromResult<IList<string>>(new List<string> { role.Name });
+        }
+
+        public async Task<bool> IsInRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
+        {
+            var role = await _context.Roles
+            .Where(r => r.NormalizedName == roleName)
+            .FirstOrDefaultAsync(cancellationToken);
+
+            if (role == null || user.RoleId == null) return false;
+
+            return user.RoleId == role.Id;
+        }
+
+        public async Task<IList<ApplicationUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
+        {
+            var role = await _context.Roles
+            .Where(r => r.NormalizedName == roleName)
+            .FirstOrDefaultAsync(cancellationToken);
+
+            if(role == null) return new List<ApplicationUser>();
+
+            var usersInRole = _context.Users
+            .Where(u => u.RoleId == role.Id)
+            .ToList();
+
+            return new List<ApplicationUser>(usersInRole);
+        }
     }
 }

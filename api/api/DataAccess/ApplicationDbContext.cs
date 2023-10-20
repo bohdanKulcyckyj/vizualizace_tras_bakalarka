@@ -45,14 +45,13 @@ namespace api.DataAccess
             modelBuilder.Entity<ApplicationUser>().HasPartitionKey(e => e.Id);
             modelBuilder.Entity<ApplicationUser>().ToContainer(_userContainerName);
 
-
             modelBuilder.Entity<ApplicationUser>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            modelBuilder.Entity<IdentityRole>()
-            .HasIndex(r => r.Name)
-            .IsUnique();
+            modelBuilder.Entity<IdentityRole>().HasPartitionKey(p => p.Id);
+            modelBuilder.Entity<IdentityRole>().HasIndex(r => r.Name).IsUnique();
+            modelBuilder.Entity<IdentityRole>().ToContainer(_roleContainerName);
 
             base.OnModelCreating(modelBuilder);
         }

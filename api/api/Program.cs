@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Cosmos.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,7 @@ app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+//app.UseAuthentication();
 
 app.MapControllers();
 

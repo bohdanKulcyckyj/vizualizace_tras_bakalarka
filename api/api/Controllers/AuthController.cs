@@ -22,14 +22,16 @@ public class AuthController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly EmailSender _emailSender;
 
-    public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, ApplicationDbContext context, EmailSender emailSender)
+    public AuthController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, ApplicationDbContext context, EmailSender emailSender)
     {
         this._context = context;
         this._configuration = configuration;
         this._userManager = userManager;
+        this._roleManager = roleManager;
         this._signInManager = signInManager;
         this._emailSender = emailSender;
     }
@@ -65,17 +67,18 @@ public class AuthController : ControllerBase
                 Name = model.Name,
             };
 
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var savingUser = await _userManager.CreateAsync(user, model.Password);
 
-            if (result.Succeeded)
+            if (savingUser.Succeeded)
             {
                 var token = GenerateJwtToken(user);
-
+                await _userManager.AddToRoleAsync(user, "USER");
+                await _signInManager.SignInAsync(user, isPersistent: false);
                 return Ok(new { token });
             }
             else
             {
-                return BadRequest(new { Errors = result.Errors });
+                return BadRequest(new { Errors = savingUser.Errors });
             }
         }
         return BadRequest(ModelState);
@@ -91,7 +94,7 @@ public class AuthController : ControllerBase
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 var token = GenerateJwtToken(user);
-
+                await _signInManager.SignInAsync(user, isPersistent: false);
                 return Ok(new { token });
             }
             else
@@ -170,21 +173,27 @@ public class AuthController : ControllerBase
         return BadRequest(ModelState);
     }
 
+    [HttpGet("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        return Ok("Uživatel byl odhlašen");
+    }
     private string GenerateJwtToken(ApplicationUser user)
     {
         var claims = new[]
         {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.NameId, user.Id),
-            };
+            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.NameId, user.Id),
+        };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("A247DB24-C8AE-4B8A-8CB2-59637754BF2F"));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            _configuration["JwtIssuer"],
-            _configuration["JwtIssuer"],
+            _configuration["Jwt:JwtIssuer"],
+            _configuration["Jwt:JwtAudience"],
             claims,
             expires: DateTime.Now.AddMinutes(30),
             signingCredentials: creds);

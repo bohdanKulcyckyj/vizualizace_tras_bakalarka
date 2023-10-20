@@ -4,6 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Models
 {
+    public enum ApplicationRolesEnum
+    {
+        USER,
+        ADMIN
+    }
+
     public class ApplicationRoleStore : IRoleStore<IdentityRole>
     {
         private readonly ApplicationDbContext _context;
