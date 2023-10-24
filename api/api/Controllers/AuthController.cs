@@ -2,6 +2,7 @@
 using api.Models;
 using api.Models.Forms;
 using api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -37,8 +38,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("get-users")]
+    [Authorize]
     public async Task<IActionResult> GetUsers()
     {
+        var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+        if (currentUser == null) return Unauthorized();
+
+
         var container = _context.GetUserContainer();
         var sqlQueryText = "SELECT * FROM c";
         var queryDefinition = new QueryDefinition(sqlQueryText);
@@ -71,7 +77,7 @@ public class AuthController : ControllerBase
 
             if (savingUser.Succeeded)
             {
-                var token = GenerateJwtToken(user);
+                var token = GenerateJwtToken(user, "USER");
                 await _userManager.AddToRoleAsync(user, "USER");
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return Ok(new { token });
@@ -93,7 +99,12 @@ public class AuthController : ControllerBase
 
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                var token = GenerateJwtToken(user);
+                var userRoles = await _userManager.GetRolesAsync(user);
+                if(userRoles.Count() <= 0)
+                {
+                    return BadRequest(new { Message = "Uživatel nemá přiřazenou roli." });
+                }
+                var token = GenerateJwtToken(user, userRoles[0]);
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return Ok(new { token });
             }
@@ -179,13 +190,14 @@ public class AuthController : ControllerBase
         await _signInManager.SignOutAsync();
         return Ok("Uživatel byl odhlašen");
     }
-    private string GenerateJwtToken(ApplicationUser user)
-    {
+    private string GenerateJwtToken(ApplicationUser user, string role)
+    {        
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.NameId, user.Id),
+            new Claim(ClaimTypes.Role, role),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

@@ -39,7 +39,6 @@ namespace api.Services
             }
             catch (Exception ex)
             {
-                // Zpracování chyby při odesílání e-mailu
                 throw new Exception($"Chyba nastala v SendEmailAsync {ex.Message}");
             }
         }
