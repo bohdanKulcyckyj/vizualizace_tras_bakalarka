@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { SIGN_IN } from '../api/endpoints';
+import { GET_ALL_USERS, SIGN_IN } from '../api/endpoints';
 import axios from 'axios';
 import { ILoginForm } from '../interfaces/Forms';
 import { useForm } from 'react-hook-form';
@@ -10,9 +10,23 @@ export default function SignIn() {
 
   const signIn = (data:ILoginForm) => {
     axios.post(SIGN_IN, data)
-    .then(res => console.log(res))
+    .then(res => {
+      sessionStorage.setItem("token", res.data.token)
+    })
     .catch(err => console.error(err))
   };
+
+  const testFunction = () => {
+    const config = {
+      headers: {
+        Authorization: 'Bearer ' + sessionStorage.getItem("token")
+      }
+    }
+
+    axios.get(GET_ALL_USERS, config)
+    .then(res => console.log(res))
+    .catch(err => console.error(err))
+  }
 
   return (
     <section className="page-section">
@@ -32,6 +46,7 @@ export default function SignIn() {
             <button className="uppercase">odeslat</button>
           </div>
         </form>
+        <button onClick={() => testFunction()} className="uppercase">Test button</button>
       </div>
     </section>
   )
