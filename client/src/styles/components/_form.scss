@@ -1,8 +1,15 @@
 .form {
-    width: 44rem;
+    width: 40rem;
+    height: fit-content;
     color: $textColor;
     background: $paper;
-    box-shadow: 2px 10px 40px rgba(0, 0, 0, 0.35);
+    border-radius: 10px;
+    background: rgba(51, 60, 68, 0.5411764705882353);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.511);
+    backdrop-filter: blur(6.1px);
+    -webkit-backdrop-filter: blur(6.1px);
+    border: 1px solid rgba(51, 60, 68, 0.4);
+
     margin-top: 96px;
     margin-bottom: 96px;
     @media only screen and (min-width: 1450px) {
@@ -60,7 +67,8 @@
     border-bottom: 1px solid $textColor;
     transition: all 0.3s ease;
     background: transparent;
-
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem; 
     &:focus {
         border-color: $secondary-color;
     }

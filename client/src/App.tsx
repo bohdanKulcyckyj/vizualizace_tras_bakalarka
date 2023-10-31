@@ -10,6 +10,7 @@ import TerrainModelComponent from './terainModel/TerrainModelComponent';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Registration from './pages/Registration';
+import ForgottenPassword from './pages/ForgottenPassword';
 import Dashboard from './pages/Dashboard';
 
 import { ConfigProvider } from './context/ConfigProvider';
@@ -46,18 +47,18 @@ function App() {
           <Route element={<PageLayout />}>
             <Route path="/" element={<Home />} />
             {/* auth */}
-            <Route path="/prihlaseni" element={<Login />} />
-            <Route path="/registrace" element={<Registration />} />
-            <Route path="/zapomenute-heslo" element={<Home />} />
-            <Route path="/obnova-hesla" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/registration" element={<Registration />} />
+            <Route path="/forgotten-password" element={<ForgottenPassword />} />
+            <Route path="/restore-password" element={<Home />} />
           </Route>
           {/* Dashboard */}
-          <Route path="/administrace" element={
+          <Route path="/profile" element={
             <RouteGuard>
               <Dashboard />
             </RouteGuard>
           }/>
-          <Route path="/mapa" element={
+          <Route path="/map" element={
             <ConfigProvider>
               <TerrainModelComponent options={staticOptions} />
             </ConfigProvider>

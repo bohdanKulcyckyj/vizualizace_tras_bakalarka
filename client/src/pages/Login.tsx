@@ -1,36 +1,94 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SIGN_IN } from '../api/endpoints';
 import axios from 'axios';
 import { ILoginForm } from '../interfaces/Forms';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 
 export default function SignIn() {
+  const [successMsg, setSuccessMsg] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
-  const { register, handleSubmit } = useForm<ILoginForm>();
+  const { register, handleSubmit, formState: { errors } } = useForm<ILoginForm>();
 
   const signIn = (data:ILoginForm) => {
     axios.post(SIGN_IN, data)
-    .then(res => console.log(res))
-    .catch(err => console.error(err))
+    .then(res => {
+      console.log(res);
+      setSuccessMsg("Successfully logged in");
+    })
+    .catch(err => {
+      console.error(err);
+      setErrorMsg("Logging in failed");
+    })
   };
 
   return (
-    <section className="page-section">
-      <div className="page-section__container flex justify-center">
-        <form className="p-6 sm:p-10 form" onSubmit={handleSubmit(signIn)}>
+    <section className="page-section welcome-section">
+      <div className="page-section__container flex justify-center items-center">
+        <form className="relative z-10 p-6 sm:p-10 form" onSubmit={handleSubmit(signIn)}>
           <div className="w-full mb-4 md:mb-8 text-center">
-              <h1 className="mb-2 text-18px md:text-24px uppercase tracking-widest">Přihlášení</h1>
-              <p>Přihlaste se do svého účtu</p>
+              <h1 className="mb-2 text-18px md:text-24px lg:text-30px uppercase tracking-widest font-bold">Sign In</h1>
+              <p className="text-[15px]">Sign in and start your journey</p>
           </div>
           <div className='mb-4 form__input'>
-            <input placeholder="Email" type="text" {...register("email", {required: "Email je povinný"})} />
+            <input className={`${errors.email ? "mb-1" : "mb-0"}`}
+              placeholder="Email" type="text" 
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^\S+@\S+$/i,
+                  message: "Invalid email format"
+                }
+                })} />
+            {errors.email && (
+                <p className='h-5 text-left mt-1 err'>
+                    {errors.email.message}
+                </p>
+            )}
           </div>
           <div className='mb-4 form__input'>
-            <input placeholder="Heslo" type="text" {...register("password", {required: "Heslo je povinné"})} />
+            <input 
+            className={`${errors.password ? "mb-1" : "mb-0"}`} 
+            placeholder="Password" type="password" 
+            {...register("password", {
+              required: "Password is required",
+              minLength : {
+                value: 8,
+                message: "Your password is too short"
+              }
+            })} />
+            {errors.password && (
+                <p className='h-5 text-left mt-1 err'>
+                    {errors.password.message}
+                </p>
+            )}
           </div>
-          <div className="flex justify-center">
-            <button className="uppercase">odeslat</button>
+          <div className="w-full flex flex-wrap gap-2 justify-between mt-6">
+            <p className="font-medium mr-6 whitespace-nowrap form-links">Don't have an account yet? <Link to="/registration" className="tracking-wider font-medium link--underlined" rel="noreferrer">Sign up</Link></p>
+            <Link className="tracking-wider form-links link--underlined" to="/forgotten-password" rel="noreferrer">Forgot your password?</Link>
           </div>
+          <div className={`${successMsg || errorMsg ? "mb-4" : "mb-0"} transition-all flex justify-center mt-10`}>
+            <button className="primary-button">sign in</button>
+          </div>
+
+          {errorMsg ? (
+              <div className={'w-full'}>
+                  <p
+                      className={'alert errorAlert text-center w-full'}
+                  >
+                      {errorMsg}
+                  </p>
+              </div>
+          ) : null}
+
+            {successMsg ? (
+                <div className={"w-full"}>
+                    <p className={"success text-center w-full"}>
+                        {successMsg}
+                    </p>
+                </div>
+            ) : null}
         </form>
       </div>
     </section>
