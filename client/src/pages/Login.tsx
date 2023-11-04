@@ -23,6 +23,18 @@ export default function SignIn() {
     })
   };
 
+  const testFunction = () => {
+    const config = {
+      headers: {
+        Authorization: 'Bearer ' + sessionStorage.getItem("token")
+      }
+    }
+
+    axios.get(GET_ALL_USERS, config)
+    .then(res => console.log(res))
+    .catch(err => console.error(err))
+  }
+
   return (
     <section className="page-section welcome-section">
       <div className="page-section__container flex justify-center items-center">
@@ -90,6 +102,7 @@ export default function SignIn() {
                 </div>
             ) : null}
         </form>
+        <button onClick={() => testFunction()} className="uppercase">Test button</button>
       </div>
     </section>
   )
