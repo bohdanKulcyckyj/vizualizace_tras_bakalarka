@@ -1,18 +1,18 @@
 import react from 'react';
-import { Route, redirect, Navigate } from 'react-router-dom';
-import IRouteGuard from '../interfaces/IRouteGuard';
+import { Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
-const RouteGuard: react.FC<IRouteGuard> = ({children}) => {
+const RouteGuard = () => {
     const hasValidJWT = () => {
         let isValid = false;
-        localStorage.getItem("token") ? isValid=true : isValid=false;
+        sessionStorage.getItem("token") ? isValid=true : isValid=false;
         console.log(isValid);
         return isValid;
     }
 
     return (
         <>
-        {hasValidJWT() ? <>{children}</> : <Navigate to="/prihlaseni" replace />}
+        {hasValidJWT() ? <Outlet /> : <Navigate to="/login" replace />}
         </>
     )
 }

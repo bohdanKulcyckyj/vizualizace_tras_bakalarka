@@ -6,7 +6,7 @@
 }
 
 .header.header--scroll {
-    background: $primary-color;
+    background: #11161cf7;
 }
 
 .header__logo img {
@@ -140,10 +140,10 @@
     text-transform: uppercase;
     position: relative;
     transition: all 0.5s ease;
-    font-size: 22px;
+    font-size: 15px;
     @media only screen and (min-width: 1450px) {
         padding-bottom: 6px;
-        font-size: 18px;
+        font-size: 16px;
         &::before {
             content: "";
         }
@@ -177,8 +177,8 @@
     }
 
     & svg {
-        width: 28px !important;
-        height: 28px !important;
+        width: 24px !important;
+        height: 24px !important;
         vertical-align: middle;
     }
 

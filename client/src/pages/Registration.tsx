@@ -3,11 +3,12 @@ import { SIGN_UP} from '../api/endpoints';
 import axios from 'axios';
 import { IRegistrationForm } from '../interfaces/Forms';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function SignUp() {
   const [successMsg, setSuccessMsg] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const navigate = useNavigate();
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<IRegistrationForm>();
   const currentPassword = watch("password", "");
@@ -17,6 +18,7 @@ export default function SignUp() {
     .then(res => {
       console.log(res);
       setSuccessMsg("Registration was successful");
+      navigate("/admin/maps");
     })
     .catch(err => {
       console.error(err);

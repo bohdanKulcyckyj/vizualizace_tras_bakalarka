@@ -17,6 +17,7 @@ import { ConfigProvider } from './context/ConfigProvider';
 //scss
 import './styles/main.scss'
 import { IModelOptions } from './terainModel/model';
+import MapDetail from './pages/MapDetail';
 
 const staticOptions : IModelOptions = {
 	center: {
@@ -51,13 +52,40 @@ function App() {
             <Route path="/registration" element={<Registration />} />
             <Route path="/forgotten-password" element={<ForgottenPassword />} />
             <Route path="/restore-password" element={<Home />} />
+
+            {/* Admin */}
+            <Route path="/admin" element={<RouteGuard />}>
+              <Route path="/admin/maps" element={
+                  <Dashboard />
+              }/>
+              <Route path="/admin/maps/new" element={
+                  <MapDetail />
+              }/>
+              <Route path="/admin/maps/edit/:mapid" element={
+                  <Dashboard />
+              }/>
+              <Route path="/admin/profile" element={
+                  <Dashboard />
+              }/>
+            </Route>
+
+            {/* User */}
+            <Route path="/user" element={<RouteGuard />}>
+              <Route path="/user/maps" element={
+                  <Dashboard />
+              }/>
+              <Route path="/user/profile" element={
+                  <Dashboard />
+              }/>
+              <Route path="/user/maps/new" element={
+                  <Dashboard />
+              }/>
+              <Route path="/user/maps/edit/:mapid" element={
+                  <Dashboard />
+              }/>
+            </Route>
           </Route>
-          {/* Dashboard */}
-          <Route path="/profile" element={
-            <RouteGuard>
-              <Dashboard />
-            </RouteGuard>
-          }/>
+          {/* TEST MAP ROUTE */}
           <Route path="/map" element={
             <ConfigProvider>
               <TerrainModelComponent options={staticOptions} />

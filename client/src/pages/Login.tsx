@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { SIGN_IN } from '../api/endpoints';
+import { SIGN_IN, GET_ALL_USERS } from '../api/endpoints';
+import { saveTokenToCookie, getTokenFromCookie } from '../utils/jwt';
 import axios from 'axios';
 import { ILoginForm } from '../interfaces/Forms';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function SignIn() {
   const [successMsg, setSuccessMsg] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors } } = useForm<ILoginForm>();
 
   const signIn = (data:ILoginForm) => {
     axios.post(SIGN_IN, data)
     .then(res => {
-      console.log(res);
+      console.log(res.data.token);
+      sessionStorage.setItem("token", res.data.token);
       setSuccessMsg("Successfully logged in");
+      saveTokenToCookie(res.data.token);
+      navigate("/admin/maps");
     })
     .catch(err => {
       console.error(err);
@@ -26,10 +31,11 @@ export default function SignIn() {
   const testFunction = () => {
     const config = {
       headers: {
-        Authorization: 'Bearer ' + sessionStorage.getItem("token")
+        Authorization: "Bearer " + sessionStorage.getItem("token")
       }
     }
 
+    axios.defaults.withCredentials = true;
     axios.get(GET_ALL_USERS, config)
     .then(res => console.log(res))
     .catch(err => console.error(err))
@@ -102,8 +108,8 @@ export default function SignIn() {
                 </div>
             ) : null}
         </form>
-        <button onClick={() => testFunction()} className="uppercase">Test button</button>
       </div>
+      <button onClick={testFunction}>Try authorize</button>
     </section>
   )
 }
