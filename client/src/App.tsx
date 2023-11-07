@@ -12,6 +12,8 @@ import Login from './pages/Login';
 import Registration from './pages/Registration';
 import ForgottenPassword from './pages/ForgottenPassword';
 import Dashboard from './pages/Dashboard';
+import Users from './pages/Dashboard/Users';
+import Profile from './pages/Dashboard/Profile';
 
 import { ConfigProvider } from './context/ConfigProvider';
 //scss
@@ -56,32 +58,35 @@ function App() {
             {/* Admin */}
             <Route path="/admin" element={<RouteGuard />}>
               <Route path="/admin/maps" element={
-                  <Dashboard />
+                <Dashboard />
+              }/>
+              <Route path="/admin/users" element={
+                <Users />
               }/>
               <Route path="/admin/maps/new" element={
-                  <MapDetail />
+                <MapDetail />
               }/>
               <Route path="/admin/maps/edit/:mapid" element={
-                  <Dashboard />
+                <Dashboard />
               }/>
               <Route path="/admin/profile" element={
-                  <Dashboard />
+                <Profile />
               }/>
             </Route>
 
             {/* User */}
             <Route path="/user" element={<RouteGuard />}>
               <Route path="/user/maps" element={
-                  <Dashboard />
+                <Dashboard />
               }/>
               <Route path="/user/profile" element={
-                  <Dashboard />
+                <Profile />
               }/>
               <Route path="/user/maps/new" element={
-                  <Dashboard />
+                <Dashboard />
               }/>
               <Route path="/user/maps/edit/:mapid" element={
-                  <Dashboard />
+                <Dashboard />
               }/>
             </Route>
           </Route>

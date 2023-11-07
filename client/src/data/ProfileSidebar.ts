@@ -9,7 +9,7 @@ export const adminSidebarData = [
     },
     {
         label: "Profile",
-        url: "/profile"
+        url: "/admin/profile"
     },
     {
         label: "Logout",
@@ -24,7 +24,7 @@ export const userSidebarData = [
     },
     {
         label: "Profile",
-        url: "/profile"
+        url: "/user/profile"
     },
     {
         label: "Logout",

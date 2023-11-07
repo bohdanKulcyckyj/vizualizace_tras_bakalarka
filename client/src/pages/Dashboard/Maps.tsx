@@ -1,7 +1,7 @@
 import React from 'react'
-import { ButtonType } from '../interfaces/IButton';
-import Table from '../components/Table';
-import Aside from '../components/Aside';
+import { ButtonType } from '../../interfaces/IButton';
+import Table from '../../components/Table';
+import Aside from '../../components/Aside';
 
 const dummyData = [
   {
@@ -53,9 +53,9 @@ const dummyConfig = {
       actionUrlDynamicPartKey: "id",
     }
   ]
-}
+};
 
-const Dashboard = () => {
+const Maps = () => {
   return (
     <section className="page-section mt-[8rem]">
         <div className="page-section__container">
@@ -69,4 +69,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default Maps

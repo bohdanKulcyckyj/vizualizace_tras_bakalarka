@@ -65,19 +65,21 @@ builder.Services.AddAuthentication(x => {
         ValidateAudience = false,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        ValidIssuer = configuration.GetSection("Jwt:Issuer").Value,
+        ValidAudience = configuration.GetSection("Jwt:Audience").Value,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration.GetSection("Jwt:Key").Value))
     };
 });
-//builder.Services.AddSingleton<JwtService>();
 
 builder.Services.AddCors(options =>
 {
-    var frontendURL = configuration.GetValue<string>("AllowedHosts");
+    var frontendURL = "https://localhost:7214";
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins(frontendURL).AllowAnyMethod().AllowAnyHeader();
+        builder.WithOrigins(frontendURL)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
     });
 });
 
