@@ -7,7 +7,7 @@ const Home = () => {
         <p className="text-center text-18px md:text-22px lg:text-26px font-medium">Create your own</p>
         <h1 className="text-center text-32px md:text-38px lg:text-50px font-bold uppercase mb-8">Wander Map <span className="text-secondaryColor">3D</span></h1>
         <div className="flex justify-center">
-          <button className="secondary-button">learn more</button>
+          <button className="presentation-button">learn more</button>
         </div>
       </div>
     </section>

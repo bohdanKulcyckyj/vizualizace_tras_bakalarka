@@ -1,8 +1,7 @@
 //@ts-nocheck
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Model } from './model';
-import { useConfig } from '../context/ConfigProvider';
+import { useMainContext } from '../context/MainContext';
 
 function TerrainModelComponent({ options } : any) {
   const wrapperRef = useRef(null);
@@ -10,7 +9,16 @@ function TerrainModelComponent({ options } : any) {
   const viewHelperCanvasWrapperRef = useRef(null);
   const northArrowCanvasWrapperRef = useRef(null);
   const [model, setModel] = useState(null);
-  const config = useConfig();
+  const mainContext = useMainContext();
+
+  useEffect(() => {
+    if(mainContext) {
+      mainContext.setIsLoading(true);
+      setTimeout(() => {
+        mainContext.setIsLoading(false);
+      }, 5000);
+    }
+  }, []);
 
   useEffect(() => {
     if (!model) {
@@ -112,15 +120,15 @@ function TerrainModelComponent({ options } : any) {
       resizeObserver.observe(wrapperRef.current);
 
       // Následující kód pro sledování změn konfigurace můžete přesunout sem
-      const animateTrail = config.animateTrail;
-      const enableShadow = config.enableShadow;
-      const enableSun = config.enableSun;
+      const animateTrail = mainContext.animateTrail;
+      const enableShadow = mainContext.enableShadow;
+      const enableSun = mainContext.enableSun;
 
       newModel.setAnimateTrail(animateTrail);
       newModel.setEnableShadow(enableShadow);
       newModel.setEnableSun(enableSun);
     }
-  }, [model, options, config]);
+  }, [model, options, mainContext]);
 
   return (
     <div className="model-wrapper" ref={wrapperRef}>

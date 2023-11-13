@@ -1,0 +1,28 @@
+.error-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-image: url('../../assets/images/3d-map.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  h1 {
+    font-size: 50px;
+    text-transform: uppercase;
+    color: $secondary-color;
+    font-weight: 900;
+    text-align: center;
+    @media only screen and (min-width: 768px) {
+      font-size: 60px;
+    }
+    @media only screen and (min-width: 1024px) {
+      font-size: 100px;
+    }
+  }
+  p {
+    font-size: 20px;
+    @media only screen and (min-width: 768px) {
+        font-size: 24px;
+    }
+  }
+}

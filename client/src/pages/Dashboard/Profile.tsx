@@ -2,7 +2,7 @@ import React from 'react'
 import { ButtonType } from '../../interfaces/IButton';
 import Table from '../../components/Table';
 import Aside from '../../components/Aside';
-import ProfileForm from '../../components/ProfileForm';
+import ProfileForm from '../../components/Profile';
 
 const dummyData = {
     id: 1,

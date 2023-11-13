@@ -29,7 +29,7 @@ export default function SignUp() {
   return (
     <section className="page-section welcome-section">
       <div className="page-section__container flex justify-center items-center">
-        <form className="relative z-10 p-6 sm:p-10 form" onSubmit={handleSubmit(signUp)}>
+        <form className="relative z-10 p-6 sm:p-10 form form--standalone" onSubmit={handleSubmit(signUp)}>
           <div className="w-full mb-4 md:mb-8 text-center">
               <h1 className="mb-2 text-18px md:text-24px lg:text-30px uppercase tracking-widest font-bold">Sign Up</h1>
               <p className="text-[15px]">Sign up and start your journey</p>
@@ -37,7 +37,7 @@ export default function SignUp() {
           <div className='mb-4 form__input'>
             <input className={`${errors.name ? "mb-1" : "mb-0"}`}
               placeholder="Name" type="text" 
-              {...register("email", {
+              {...register("name", {
                 required: "Name is required",
                 })} />
             {errors.name && (

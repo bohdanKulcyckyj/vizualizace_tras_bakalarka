@@ -14,8 +14,10 @@ import ForgottenPassword from './pages/ForgottenPassword';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Dashboard/Users';
 import Profile from './pages/Dashboard/Profile';
+import PageNotFound from './pages/404';
+import Unauthorized from './pages/403';
 
-import { ConfigProvider } from './context/ConfigProvider';
+import { MainProvider } from './context/MainContext';
 //scss
 import './styles/main.scss'
 import { IModelOptions } from './terainModel/model';
@@ -43,7 +45,7 @@ const staticOptions : IModelOptions = {
 
 function App() {
   return (
-    <>
+    <MainProvider>
       <BrowserRouter>
         <Header />
         <Routes>
@@ -54,6 +56,10 @@ function App() {
             <Route path="/registration" element={<Registration />} />
             <Route path="/forgotten-password" element={<ForgottenPassword />} />
             <Route path="/restore-password" element={<Home />} />
+
+            <Route path="/map" element={
+            <TerrainModelComponent options={staticOptions} />
+            } />
 
             {/* Admin */}
             <Route path="/admin" element={<RouteGuard />}>
@@ -90,16 +96,14 @@ function App() {
               }/>
             </Route>
           </Route>
-          {/* TEST MAP ROUTE */}
-          <Route path="/map" element={
-            <ConfigProvider>
-              <TerrainModelComponent options={staticOptions} />
-            </ConfigProvider>
-          } />
+
+          <Route path="/403" element={<Unauthorized />} />
+          {/* Poslední Route pro 404 */}
+          <Route path="/*" element={<PageNotFound />} />
         </Routes>
         <Footer />
       </BrowserRouter>
-    </>
+    </MainProvider>
   );
 }
 

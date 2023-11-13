@@ -28,7 +28,6 @@ const Table : React.FC<ITableProps> = ({config, data}) => {
     }
 
     const transformColumnData = (_data) => {
-        console.log(_data)
         return (
             <tr>
                 {config.tbody.map((_attribute, _index) => (

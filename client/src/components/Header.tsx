@@ -3,15 +3,21 @@ import { Link } from 'react-router-dom';
 import Logo from '../assets/images/logo-short.svg';
 import { FaUserCircle } from 'react-icons/fa';
 import { IconContext } from 'react-icons';
+import { useLocation } from 'react-router-dom';
 
 const Header: React.FC = (props) => {
   const [isMenuOpened, setIsMenuOpened] = useState(false);
+  const location = useLocation();
 
   const toggleMobileMenu = () : void => {
     const width = window.innerWidth;
     if(width < 1450) {
         setIsMenuOpened(!isMenuOpened);
     }
+  }
+
+  const isLinkActive = (path : string) : boolean => {
+    return path === location.pathname;
   }
 
   useEffect(() => {
@@ -30,6 +36,10 @@ const Header: React.FC = (props) => {
     }
   }, [])
 
+  useEffect(() => {
+    console.log(location);
+  }, [location])
+
   return (
     <header className="header fixed top-0 left-0 w-full">
         <div className="header__container mx-auto px-[1.5rem] md:px-[4rem] py-2 w-full">
@@ -44,12 +54,12 @@ const Header: React.FC = (props) => {
             <nav className={"header__nav" + (isMenuOpened ? " open" : "")}>
                 <ul className="flex h-full items-center">
                     <li>
-                        <Link to="/" className="tracking-widest lg:tracking-wider w-full px-2 xl:mx-3 header__nav-link">
+                        <Link to="/" className={`tracking-widest lg:tracking-wider w-full px-2 xl:mx-3 header__nav-link${isLinkActive("/") ? " header__nav-link--active" : ""}`}>
                             Home
                         </Link>
                     </li>
                     <li>
-                        <Link to="/" className="tracking-widest lg:tracking-wider w-full px-2 xl:mx-3 header__nav-link">
+                        <Link to="/about" className={`tracking-widest lg:tracking-wider w-full px-2 xl:mx-3 header__nav-link${isLinkActive("/about") ? " header__nav-link--active" : ""}`}>
                             About
                         </Link>
                     </li>

@@ -13,3 +13,8 @@ export interface IRegistrationForm {
 export interface IForgottenPasswordForm {
     email: string
 }
+
+export interface IProfileForm {
+    name: string;
+    email: string;
+}

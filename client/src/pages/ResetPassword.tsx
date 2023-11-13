@@ -26,7 +26,7 @@ export default function ResetPassword() {
   return (
     <section className="page-section welcome-section">
       <div className="page-section__container flex justify-center items-center">
-        <form className="relative z-10 p-6 sm:p-10 form" onSubmit={handleSubmit(sendData)}>
+        <form className="relative z-10 p-6 sm:p-10 form form--standalone" onSubmit={handleSubmit(sendData)}>
           <div className="w-full mb-4 md:mb-8 text-center">
               <h1 className="mb-2 text-18px md:text-24px lg:text-30px uppercase tracking-widest font-bold">Forgotten password</h1>
               <p className="text-[15px]">Don't worry we will send you an e-mail with a reset password</p>
