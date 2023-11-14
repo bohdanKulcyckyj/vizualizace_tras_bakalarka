@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { MapContainer, TileLayer, Pane, ZoomControl, Marker, Rectangle } from "react-leaflet";
+import { MapContainer, TileLayer, Pane, ZoomControl, Marker, Rectangle, useMapEvents } from "react-leaflet";
 import Toolbar from "../toolbar/Toolbar";
 import L from 'leaflet';
 
@@ -7,6 +7,11 @@ const LeafletMap = () => {
   const mapRef = useRef(null);
   const rectangleRef = useRef(null);
   let rectangle = null;
+  //const map = useMapEvents({
+  //  drag: () => {
+  //    map.locate()
+  //  },
+  //})
 
   const onRectangleChange = (data) => console.log(data);
 
@@ -78,7 +83,7 @@ const LeafletMap = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Pane name="custom">
-          <Rectangle ref={rectangleRef} bounds={[[54.559322, -5.767822], [56.1210604, -3.021240]]} />
+          <Rectangle ref={rectangleRef} bounds={[[54.559322, -6.767822], [56.1210604, -3.021240]]} />
           {rectangleRef.current && rectangle && 
           <>
           <Marker 
@@ -123,7 +128,6 @@ const LeafletMap = () => {
              />
             </>}
         </Pane>
-        <ZoomControl position="bottomleft" />
       </MapContainer>
     </div>
   );
