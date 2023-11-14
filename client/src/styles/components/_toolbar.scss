@@ -42,10 +42,6 @@
       .toolbar__content {
         display: block;
       }
-
-      .toolbar__arrow {
-        transform: rotateY(-180deg);
-      }
     }
   }
 
@@ -78,5 +74,9 @@
     height: 26px;
     transition: all 0.4s ease;
     color: $primary-color;
+
+    &--opened {
+      transform: rotateY(-180deg);
+    }
   }
 }

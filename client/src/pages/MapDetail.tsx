@@ -1,5 +1,5 @@
 import React from 'react'
-import LeafletMap from '../components/LeafletMap';
+import LeafletMap from '../components/map/LeafletMap';
 
 const MapDetail = () => {
   return (

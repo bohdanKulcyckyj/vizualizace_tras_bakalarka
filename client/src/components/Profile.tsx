@@ -66,7 +66,7 @@ const Profile = ({ data }) => {
         </div>
         <div className={`${successMsg || errorMsg ? "mb-4" : "mb-0"} transition-all flex gap-6 flex-wrap mt-10`}>
             {isFieldsDisabled 
-            ? (<button onClick={(e) => setIsFieldsDisabled(false)} className="primary-button">Change</button>)
+            ? (<button onClick={(e) => {e.preventDefault();setIsFieldsDisabled(false)}} className="primary-button">Change</button>)
             : (
               <>
                 <button type="submit" className="primary-button">Save</button>

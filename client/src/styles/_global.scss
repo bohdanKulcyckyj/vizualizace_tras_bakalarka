@@ -1,13 +1,4 @@
-html,
-body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  color: $textColor;
-  background-color: $primary-color--lighter;
-
+* {
   &::-webkit-scrollbar {
     width: 12px;
   }
@@ -24,6 +15,17 @@ body {
   &::-webkit-scrollbar-thumb:hover {
     background: lighten($secondary-color, 5%);
   }
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  color: $textColor;
+  background-color: $primary-color--lighter;
 }
 
 h1 {
