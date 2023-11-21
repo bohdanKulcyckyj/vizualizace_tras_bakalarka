@@ -12,8 +12,8 @@ const dummyData = [
     },
     {
         id: 2,
-        name: "Ivan Gorylko",
-        email: "ivan.gorylko@seznam.cz",
+        name: "Ivan Gorilko",
+        email: "ivan.gorilko@seznam.cz",
         createdAt: new Date().toLocaleDateString(),
     },
     {

@@ -1,135 +1,122 @@
-import React, { useRef, useEffect, useState } from "react";
-import { MapContainer, TileLayer, Pane, ZoomControl, Marker, Rectangle, useMapEvents } from "react-leaflet";
-import Toolbar from "../toolbar/Toolbar";
+import React, { useState, useEffect } from 'react';
+import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { AreaSelect } from '../../utils/leaflet';
 
 const LeafletMap = () => {
-  const mapRef = useRef(null);
-  const rectangleRef = useRef(null);
-  let rectangle = null;
-  //const map = useMapEvents({
-  //  drag: () => {
-  //    map.locate()
-  //  },
-  //})
-
-  const onRectangleChange = (data) => console.log(data);
-
-  const handleRectangleChange = () => {
-    const bounds = rectangle.getBounds();
-    onRectangleChange({
-      center: bounds.getCenter(),
-      bbox: {
-        northEast: bounds.getNorthEast(),
-        southWest: bounds.getSouthWest(),
-      },
-      zoom: mapRef.current.getZoom(),
-    });
-  };
-
-  const handleMarkerDrag = (event, marker) => {
-    const { target } = event;
-    const latlng = target.getLatLng();
-    const bounds = rectangle.getBounds();
-    console.log(latlng, bounds);
-
-    if (marker === "ne") {
-      bounds._northEast.lat = latlng.lat;
-      bounds._northEast.lng = latlng.lng;
-    } else if (marker === "sw") {
-      bounds._southWest.lat = latlng.lat;
-      bounds._southWest.lng = latlng.lng;
-    } else if (marker === "nw") {
-      bounds._northWest.lat = latlng.lat;
-      bounds._northWest.lng = latlng.lng;
-    } else if (marker === "se") {
-      bounds._southEast.lat = latlng.lat;
-      bounds._southEast.lng = latlng.lng;
-    } else if (marker === "c") {
-      bounds._center.lat = latlng.lat;
-      bounds._center.lng = latlng.lng;
-    }
-
-    rectangle.setBounds(bounds);
-    handleRectangleChange();
-  };
-
-  const toolbarContent = () => (
-    <div className="hidden">
-      <label htmlFor="mapName"></label>
-      <input name="mapName" placeholder="map name" />
-      <button className="primary-button">Save</button>
-    </div>
-  );
+  const [map, setMap] = useState(null);
+  const [areaSelect, setAreaSelect] = useState(null);
+  const [projectId, setProjectId] = useState(null);
 
   useEffect(() => {
-    if(rectangleRef.current) {
-      rectangle = rectangleRef.current;
+    // Define your Leaflet map
+    const leafletMap = L.map('map').setView([51.505, -0.09], 13);
+    
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(leafletMap);
+
+    // Create and add AreaSelect
+    const areaSelectInstance = new AreaSelect();
+    areaSelectInstance.initialize({
+      width: 200,
+      height: 300,
+      minWidth: 40,
+      minHeight: 40,
+      minHorizontalSpacing: 40,
+      minVerticalSpacing: 100
+    })
+    areaSelectInstance.addTo(leafletMap);
+
+    setMap(leafletMap);
+    setAreaSelect(areaSelectInstance);
+
+    // Clean up function
+    return () => {
+      leafletMap.remove();
+    };
+  }, []); // Empty dependency array to run the effect only once on mount
+
+  useEffect(() => {
+    // Fetch project data and update the map and AreaSelect
+    // (Note: You may need to use async/await if your service methods are asynchronous)
+    const fetchData = async () => {
+      const response = {
+        center: {
+          lat: 45.83256987294795,
+          lng: 6.865163189418157,
+          alt: 4791.7,
+        },
+        bbox: {
+          northEast: {
+              lat: 45.9179008,
+              lng: 6.9354122
+          },
+          southWest: {
+              lat: 45.7724925,
+              lng: 6.7421217,
+          },
+        },
+        zoom: 13,
+        trailGpxUrl: "./assets/export2.gpx",
+      };
+      const { center, bbox } = response;
+
+      map.panTo(center);
+
+      if (bbox) {
+        areaSelect.setBounds(new L.LatLngBounds(bbox.southWest, bbox.northEast));
+      }
+    };
+
+    if (projectId !== null) {
+      fetchData();
     }
-  }, [])
+  }, [projectId, map, areaSelect]); // Dependencies include projectId, map, and areaSelect
+
+  const confirm = () => {
+    const bounds = areaSelect.getBounds();
+    console.log(bounds);
+
+    const dist = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
+    console.log('dist:', dist);
+
+    if (dist > 20000 * 2) {
+      // Display a snackbar or any other notification
+      return;
+    }
+
+    //projectService.setBBox(projectId, {
+    //  northEast: bounds.getNorthEast(),
+    //  southWest: bounds.getSouthWest()
+    //}).then(() => {
+    // Navigate to the desired route
+    // (Note: You may need to use useHistory hook or any other routing method)
+    //});
+  };
+
+  const cancel = () => {
+    // Navigate to the desired route
+    // (Note: You may need to use useHistory hook or any other routing method)
+  };
 
   return (
-    <div className="flex mt-20">
-      <Toolbar children={toolbarContent()} />
-      <MapContainer
-        ref={mapRef}
-        center={[51.505, -0.09]}
-        zoom={5}
-        scrollWheelZoom={true}
-        className="h-[90vh] w-full"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Pane name="custom">
-          <Rectangle ref={rectangleRef} bounds={[[54.559322, -6.767822], [56.1210604, -3.021240]]} />
-          {rectangleRef.current && rectangle && 
-          <>
-          <Marker 
-            position={rectangle.getBounds().getNorthWest()}
-            draggable={true}
-            icon={L.divIcon({className: 'leaflet-marker-icon'})}
-            eventHandlers={{
-              drag: (e) => handleMarkerDrag(e, "nw")
-            }}
-          />
-          <Marker 
-            position={rectangle.getBounds().getNorthEast()}
-            draggable={true}
-            icon={L.divIcon({className: 'leaflet-marker-icon'})}
-            eventHandlers={{
-              drag: (e) => handleMarkerDrag(e, "ne")
-            }}
-             />
-          <Marker 
-            position={rectangle.getBounds().getSouthWest()}
-            draggable={true}
-            icon={L.divIcon({className: 'leaflet-marker-icon'})}
-            eventHandlers={{
-              drag: (e) => handleMarkerDrag(e, "sw")
-            }}
-             />
-          <Marker 
-            position={rectangle.getBounds().getSouthEast()}
-            draggable={true}
-            icon={L.divIcon({className: 'leaflet-marker-icon'})}
-            eventHandlers={{
-              drag: (e) => handleMarkerDrag(e, "se")
-            }}
-             />
-          <Marker 
-            position={rectangle.getBounds().getCenter()}
-            draggable={true}
-            icon={L.divIcon({className: 'leaflet-marker-icon'})}
-            eventHandlers={{
-              drag: (e) => handleMarkerDrag(e, "c")
-            }}
-             />
-            </>}
-        </Pane>
-      </MapContainer>
-    </div>
+    <>
+      <div id="map" style={{ height: 'calc(100vh - 64px)' }}></div>
+      <div className="btns-wrapper">
+        <div className="btn-wrapper">
+          <button onClick={cancel} className="mat-fab" style={{ backgroundColor: 'accent' }}>
+            <span>Close</span>
+          </button>
+        </div>
+        <div className="btn-wrapper">
+          <button onClick={confirm} className="mat-fab" style={{ backgroundColor: 'primary' }}>
+            <span>Done</span>
+          </button>
+        </div>
+      </div>
+    </>
   );
 };
 

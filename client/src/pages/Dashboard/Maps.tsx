@@ -1,7 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react';
+import axios from 'axios';
+import { getTokenFromCookie } from '../../utils/jwt';
 import { ButtonType } from '../../interfaces/IButton';
 import Table from '../../components/Table';
 import Aside from '../../components/Aside';
+import { MAP_NEW } from '../../api/endpoints';
 
 const dummyData = [
   {
@@ -55,7 +58,41 @@ const dummyConfig = {
   ]
 };
 
+const dummyMap = {
+	center: {
+		lat: 45.83256987294795,
+		lng: 6.865163189418157,
+		alt: 4791.7,
+	},
+	bbox: {
+		northEast: {
+      	lat: 45.9179008,
+        lng: 6.9354122
+    },
+		southWest: {
+        lat: 45.7724925,
+      	lng: 6.7421217,
+    },
+	},
+	zoom: 13,
+	trailGpxUrl: "./assets/export2.gpx",
+}
+
 const Maps = () => {
+
+  useEffect(() => {
+    console.log("running")
+    /*let token = getTokenFromCookie()
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    }
+    axios.post(MAP_NEW, JSON.stringify(dummyMap), config)
+    .then(res => console.log(res))
+    .catch(err => console.error(err))*/
+  }, [])
+
   return (
     <section className="page-section mt-[8rem]">
         <div className="page-section__container">

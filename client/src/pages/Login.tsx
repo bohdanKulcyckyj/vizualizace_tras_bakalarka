@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SIGN_IN, GET_ALL_USERS } from '../api/endpoints';
+import { SIGN_IN } from '../api/endpoints';
 import { saveTokenToCookie, getTokenFromCookie } from '../utils/jwt';
 import axios from 'axios';
 import { ILoginForm } from '../interfaces/Forms';
@@ -16,8 +16,6 @@ export default function SignIn() {
   const signIn = (data:ILoginForm) => {
     axios.post(SIGN_IN, data)
     .then(res => {
-      console.log(res.data.token);
-      sessionStorage.setItem("token", res.data.token);
       setSuccessMsg("Successfully logged in");
       saveTokenToCookie(res.data.token);
       navigate("/admin/maps");
@@ -27,19 +25,6 @@ export default function SignIn() {
       setErrorMsg("Logging in failed");
     })
   };
-
-  const testFunction = () => {
-    const config = {
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token")
-      }
-    }
-
-    axios.defaults.withCredentials = true;
-    axios.get(GET_ALL_USERS, config)
-    .then(res => console.log(res))
-    .catch(err => console.error(err))
-  }
 
   return (
     <section className="page-section welcome-section">
@@ -109,7 +94,6 @@ export default function SignIn() {
             ) : null}
         </form>
       </div>
-      <button onClick={testFunction}>Try authorize</button>
     </section>
   )
 }

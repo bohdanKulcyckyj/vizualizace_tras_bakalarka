@@ -35,11 +35,7 @@ const Header: React.FC = (props) => {
         window.removeEventListener("scroll", handleScrollingNavigation);
     }
   }, [])
-
-  useEffect(() => {
-    console.log(location);
-  }, [location])
-
+  
   return (
     <header className="header fixed top-0 left-0 w-full">
         <div className="header__container mx-auto px-[1.5rem] md:px-[4rem] py-2 w-full">

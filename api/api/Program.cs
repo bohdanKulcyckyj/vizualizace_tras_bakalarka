@@ -73,7 +73,7 @@ builder.Services.AddAuthentication(x => {
 
 builder.Services.AddCors(options =>
 {
-    var frontendURL = "https://localhost:7214";
+    var frontendURL = "http://localhost:3000";
     options.AddDefaultPolicy(builder =>
     {
         builder.WithOrigins(frontendURL)

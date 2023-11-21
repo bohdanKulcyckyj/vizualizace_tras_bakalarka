@@ -37,30 +37,6 @@ public class AuthController : ControllerBase
         this._emailSender = emailSender;
     }
 
-    [HttpGet("get-users")]
-    [Authorize]
-    public async Task<IActionResult> GetUsers()
-    {
-        var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
-        if (currentUser == null) return Unauthorized();
-
-
-        var container = _context.GetUserContainer();
-        var sqlQueryText = "SELECT * FROM c";
-        var queryDefinition = new QueryDefinition(sqlQueryText);
-
-        var queryResultSetIterator = container.GetItemQueryIterator<ApplicationUser>(queryDefinition);
-
-        var items = new List<ApplicationUser>();
-        while (queryResultSetIterator.HasMoreResults)
-        {
-            var currentResultSet = await queryResultSetIterator.ReadNextAsync();
-            items.AddRange(currentResultSet);
-        }
-
-        return Ok(items);
-    }
-
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
     {

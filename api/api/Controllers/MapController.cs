@@ -1,0 +1,143 @@
+﻿using api.DataAccess;
+using api.Models;
+using api.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Azure.Cosmos;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Collections;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography.Xml;
+using System.Text;
+
+namespace api.Controllers
+{
+    [Route("api/map")]
+    [ApiController]
+    public class MapController : ControllerBase
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+
+        public MapController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, ApplicationDbContext context)
+        {
+            this._context = context;
+            this._configuration = configuration;
+            this._userManager = userManager;
+            this._roleManager = roleManager;
+            this._signInManager = signInManager;
+        }
+        [HttpPost("new")]
+        [Authorize]
+        public async Task<IActionResult> createNewMap([FromBody] Map m)
+        {
+            var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+            if(currentUser == null)
+            {
+                return NotFound();
+            }
+            if((ModelState.IsValid))
+            {
+                m.Id = Guid.NewGuid().ToString("N");
+                currentUser.Maps.Add(m);
+                _context.SaveChanges();
+                
+                return Ok(m);
+            } else
+            {
+                return BadRequest(new { Message = "Invalid data format" });
+            }
+
+            return BadRequest(new {Message = "Something went wrong"});
+        }
+
+        [HttpGet("user-maps")]
+        [Authorize]
+        public async Task<IActionResult> getUserMaps()
+        {
+            var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(currentUser.Maps);
+
+            return BadRequest(new { Message = "Something went wrong" });
+        }
+
+        [HttpGet("all-maps")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> getAllMaps()
+        {
+            try
+            {
+                List<Map> maps = new List<Map>();
+                var users = await _context.Users.ToListAsync<ApplicationUser>();
+                foreach (var user in users)
+                {
+                    foreach(var map in user.Maps)
+                    {
+                        maps.Add(map);  
+                    }
+                }
+
+                return Ok(maps);
+            }
+            catch(Exception e)
+            {
+                return BadRequest(new { Message = e.Message });
+            }
+        }
+
+        [HttpGet("{mapId}")]
+        [Authorize]
+        public async Task<IActionResult> getMapById(string mapId)
+        {
+            var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+
+            var map = currentUser.Maps.FirstOrDefault(m => m.Id == mapId);
+
+            if (map == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(map);
+        }
+
+        [HttpDelete("{mapId}")]
+        [Authorize]
+        public async Task<IActionResult> deleteMap(string mapId)
+        {
+            var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+
+            var map = currentUser.Maps.FirstOrDefault(m => m.Id == mapId);
+
+            if (map == null)
+            {
+                return NotFound();
+            }
+            currentUser.Maps.Remove(map);
+            await _context.SaveChangesAsync();
+
+            return Ok(map);
+        }
+    }
+}

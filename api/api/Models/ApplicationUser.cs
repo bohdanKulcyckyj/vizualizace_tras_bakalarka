@@ -10,6 +10,6 @@ namespace api.Models
         public override string? Email { get; set; }
         public string? RoleId { get; set; }
         public string? Name { get; set; }
-        public List<Map>? Maps { get; set; }
+        public List<Map>? Maps { get; set; } = new List<Map>();
     }
 }

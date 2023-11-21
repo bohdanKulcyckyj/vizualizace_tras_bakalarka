@@ -1,14 +1,29 @@
 import React, { useState } from 'react'
+import { SIGN_OUT } from '../api/endpoints';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { adminSidebarData, userSidebarData } from '../data/ProfileSidebar';
 import { Link } from 'react-router-dom';
 import { ISidebar } from '../interfaces/Sidebar';
+import { saveTokenToCookie } from '../utils/jwt';
 
 const Aside : React.FC<ISidebar> = (props) => {
   const [sidebarOpened, setSidebarOpened] = useState(window.innerWidth >= 1250);
   const toggleSidebar = () => {
       setSidebarOpened(!sidebarOpened)
   }
+  const navigate = useNavigate();
   const sidebarData = props.role === "admin" ? adminSidebarData : userSidebarData;
+
+  const handleLogout = () => {
+    axios.get(SIGN_OUT)
+    .then(res => console.log(res))
+    .then(() => {
+      saveTokenToCookie("")
+      navigate("/")
+    })
+    .catch(err => console.error(err))
+  }
 
   return (
     <>
@@ -22,14 +37,23 @@ const Aside : React.FC<ISidebar> = (props) => {
       </div>
       <div className={`${sidebarOpened ? 'profile-aside--active mb-4' : ''} profile-aside w-full`}>
         <ul>
-          {sidebarData.map((_item, _index) => (
-            <li key={_index}>
+          {sidebarData.map((_item, _index) => {
+            if(_item.url === '/logout') {
+              return (<li key={_index}>
+              <button
+              onClick={handleLogout}
+              className="profile-aside__link w-full block py-5 px-6 text-center md:font-medium whitespace-nowrap">{_item.label}</button>
+              </li>)
+            }
+            
+            return (<li key={_index}>
               <Link 
               to={_item.url}
               className={`${window.location.pathname === _item.url ? 'profile-aside__link--active' : ''} 
               profile-aside__link block py-5 px-6 text-center md:font-medium whitespace-nowrap`}>{_item.label}</Link>
             </li>
-          ))}
+            )
+          })}
         </ul>
       </div>
     </>
