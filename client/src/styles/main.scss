@@ -5,6 +5,9 @@
 @import 'variables';
 @import 'global';
 
+
+@import 'leaflet/dist/leaflet.css';
+
 //components
 @import './components/header';
 @import './components/welcomeSection';
