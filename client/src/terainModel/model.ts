@@ -291,8 +291,6 @@ export class Model {
 
 	public async init() {
 		const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
-
-
 		const trail = this.options.trailGpxUrl == null ? null : await this.loadTrail(this.options.trailGpxUrl);
 		//'./assets/export2.gpx'
 		//@ts-ignore

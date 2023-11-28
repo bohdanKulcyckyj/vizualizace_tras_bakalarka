@@ -39,16 +39,20 @@ function TerrainModelComponent({ options } : any) {
         }
       }
       let res, resData;
-      try {
-        res = await axios.get(MAP_DETAIL + mapid, requestConfig)
-        console.log(res)
-        resData = res.data
-        console.log(resData)
-      } catch(e) {
-        //navigate("/404");
-        console.error(e)
+      if(mapid) {
+        try {
+          res = await axios.get(MAP_DETAIL + mapid, requestConfig)
+          console.log(res)
+          resData = res.data
+          resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl ?? null
+          console.log(resData.mapModel.trailGpxUrl)
+          console.log(resData)
+        } catch(e) {
+          //navigate("/404");
+          console.error(e)
+        }
       }
-      console.log(resData)
+      console.log("OPTIONS: ", options ?? resData.mapModel)
       const newModel = new Model(
         canvasRef.current,
         viewHelperCanvasWrapperRef.current,

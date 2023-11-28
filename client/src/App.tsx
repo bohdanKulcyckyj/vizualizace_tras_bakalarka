@@ -61,6 +61,7 @@ function App() {
             <Route path="/map/:mapid" element={
               <TerrainModelComponent />
             } />
+            {/* 3D mapa se statickou konfiguraci pro DEBUG účely */}
             <Route path="/map/" element={
               <TerrainModelComponent options={staticOptions} />
             } />

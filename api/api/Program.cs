@@ -4,11 +4,9 @@ using api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Azure.Cosmos.Core;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -96,9 +94,17 @@ app.UseCors();
 
 app.UseHttpsRedirection();
 
+var fileProvider = new FileExtensionContentTypeProvider();
+fileProvider.Mappings[".gpx"] = "application/gpx+xml";
+fileProvider.Mappings[".gltf"] = "model/gltf+json";
+
+app.UseStaticFiles(new StaticFileOptions()
+{
+    ContentTypeProvider = fileProvider
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
