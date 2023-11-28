@@ -1,3 +1,5 @@
+import React, { Dispatch, SetStateAction } from 'react';
+
 export enum ButtonType {
     REDIRECT,
     DELETE,
@@ -10,3 +12,19 @@ export interface IButton {
     actionUrlConstantPart?: string;
     actionUrlDynamicPartKey?: string | number;
 };
+
+export interface IDeleteButton {
+    data: IButton;
+    rowData: any;
+    setDeleteRoute: Dispatch<SetStateAction<string>>;
+    setShowTheDialog: Dispatch<SetStateAction<boolean>>;
+}
+
+export interface IRedirectButton {
+    data: IButton;
+    rowData: any;
+}
+
+export interface IUnpackButton {
+    data: IButton;
+}

@@ -1,9 +1,15 @@
 //@ts-nocheck
 import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import { Model } from './model';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useMainContext } from '../context/MainContext';
+import { getTokenFromCookie } from '../utils/jwt';
+import { MAP_DETAIL } from '../api/endpoints';
 
 function TerrainModelComponent({ options } : any) {
+  const { mapid } = useParams();
+  const navigate = useNavigate();
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const viewHelperCanvasWrapperRef = useRef(null);
@@ -21,16 +27,33 @@ function TerrainModelComponent({ options } : any) {
   }, []);
 
   useEffect(() => {
-    if (!model) {
+    const setup = async () => {
       console.log(viewHelperCanvasWrapperRef.current);
       console.log(northArrowCanvasWrapperRef.current);
       console.log(canvasRef.current);
 
+      let token = getTokenFromCookie()
+      const requestConfig = {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      }
+      let res, resData;
+      try {
+        res = await axios.get(MAP_DETAIL + mapid, requestConfig)
+        console.log(res)
+        resData = res.data
+        console.log(resData)
+      } catch(e) {
+        //navigate("/404");
+        console.error(e)
+      }
+      console.log(resData)
       const newModel = new Model(
         canvasRef.current,
         viewHelperCanvasWrapperRef.current,
         northArrowCanvasWrapperRef.current,
-        options
+        options ?? resData.mapModel
       );
       setModel(newModel);
       newModel.animate();
@@ -127,6 +150,9 @@ function TerrainModelComponent({ options } : any) {
       newModel.setAnimateTrail(animateTrail);
       newModel.setEnableShadow(enableShadow);
       newModel.setEnableSun(enableSun);
+    }
+    if (!model) {
+      setup();
     }
   }, [model, options, mainContext]);
 

@@ -60,7 +60,7 @@ const Header: React.FC = (props) => {
                         </Link>
                     </li>
                     <li className="px-3 lg:px-4">
-                        <Link to="/admin/maps" className="tracking-widest lg:tracking-wider w-full header__nav-link header__nav-link--account">
+                        <Link to="/user/maps" className="tracking-widest lg:tracking-wider w-full header__nav-link header__nav-link--account">
                             <IconContext.Provider value={{ size: "2em", className: "account-icon" }}>
                                 <div>
                                     <FaUserCircle />

@@ -22,6 +22,7 @@ import { MainProvider } from './context/MainContext';
 import './styles/main.scss'
 import { IModelOptions } from './terainModel/model';
 import MapDetail from './pages/MapDetail';
+import Maps from './pages/Dashboard/Maps';
 
 const staticOptions : IModelOptions = {
 	center: {
@@ -57,42 +58,45 @@ function App() {
             <Route path="/forgotten-password" element={<ForgottenPassword />} />
             <Route path="/restore-password" element={<Home />} />
 
-            <Route path="/map" element={
-            <TerrainModelComponent options={staticOptions} />
+            <Route path="/map/:mapid" element={
+              <TerrainModelComponent />
+            } />
+            <Route path="/map/" element={
+              <TerrainModelComponent options={staticOptions} />
             } />
 
             {/* Admin */}
             <Route path="/admin" element={<RouteGuard />}>
               <Route path="/admin/maps" element={
-                <Dashboard />
+                <Maps role="admin" />
               }/>
               <Route path="/admin/users" element={
                 <Users />
               }/>
               <Route path="/admin/maps/new" element={
-                <MapDetail />
+                <MapDetail status="new" />
               }/>
               <Route path="/admin/maps/edit/:mapid" element={
-                <Dashboard />
+                <MapDetail status="edit" />
               }/>
               <Route path="/admin/profile" element={
-                <Profile />
+                <Profile role="admin" />
               }/>
             </Route>
 
             {/* User */}
             <Route path="/user" element={<RouteGuard />}>
               <Route path="/user/maps" element={
-                <Dashboard />
+                <Maps role="user" />
               }/>
               <Route path="/user/profile" element={
-                <Profile />
+                <Profile role="user" />
               }/>
               <Route path="/user/maps/new" element={
-                <Dashboard />
+                <MapDetail status="new" />
               }/>
               <Route path="/user/maps/edit/:mapid" element={
-                <Dashboard />
+                <MapDetail status="edit" />
               }/>
             </Route>
           </Route>

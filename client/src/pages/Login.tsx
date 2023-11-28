@@ -18,7 +18,7 @@ export default function SignIn() {
     .then(res => {
       setSuccessMsg("Successfully logged in");
       saveTokenToCookie(res.data.token);
-      navigate("/admin/maps");
+      navigate("/user/maps");
     })
     .catch(err => {
       console.error(err);

@@ -58,26 +58,6 @@ const dummyConfig = {
   ]
 }
 
-const dummyMap = {
-	center: {
-		lat: 45.83256987294795,
-		lng: 6.865163189418157,
-		alt: 4791.7,
-	},
-	bbox: {
-		northEast: {
-      	lat: 45.9179008,
-        lng: 6.9354122
-    },
-		southWest: {
-        lat: 45.7724925,
-      	lng: 6.7421217,
-    },
-	},
-	zoom: 13,
-	trailGpxUrl: "./assets/export2.gpx",
-}
-
 const Dashboard = () => {
 
   useEffect(() => {
@@ -112,7 +92,7 @@ const Dashboard = () => {
             <h1 className="text-center mb-[6rem]">Your maps</h1>
             <div className="flex flex-col xl:flex-row">
               <Aside role="admin" />
-              <Table config={dummyConfig} data={dummyData} />
+              <Table config={dummyConfig} />
             </div>
         </div>
     </section>

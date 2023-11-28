@@ -1,5 +1,6 @@
 ﻿using api.DataAccess;
 using api.Models;
+using api.Models.Forms;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -59,6 +60,19 @@ namespace api.Controllers
             if (currentUser == null) return Unauthorized();
 
             return Ok(currentUser);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> userDetailChange([FromBody] UserProfileViewModel um)
+        {
+            var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+            if (currentUser == null) return Unauthorized();
+            currentUser.Name = um.Name;
+            currentUser.Email = um.Email;
+            _context.SaveChanges();
+
+            return Ok(new {Message = "Your profile was successfully updated"});
         }
 
         [HttpDelete("{userId}")]

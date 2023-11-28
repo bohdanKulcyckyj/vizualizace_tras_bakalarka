@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import defaultProfileImage from "../assets/images/profile.png";
 import { useForm } from "react-hook-form";
 import { IProfileForm } from "../interfaces/Forms";
 import { Link } from 'react-router-dom';
+import { USER_DETAIL, USER_DETAIL_CHANGE } from "../api/endpoints";
+import { getTokenFromCookie } from "../utils/jwt";
 
-const Profile = ({ data }) => {
+const Profile = () => {
+  const [data, setData] = useState<any>({})
   const [isFieldsDisabled, setIsFieldsDisabled] = useState(true);
   const [successMsg, setSuccessMsg] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
@@ -17,14 +21,39 @@ const Profile = ({ data }) => {
   } = useForm<IProfileForm>();
 
   const sendData = (data) => {
-    console.log("sending data...");
-    setErrorMsg("Something went wrong. Try again please.");
+    let token = getTokenFromCookie()
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    }
+    axios.post(USER_DETAIL_CHANGE, data, config)
+    .then(res => {
+      console.log(res)
+      setSuccessMsg('Your profile was successfully changed')
+    })
+    .catch(err => {
+      console.error(err)
+      setErrorMsg('Something went wrong. Try again')
+    })
   }
 
   useEffect(() => {
-    setValue("email", "bohdan.kulchytskyy@seznam.cz");
-    setValue("name", "Bohdan");
+    let token = getTokenFromCookie()
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    }
+    axios.get(USER_DETAIL, config)
+    .then(res => setData({...res.data, createdAt: new Date().toLocaleDateString()})) // TODO: add createdAt property in API
+    .catch(err => console.error(err))
   }, []);
+
+  useEffect(() => {
+    setValue("email", data.email);
+    setValue("name", data.name);
+  }, [data])
 
   return (
     <div className="profile__container">

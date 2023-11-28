@@ -118,6 +118,29 @@ namespace api.Controllers
             return Ok(map);
         }
 
+        [HttpPost("{mapId}")]
+        [Authorize]
+        public async Task<IActionResult> editMap(string mapId, [FromBody] Map m)
+        {
+            var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+
+            var map = currentUser.Maps.FirstOrDefault(m => m.Id == mapId);
+
+            if (map == null)
+            {
+                return NotFound();
+            }
+            map.Name = m.Name;
+            map.MapModel = m.MapModel;
+            _context.SaveChanges();
+
+            return Ok(new { Message = "Your map was successfully changed"});
+        }
+
         [HttpDelete("{mapId}")]
         [Authorize]
         public async Task<IActionResult> deleteMap(string mapId)

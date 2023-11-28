@@ -3,6 +3,7 @@ import { IButton } from "./IButton";
 export interface ITableConfig {
     heading: string;
     colgroup: number[];
+    getItemsRoute?: string;
     newItemRoute?: string;
     newItemRouteLabel?: string;
     thead: string[];
@@ -11,6 +12,5 @@ export interface ITableConfig {
 };
 
 export interface ITableProps {
-    data: any;
     config: ITableConfig;
 };

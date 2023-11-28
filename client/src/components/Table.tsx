@@ -1,28 +1,61 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+import { getTokenFromCookie } from '../utils/jwt'
 import { ITableProps } from '../interfaces/ITable'
 import { ButtonType, IButton } from '../interfaces/IButton'
 import { Link } from 'react-router-dom'
 import { AiFillPlusCircle } from 'react-icons/ai'
+//buttons
+import DeleteButton from './Buttons/DeleteButton'
+import RedirectButton from './Buttons/RedirectButton'
+import UnpackButton from './Buttons/UnpackButton'
+//components
+import ConfirmDialog from './ConfirmDialog'
 
-const Table : React.FC<ITableProps> = ({config, data}) => {
+const Table : React.FC<ITableProps> = ({config}) => {
+    const [data, setData] = useState<any[]>([])
+    const [showTheDialog, setShowTheDialog] = useState<boolean>(false)
+    const [deleteRoute, setDeleteRoute] = useState<string>('')
+    const [update, updateState] = useState<number>(0)
 
-    const retrieveButton = (buttonData : IButton) => {
+    const forceUpdate = () => {
+        updateState(update + 1)
+    }
+
+    useEffect(() => {
+        let token = getTokenFromCookie()
+        const requestConfig = {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        }
+        axios.get(config.getItemsRoute, requestConfig)
+        .then(res => setData(res.data))
+        .catch(err => console.error(err))
+    }, [update])
+
+    const retrieveButton = (buttonData : IButton, rowData: any) => {
         switch(buttonData.type) {
             case ButtonType.REDIRECT:
                 return (
-                    <button className='redirect-button'>{buttonData.label}</button>
-                );
+                    <RedirectButton data={buttonData} rowData={rowData} />
+                )
             case ButtonType.DELETE:
                 return (
-                    <button className='delete-button'>{buttonData.label}</button>
-                );
+                    <DeleteButton 
+                        data={buttonData}
+                        rowData={rowData}
+                        setShowTheDialog={setShowTheDialog}
+                        setDeleteRoute={setDeleteRoute}
+                    />
+                )
             case ButtonType.UNPACK:
                 return (
-                    <button className='unpack-button'>{buttonData.label}</button>
+                    <UnpackButton data={buttonData} />
                 )
             default:
                 return (
-                    <button className='primaryunpack-button'>{buttonData.label}</button>
+                    <button className='primary-button'>{buttonData.label}</button>
                 )
         }
     }
@@ -37,7 +70,7 @@ const Table : React.FC<ITableProps> = ({config, data}) => {
                 ))}
                 {config.buttons.map((_button, _index) => (
                     <td key={100 + _index}>
-                        {retrieveButton(_button)}
+                        {retrieveButton(_button, _data)}
                     </td>
                 ))}
             </tr>
@@ -46,7 +79,14 @@ const Table : React.FC<ITableProps> = ({config, data}) => {
 
   return (
     <div className="table-component">
-        {config.heading || config.newItemRoute && <div className="table-component__title flex justify-end my-2">
+        <ConfirmDialog
+            showTheDialog={showTheDialog}
+            setShowTheDialog={setShowTheDialog}
+            update={forceUpdate}
+            deleteRoute={deleteRoute}
+        />
+
+        {(config.heading || config.newItemRoute) && <div className="table-component__title flex justify-end my-2">
             {config.newItemRoute && (
                 <Link className="flex gap-3" to={config.newItemRoute}>
                     <span className="text-[16px] font-normal">{config.newItemRouteLabel}</span>

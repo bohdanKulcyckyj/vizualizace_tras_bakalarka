@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { getTokenFromCookie } from '../../utils/jwt';
+import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import { AreaSelect } from '../../utils/leaflet';
+import { MAP_DETAIL, MAP_EDIT, MAP_NEW } from '../../api/endpoints';
+import { useMainContext } from '../../context/MainContext';
 
-const LeafletMap = () => {
+const LeafletMap = ({ projectId }) => {
+  const navigate = useNavigate()
   const [map, setMap] = useState(null);
+  const { mapData: defaultMapData } = useMainContext()
   const [areaSelect, setAreaSelect] = useState(null);
-  const [projectId, setProjectId] = useState(null);
 
   useEffect(() => {
     // Define your Leaflet map
@@ -31,48 +37,34 @@ const LeafletMap = () => {
     setMap(leafletMap);
     setAreaSelect(areaSelectInstance);
 
-    // Clean up function
+    let token = getTokenFromCookie()
+    const requestConfig = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    }
+    
+    if(projectId) {
+      axios.get(MAP_DETAIL + projectId, requestConfig)
+      .then(res => {
+        if(res.data) {
+          map.panTo(res.data.center)
+          map.zoom(res.data.zoom)
+          areaSelect.setBounds(new L.LatLngBounds(res.data.bbox.southWest, res.data.bbox.northEast));
+          //if(res.data.trailGpxUrl) {
+          //  new L.GPX(res.data, { async: true }).on('loaded', function (e) {
+          //    map.fitBounds(e.target.getBounds());
+          //  }).addTo(map);
+          //}
+        }
+      })
+      .catch(err => console.error(err))
+    }
+
     return () => {
       leafletMap.remove();
     };
-  }, []); // Empty dependency array to run the effect only once on mount
-
-  useEffect(() => {
-    // Fetch project data and update the map and AreaSelect
-    // (Note: You may need to use async/await if your service methods are asynchronous)
-    const fetchData = async () => {
-      const response = {
-        center: {
-          lat: 45.83256987294795,
-          lng: 6.865163189418157,
-          alt: 4791.7,
-        },
-        bbox: {
-          northEast: {
-              lat: 45.9179008,
-              lng: 6.9354122
-          },
-          southWest: {
-              lat: 45.7724925,
-              lng: 6.7421217,
-          },
-        },
-        zoom: 13,
-        trailGpxUrl: "./assets/export2.gpx",
-      };
-      const { center, bbox } = response;
-
-      map.panTo(center);
-
-      if (bbox) {
-        areaSelect.setBounds(new L.LatLngBounds(bbox.southWest, bbox.northEast));
-      }
-    };
-
-    if (projectId !== null) {
-      fetchData();
-    }
-  }, [projectId, map, areaSelect]); // Dependencies include projectId, map, and areaSelect
+  }, []);
 
   const confirm = () => {
     const bounds = areaSelect.getBounds();
@@ -86,18 +78,39 @@ const LeafletMap = () => {
       return;
     }
 
-    //projectService.setBBox(projectId, {
-    //  northEast: bounds.getNorthEast(),
-    //  southWest: bounds.getSouthWest()
-    //}).then(() => {
-    // Navigate to the desired route
-    // (Note: You may need to use useHistory hook or any other routing method)
-    //});
+    let token = getTokenFromCookie()
+    const requestConfig = {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      }
+    }
+    const newMap = {
+      mapModel: {
+        ...defaultMapData,
+        bbox: {
+          northEast: bounds.getNorthEast(),
+          southWest: bounds.getSouthWest()
+        }
+      },
+      name: "New map"
+    }
+    if(projectId) {
+      axios.post(MAP_EDIT + projectId, newMap, requestConfig)
+      .then(res => navigate("/map/" + projectId, { replace: true}))
+      .catch(e => window.alert("Failed to edit map"))
+    } else {
+      axios.post(MAP_NEW, newMap, requestConfig)
+      .then(res => {
+        if(res.data) {
+          navigate("/map/" + res.data.id, { replace: true})
+        }
+      })
+      .catch(e => window.alert("Failed to edit map"))
+    }
   };
 
   const cancel = () => {
-    // Navigate to the desired route
-    // (Note: You may need to use useHistory hook or any other routing method)
+    navigate(-1)
   };
 
   return (
