@@ -32,6 +32,9 @@ const Table : React.FC<ITableProps> = ({config}) => {
         axios.get(config.getItemsRoute, requestConfig)
         .then(res => setData(res.data))
         .catch(err => console.error(err))
+        //axios.get('https://localhost:7214/gpx/export2.gpx', requestConfig)
+        //.then(res => console.log(res))
+        //.catch(err => console.error(err))
     }, [update])
 
     const retrieveButton = (buttonData : IButton, rowData: any) => {

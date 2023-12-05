@@ -5,7 +5,7 @@ import { Model } from './model';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMainContext } from '../context/MainContext';
 import { getTokenFromCookie } from '../utils/jwt';
-import { MAP_DETAIL } from '../api/endpoints';
+import { BASE_URL, MAP_DETAIL } from '../api/endpoints';
 
 function TerrainModelComponent({ options } : any) {
   const { mapid } = useParams();
@@ -44,7 +44,7 @@ function TerrainModelComponent({ options } : any) {
           res = await axios.get(MAP_DETAIL + mapid, requestConfig)
           console.log(res)
           resData = res.data
-          resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl ?? null
+          resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl ? BASE_URL + resData.mapModel.trailGpxUrl : null
           console.log(resData.mapModel.trailGpxUrl)
           console.log(resData)
         } catch(e) {

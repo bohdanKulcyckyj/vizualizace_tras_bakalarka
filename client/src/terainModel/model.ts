@@ -25,7 +25,6 @@ import CameraControls from 'camera-controls';
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ITileTextureDecorator, TileTextureDecorator } from './TileTextureDecorator';
-//import { NgZone, isDevMode } from '@angular/core';
 
 const subsetOfTHREE = {
 	Vector2: Vector2,
@@ -223,7 +222,7 @@ export class Model {
 	//@ts-ignore
 	private async addMarker(x: number, y: number, z: number, color: Color = null) {
 
-		const url = './assets/pin.gltf';
+		const url = '/assets/pin.gltf';
 		const loader = new GLTFLoader()
 		const gltf = await loader.loadAsync(url);
 
@@ -793,7 +792,7 @@ export class Model {
 
 		const loader = new TextureLoader();
 
-		const groundTexture = await loader.loadAsync("./assets/ground.jpg");
+		const groundTexture = await loader.loadAsync("/assets/ground.jpg");
 
 		const sideMaterial = new MeshLambertMaterial({
 			map: groundTexture,
