@@ -678,7 +678,6 @@ export class Model {
 	}
 
 	private async loadTile(x: number, y: number, zoom: number) {
-
 		const baseUrl = 'https://3dmap.janjanousek.cz/proxy/?url=';
 		//baseUrl = 'https://api.mapbox.com/';
 
@@ -786,19 +785,21 @@ export class Model {
 	}
 
 
+	private static groundMaterial = new Promise(async (resolve) =>{
+		const loader = new TextureLoader();
+		const groundTexture = await loader.loadAsync("/assets/ground.jpg");
+		resolve(new MeshLambertMaterial({
+			map: groundTexture,
+			side: DoubleSide,
+			// wireframe: true
+		}));
+	});
+
 	private async createBox(sidesHeightMap: IContourHeightMap, heightScale: number, group: Group, borders: TileBorderEnum) {
 
 		if (borders == TileBorderEnum.NONE) { return; }
 
-		const loader = new TextureLoader();
-
-		const groundTexture = await loader.loadAsync("/assets/ground.jpg");
-
-		const sideMaterial = new MeshLambertMaterial({
-			map: groundTexture,
-			side: DoubleSide,
-			// wireframe: true
-		});
+		const sideMaterial = await Model.groundMaterial;
 
 		const DEPTH = -0.1;
 
