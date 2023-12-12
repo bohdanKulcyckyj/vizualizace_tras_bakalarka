@@ -4,12 +4,14 @@ import { getTokenFromCookie } from '../../utils/jwt';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import { AreaSelect } from '../../utils/leaflet';
+import Toolbar from "../toolbar/Toolbar";
 import { MAP_DETAIL, MAP_EDIT, MAP_NEW } from '../../api/endpoints';
 
 const LeafletMap = ({ projectId }) => {
   const navigate = useNavigate()
-  const [map, setMap] = useState(null);
+  const [map, setMap] = useState(null)
   const [areaSelect, setAreaSelect] = useState(null)
+  const [inputNameValue, setInputNameValue] = useState<string>("New Map")
 
   useEffect(() => {
     // Define your Leaflet map
@@ -116,25 +118,30 @@ const LeafletMap = ({ projectId }) => {
     navigate(-1)
   };
 
+  const toolbarContent = () => (
+    <div className='flex flex-col mt-20 h-full'>
+      <div className='flex flex-col'>
+        <label htmlFor="mapName">Map name:</label>
+        <input
+        className="text-black" 
+        name="mapName" 
+        value={inputNameValue}
+        onChange={(e) => setInputNameValue(e.target.value)} />
+      </div>
+      <div className="flex justify-center items-center gap-6 mt-[30rem]">
+      <button onClick={confirm} className="primary-button">Save</button>
+      <button onClick={cancel} className="secondary-button">Cancel</button>
+      </div>
+    </div>
+  );
+
   return (
-    <>
-      <div className='flex'>
-        
-        <div id="map" style={{ height: 'calc(100vh - 64px)' }}></div>
+    <div className="flex mt-20">
+      <div style={{ height: 'calc(100vh - 64px)'}}>
+        <Toolbar children={toolbarContent()} />
       </div>
-      <div className="btns-wrapper">
-        <div className="btn-wrapper">
-          <button onClick={cancel} className="mat-fab" style={{ backgroundColor: 'accent' }}>
-            <span>Close</span>
-          </button>
-        </div>
-        <div className="btn-wrapper">
-          <button onClick={confirm} className="mat-fab" style={{ backgroundColor: 'primary' }}>
-            <span>Done</span>
-          </button>
-        </div>
-      </div>
-    </>
+      <div id="map" className="flex-1" style={{ height: 'calc(100vh - 64px)'}}></div>
+    </div>
   );
 };
 
