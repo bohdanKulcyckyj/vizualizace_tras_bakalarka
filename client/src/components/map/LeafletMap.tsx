@@ -5,69 +5,11 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import { AreaSelect } from '../../utils/leaflet';
 import { MAP_DETAIL, MAP_EDIT, MAP_NEW } from '../../api/endpoints';
-import { useMainContext } from '../../context/MainContext';
 
 const LeafletMap = ({ projectId }) => {
   const navigate = useNavigate()
   const [map, setMap] = useState(null);
-  const { mapData: defaultMapData } = useMainContext()
   const [areaSelect, setAreaSelect] = useState(null)
-  const [renderCount, setRenderCount] = useState(0)
-
-  /*useEffect(() => {
-    // Define your Leaflet map
-    let leafletMap = null;
-
-    const loadMapData = async () => {
-      let token = getTokenFromCookie()
-      const requestConfig = {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      }
-      let data = defaultMapData;
-      if(projectId) {
-        data = await axios.get(MAP_DETAIL + projectId, requestConfig);
-        //@ts-ignore
-        data = data.hasOwnProperty('mapModel') ? data.mapModel : defaultMapData
-      }
-      //@ts-ignore
-      leafletMap = L.map('map').setView([51.505, -0.09], 13);
-      console.log("hhh")
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      }).addTo(leafletMap);
-      const areaSelectInstance = new AreaSelect();
-      areaSelectInstance.initialize({
-        width: 200,
-        height: 300,
-        minWidth: 40,
-        minHeight: 40,
-        minHorizontalSpacing: 40,
-        minVerticalSpacing: 100
-      })
-      areaSelectInstance.addTo(leafletMap);
-      areaSelectInstance.setBounds(new L.LatLngBounds(data.bbox.southWest, data.bbox.northEast));
-      //if(res.data.trailGpxUrl) {
-      //  new L.GPX(res.data, { async: true }).on('loaded', function (e) {
-      //    map.fitBounds(e.target.getBounds());
-      //  }).addTo(map);
-      //}
-      setMap(leafletMap);
-      setAreaSelect(areaSelectInstance);
-    }
-
-    if(!map) {
-      loadMapData();
-    }
-
-    return () => {
-      if(map) {
-        leafletMap.remove();
-      }
-    };
-  }, []);*/
 
   useEffect(() => {
     // Define your Leaflet map
@@ -105,11 +47,6 @@ const LeafletMap = ({ projectId }) => {
           console.log(res.data.mapModel)
           leafletMap.setView([res.data.mapModel.center.lat, res.data.mapModel.center.lng], res.data.mapModel.zoom)
           areaSelectInstance.setBounds(new L.LatLngBounds(res.data.mapModel.bbox.southWest, res.data.mapModel.bbox.northEast));
-          //if(res.data.trailGpxUrl) {
-          //  new L.GPX(res.data, { async: true }).on('loaded', function (e) {
-          //    map.fitBounds(e.target.getBounds());
-          //  }).addTo(map);
-          //}
         }
       })
       .catch(err => console.error(err))
@@ -147,13 +84,18 @@ const LeafletMap = ({ projectId }) => {
     }
     const newMap = {
       mapModel: {
-        ...defaultMapData,
+        center: {
+          lat: ((bounds.getNorthEast().lat + bounds.getSouthWest().lat) / 2) ,
+          lng: ((bounds.getNorthEast().lng + bounds.getSouthWest().lng) / 2),
+          alt: 4791.7,
+        },
         bbox: {
           northEast: bounds.getNorthEast(),
           southWest: bounds.getSouthWest()
         }
       },
-      name: "New map"
+      name: "New map",
+      trailGpxUrl: null
     }
     if(projectId) {
       axios.post(MAP_EDIT + projectId, newMap, requestConfig)
@@ -176,7 +118,10 @@ const LeafletMap = ({ projectId }) => {
 
   return (
     <>
-      <div id="map" style={{ height: 'calc(100vh - 64px)' }}></div>
+      <div className='flex'>
+        
+        <div id="map" style={{ height: 'calc(100vh - 64px)' }}></div>
+      </div>
       <div className="btns-wrapper">
         <div className="btn-wrapper">
           <button onClick={cancel} className="mat-fab" style={{ backgroundColor: 'accent' }}>
