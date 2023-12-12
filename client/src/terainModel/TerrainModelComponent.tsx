@@ -59,20 +59,17 @@ function TerrainModelComponent({ options } : any) {
         northArrowCanvasWrapperRef.current,
         options ?? resData.mapModel
       );
-      setModel(newModel);
       newModel.animate();
+      setModel(newModel);
       //const controls = new CameraControls(newModel.camera, canvasRef.current);
       const controls = newModel.controls;
       //newModel.setControls(controls);
 
-      window.addEventListener('keydown', (e) => {
-
+      const keyEventHandler = (e) => {
         const keyRotateSpeed = 0.5;
         const keyRotateAngle = keyRotateSpeed * Math.PI / 180;
   
-  
         if (e.shiftKey) {
-  
           switch (e.keyCode) {
             case 37:  // LEFT
               controls.rotate(-keyRotateAngle, 0);
@@ -92,7 +89,6 @@ function TerrainModelComponent({ options } : any) {
             default:
               return;
           }
-  
         }
         else if (e.ctrlKey) {
           switch (e.keyCode) {
@@ -132,7 +128,9 @@ function TerrainModelComponent({ options } : any) {
               return;
           }
         }
-      });
+      }
+
+      window.addEventListener('keydown', (e) => keyEventHandler(e));
 
       const resize = () => {
         newModel.resize(
@@ -146,7 +144,6 @@ function TerrainModelComponent({ options } : any) {
       });
       resizeObserver.observe(wrapperRef.current);
 
-      // Následující kód pro sledování změn konfigurace můžete přesunout sem
       const animateTrail = mainContext.animateTrail;
       const enableShadow = mainContext.enableShadow;
       const enableSun = mainContext.enableSun;
@@ -154,11 +151,17 @@ function TerrainModelComponent({ options } : any) {
       newModel.setAnimateTrail(animateTrail);
       newModel.setEnableShadow(enableShadow);
       newModel.setEnableSun(enableSun);
+      setModel(newModel);
     }
+
     if (!model) {
       setup();
     }
-  }, [model, options, mainContext]);
+
+    return () => {
+      window.removeEventListener('keydown', (e) => keyEventHandler(e));
+    }
+  }, [mapid]);
 
   return (
     <div className="model-wrapper" ref={wrapperRef}>
