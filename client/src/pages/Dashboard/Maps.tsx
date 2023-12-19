@@ -6,23 +6,29 @@ import { MAP_ALL_MAPS, MAP_DELETE, MAP_USER_MAPS } from '../../api/endpoints';
 
 const tableConfig = (userType: string) => ({
   heading: "",
-  colgroup: [30, 25, 15, 15, 15],
+  colgroup: [25, 15, 15, 15, 15, 15], //[30, 25, 15, 15, 15],
   getItemsRoute: userType === "admin" ? MAP_ALL_MAPS : MAP_USER_MAPS,
   newItemRoute: `/${userType}/maps/new`,
   newItemRouteLabel: "new map",
-  thead: ["Label", "Created at", "View", "Edit", "Delete"],
+  thead: ["Label", "Created at", "View model", "Model", "Map", "Delete"],
   tbody: ["name", "createdAt"],
   buttons: [
     {
       type: ButtonType.REDIRECT,
       label: "View",
-      actionUrlConstantPart: `/map/`,
+      actionUrlConstantPart: `/map-model/`,
       actionUrlDynamicPartKey: "id",
     },
     {
       type: ButtonType.REDIRECT,
       label: "Edit",
-      actionUrlConstantPart: `/${userType}/maps/edit/`,
+      actionUrlConstantPart: `/${userType}/map-model/`,
+      actionUrlDynamicPartKey: "id",
+    },
+    {
+      type: ButtonType.REDIRECT,
+      label: "Edit",
+      actionUrlConstantPart: `/${userType}/maps/`,
       actionUrlDynamicPartKey: "id",
     },
     {

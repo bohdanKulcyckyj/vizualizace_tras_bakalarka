@@ -342,7 +342,6 @@ class ViewHelper extends Object3D {
 	public handleClick: (event: any) => void;
 	public update: (delta: number) => void;
 	private dispose: () => void;
-
 }
 
 export { ViewHelper };

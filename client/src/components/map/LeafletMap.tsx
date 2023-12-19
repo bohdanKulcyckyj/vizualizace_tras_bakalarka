@@ -101,13 +101,13 @@ const LeafletMap = ({ projectId }) => {
     }
     if(projectId) {
       axios.post(MAP_EDIT + projectId, newMap, requestConfig)
-      .then(res => navigate("/map/" + projectId, { replace: true}))
+      .then(res => navigate("/map-model/" + projectId, { replace: true}))
       .catch(e => window.alert("Failed to edit map"))
     } else {
       axios.post(MAP_NEW, newMap, requestConfig)
       .then(res => {
         if(res.data) {
-          navigate("/map/" + res.data.id, { replace: true})
+          navigate("/map-model/" + res.data.id, { replace: true})
         }
       })
       .catch(e => window.alert("Failed to edit map"))
@@ -119,7 +119,7 @@ const LeafletMap = ({ projectId }) => {
   };
 
   const toolbarContent = () => (
-    <div className='flex flex-col mt-20 h-full'>
+    <div className='flex flex-col justify-between h-full'>
       <div className='flex flex-col'>
         <label htmlFor="mapName">Map name:</label>
         <input
@@ -128,19 +128,17 @@ const LeafletMap = ({ projectId }) => {
         value={inputNameValue}
         onChange={(e) => setInputNameValue(e.target.value)} />
       </div>
-      <div className="flex justify-center items-center gap-6 mt-[30rem]">
+      <div className="flex justify-center items-center gap-6">
       <button onClick={confirm} className="primary-button">Save</button>
-      <button onClick={cancel} className="secondary-button">Cancel</button>
+      <button onClick={cancel} className="secondary-button">Back</button>
       </div>
     </div>
   );
 
   return (
-    <div className="flex mt-20">
-      <div style={{ height: 'calc(100vh - 64px)'}}>
-        <Toolbar children={toolbarContent()} />
-      </div>
-      <div id="map" className="flex-1" style={{ height: 'calc(100vh - 64px)'}}></div>
+    <div className="leaflet-map__container">
+      <Toolbar children={toolbarContent()} />
+      <div id="map" className="leaflet-map__map"></div>
     </div>
   );
 };

@@ -8,7 +8,7 @@ import { getTokenFromCookie } from '../utils/jwt';
 import { BASE_URL, MAP_DETAIL } from '../api/endpoints';
 
 function TerrainModelComponent({ options } : any) {
-  const { mapid } = useParams();
+  const { modelid } = useParams();
   const navigate = useNavigate();
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
@@ -39,9 +39,9 @@ function TerrainModelComponent({ options } : any) {
         }
       }
       let res, resData;
-      if(mapid) {
+      if(modelid) {
         try {
-          res = await axios.get(MAP_DETAIL + mapid, requestConfig)
+          res = await axios.get(MAP_DETAIL + modelid, requestConfig)
           console.log(res)
           resData = res.data
           resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl ? BASE_URL + resData.mapModel.trailGpxUrl : null
@@ -161,10 +161,10 @@ function TerrainModelComponent({ options } : any) {
     return () => {
       window.removeEventListener('keydown', (e) => keyEventHandler(e));
     }
-  }, [mapid]);
+  }, [modelid]);
 
   return (
-    <div className="model-wrapper" ref={wrapperRef}>
+    <div className="model-wrapper fullscreen-with-nav" ref={wrapperRef}>
       <canvas
         ref={canvasRef}
         width="1500"

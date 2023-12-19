@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
 import { Children } from '../../interfaces/IContextProvider'
 import { IconContext } from 'react-icons';
-import { MdKeyboardArrowRight, MdKeyboardArrowLeft } from "react-icons/md";
+import { MdKeyboardArrowRight } from "react-icons/md";
 
 const Toolbar = ({children} : Children) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
 
   return (
-    <div className="flex">
+    <div className="toolbar">
       <div className={`toolbar__container ${isOpen ? "toolbar__container--opened" : ""}`}>
-        <div className="toolbar__content">
+        <div className="toolbar__content h-[70vh] mt-8">
           {children}
         </div>
       </div>

@@ -160,14 +160,11 @@ export class Model {
 			options.zoom
 		);
 
-
-
 		//this.addLights();
 		this.addSky();
 		this.addNewLights();
 
 		this.init();
-
 
 		const center = this.coordToModelPoint(this.map.center);
 		// this.addLabel(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters(), 'CENTER');

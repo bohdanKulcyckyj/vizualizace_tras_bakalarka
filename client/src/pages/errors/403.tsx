@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-const Unauthorized = () => {
+const Forbidden = () => {
     return (
         <div className="error-page">
             <div className="flex flex-col">
@@ -17,4 +17,4 @@ const Unauthorized = () => {
       )
 }
 
-export default Unauthorized
+export default Forbidden

@@ -16,6 +16,6 @@ export default interface IContextProvider {
     setConfig: Dispatch<SetStateAction<IMapConfig>>;
     isLoading: boolean;
     setIsLoading: Dispatch<SetStateAction<boolean>>;
-    mapData: IModelOptions;
-    setMapData: Dispatch<SetStateAction<IModelOptions>>;
+    //mapData: IModelOptions;
+    //setMapData: Dispatch<SetStateAction<IModelOptions>>;
 }

@@ -1,0 +1,16 @@
+.leaflet-map {
+    &__container {
+        margin-top: 64px;
+        @media only screen and (min-width: 1450px) {
+            margin-top: 80px;
+        }
+    }
+
+    &__map {
+        height: calc(100vh - 64px);
+        margin-left: 20px;
+        @media only screen and (min-width: 1450px) {
+            height: calc(100vh - 80px);
+        }
+    }
+}

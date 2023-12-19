@@ -66,5 +66,20 @@ namespace api.DataAccess
             var database = _cosmosClient.GetDatabase(_databaseName);
             return database.GetContainer(_roleContainerName);
         }
+        public Map? getMapById(string id)
+        {
+            foreach(ApplicationUser u in Users)
+            {
+                foreach(Map m in u.Maps)
+                {
+                    if(m.Id == id)
+                    {
+                        return m;
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 }

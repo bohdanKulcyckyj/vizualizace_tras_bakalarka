@@ -18,18 +18,3 @@
   background-color: $secondary-color;
   border: 1px solid $primary-color;
 }
-
-#map {
-  height: calc(100vh - 64px);
-}
-.btns-wrapper {
-    display: flex;
-    gap: 2rem;
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  z-index: 1000;
-}
-.btn-wrapper {
-  padding: 5px;
-}

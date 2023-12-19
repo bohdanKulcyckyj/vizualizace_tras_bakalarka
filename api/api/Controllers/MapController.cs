@@ -99,16 +99,15 @@ namespace api.Controllers
         }
 
         [HttpGet("{mapId}")]
-        [Authorize]
         public async Task<IActionResult> getMapById(string mapId)
         {
-            var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
+            /*var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
             if (currentUser == null)
             {
                 return NotFound();
-            }
+            }*/
 
-            var map = currentUser.Maps.FirstOrDefault(m => m.Id == mapId);
+            var map = _context.getMapById(mapId);
 
             if (map == null)
             {
