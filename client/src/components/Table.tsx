@@ -32,9 +32,6 @@ const Table : React.FC<ITableProps> = ({config}) => {
         axios.get(config.getItemsRoute, requestConfig)
         .then(res => setData(res.data))
         .catch(err => console.error(err))
-        //axios.get('https://localhost:7214/gpx/export2.gpx', requestConfig)
-        //.then(res => console.log(res))
-        //.catch(err => console.error(err))
     }, [update])
 
     const retrieveButton = (buttonData : IButton, rowData: any) => {
@@ -63,9 +60,9 @@ const Table : React.FC<ITableProps> = ({config}) => {
         }
     }
 
-    const transformColumnData = (_data) => {
+    const transformColumnData = (_data, _index) => {
         return (
-            <tr>
+            <tr key={_index}>
                 {config.tbody.map((_attribute, _index) => (
                     <td key={_index}>
                         {_data[_attribute]}
@@ -92,8 +89,8 @@ const Table : React.FC<ITableProps> = ({config}) => {
         {(config.heading || config.newItemRoute) && <div className="table-component__title flex justify-end my-2">
             {config.newItemRoute && (
                 <Link className="flex gap-3" to={config.newItemRoute}>
-                    <span className="text-[16px] font-normal">{config.newItemRouteLabel}</span>
                     <AiFillPlusCircle className="text-[1.2em] hover:rotate-90 duration-300 ease-in-out"/>
+                    <span className="text-[16px] font-normal">{config.newItemRouteLabel}</span>
                 </Link>
             )}
             {config.heading && <h2>{config.heading}</h2>}
@@ -113,7 +110,7 @@ const Table : React.FC<ITableProps> = ({config}) => {
             </thead>
             <tbody>
                 {data.map((_col, _index) => {
-                    return transformColumnData(_col);
+                    return transformColumnData(_col, _index);
                 })}
             </tbody>
         </table>

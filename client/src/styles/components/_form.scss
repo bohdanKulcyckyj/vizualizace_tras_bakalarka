@@ -1,37 +1,37 @@
 .form {
-    &--standalone {
-        width: 40rem;
-        height: fit-content;
-        color: $textColor;
-        background: $paper;
-        border-radius: 10px;
-        background: rgba(51, 60, 68, 0.5411764705882353);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.511);
-        backdrop-filter: blur(6.1px);
-        -webkit-backdrop-filter: blur(6.1px);
-        border: 1px solid rgba(51, 60, 68, 0.4);
-    
-        margin-top: 96px;
-        margin-bottom: 96px;
-        @media only screen and (min-width: 1450px) {
-            margin-top: 128px;
-            margin-bottom: 128px;
-        }
-        @media (max-width: 900px) {
-            width: 100%;
-        }
+  &--standalone {
+    width: 40rem;
+    height: fit-content;
+    color: $textColor;
+    background: $paper;
+    border-radius: 10px;
+    background: rgba(51, 60, 68, 0.5411764705882353);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.511);
+    backdrop-filter: blur(6.1px);
+    -webkit-backdrop-filter: blur(6.1px);
+    border: 1px solid rgba(51, 60, 68, 0.4);
+
+    margin-top: 96px;
+    margin-bottom: 96px;
+    @media only screen and (min-width: 1450px) {
+      margin-top: 128px;
+      margin-bottom: 128px;
     }
+    @media (max-width: 900px) {
+      width: 100%;
+    }
+  }
 }
 
 .form p,
 .form input {
-    color: $textColor;
-    letter-spacing: 0.05em;
-    font-size: 16px;
+  color: $textColor;
+  letter-spacing: 0.05em;
+  font-size: 16px;
 
-    @media only screen and (min-width: 768px) {
-        font-size: 18px;
-    }
+  @media only screen and (min-width: 768px) {
+    font-size: 18px;
+  }
 }
 
 .form input::placeholder,
@@ -44,14 +44,14 @@
 .form textarea:-webkit-autofill:focus,
 .form textarea:-webkit-autofill:hover,
 .form .option {
-    color: $textColor;
-    -webkit-text-fill-color: $textColor;
-    letter-spacing: 0.05em;
-    font-size: 16px;
+  color: $textColor;
+  -webkit-text-fill-color: $textColor;
+  letter-spacing: 0.05em;
+  font-size: 16px;
 
-    @media only screen and (min-width: 768px) {
-        font-size: 18px;
-    }
+  @media only screen and (min-width: 768px) {
+    font-size: 18px;
+  }
 }
 
 .form input[type="text"],
@@ -59,277 +59,298 @@
 .form input[type="password"],
 .form textarea,
 .option {
-    padding-left: 5px !important;
+  padding-left: 5px !important;
 }
 
 .form .form__input input,
 .form__input .select,
 .form__textarea textarea {
-    width: 100%;
-    border-bottom: 1px solid $textColor;
-    transition: all 0.3s ease;
-    background: transparent;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem; 
-    &:focus {
-        border-color: $secondary-color;
-    }
+  width: 100%;
+  border-bottom: 1px solid $textColor;
+  transition: all 0.3s ease;
+  background: transparent;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  &:focus {
+    border-color: $secondary-color;
+  }
 }
 
 .form__select {
-    position: relative;
-    color: $textColor;
-    letter-spacing: 0.05em;
-    font-size: 16px;
+  position: relative;
+  color: $textColor;
+  letter-spacing: 0.05em;
+  font-size: 16px;
 
-    @media only screen and (min-width: 768px) {
-        font-size: 18px;
-    }
+  @media only screen and (min-width: 768px) {
+    font-size: 18px;
+  }
 }
 
 .form__select .select {
-    position: relative;
-    transition: all 0.4s ease;
+  position: relative;
+  transition: all 0.4s ease;
 }
 
 .form__select .select::after {
-    content: "";
-    width: 0.6em;
-    height: 0.4em;
-    background-color: $textColor;
-    clip-path: polygon(100% 0%, 0 0%, 50% 100%);
-    position: absolute;
-    right: 2px;
-    top: 50%;
-    transform: translateY(-50%);
-    transition: all 0.2s ease;
+  content: "";
+  width: 0.6em;
+  height: 0.4em;
+  background-color: $textColor;
+  clip-path: polygon(100% 0%, 0 0%, 50% 100%);
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.2s ease;
 }
 
 .form__select .select.select--opened::after {
-    transform: translateY(-50%) rotate(180deg);
+  transform: translateY(-50%) rotate(180deg);
 }
 
 .form__options {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
 }
 
 .form__options.form__options--open {
-    display: initial;
+  display: initial;
 }
 
 .form__options .option {
-    padding: 5px 0;
-    background: lighten($paper, 10);
-    cursor: pointer;
+  padding: 5px 0;
+  background: lighten($paper, 10);
+  cursor: pointer;
 
-    &:hover {
-        background: lighten($paper, 5);
-    }
+  &:hover {
+    background: lighten($paper, 5);
+  }
 }
 
 .form__textarea textarea {
-    outline: none;
-    box-shadow: none;
-    color: $textColor;
-    -webkit-text-fill-color: $textColor;
+  outline: none;
+  box-shadow: none;
+  color: $textColor;
+  -webkit-text-fill-color: $textColor;
 }
 
 .form .form__input input::placeholder {
-    color: $textColor;
+  color: $textColor;
 }
 
 .form__checkbox {
-    position: relative;
-    display: inline-block;
-    transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
 }
 
 .form__checkbox input[type="checkbox"] {
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    left: 0px;
-    top: 3px;
-    transform: translateY(50%);
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 0px;
+  top: 3px;
+  transform: translateY(50%);
 }
 
 .form__checkbox .checkbox-label {
-    text-align: left;
-    line-height: 24px;
-    padding-left: 30px;
-    font-size: 16px;
+  text-align: left;
+  line-height: 24px;
+  padding-left: 30px;
+  font-size: 16px;
 
-    @media only screen and (min-width: 768px) {
-        font-size: 18px;
-    }
+  @media only screen and (min-width: 768px) {
+    font-size: 18px;
+  }
 }
 
 .form__checkbox input[type="checkbox"] {
-    -webkit-appearance: none;
-    appearance: none;
-    background-color: $paper;
-    margin: 0;
-    font: inherit;
-    color: currentColor;
-    border: 0.15em solid $secondary-color;
-    border-radius: 5px;
-    transform: translateY(-0.075em);
-    display: grid;
-    place-content: center;
-    cursor: pointer;
-    transition: 120ms transform ease-in-out;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: $paper;
+  margin: 0;
+  font: inherit;
+  color: currentColor;
+  border: 0.15em solid $secondary-color;
+  border-radius: 5px;
+  transform: translateY(-0.075em);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: 120ms transform ease-in-out;
 }
 
 .form__checkbox input[type="checkbox"]::before {
-    content: "";
-    width: 10px;
-    height: 10px;
-    transform: scale(0);
-    box-shadow: inset 1em 1em $secondary-color;
+  content: "";
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  box-shadow: inset 1em 1em $secondary-color;
 }
 
 .form__checkbox input[type="checkbox"]:checked::before {
-    transform: scale(1);
+  transform: scale(1);
 }
 
 .form__radio label {
-    display: flex;
-    align-items: center;
-    //justify-content: flex-end;
-    cursor: pointer;
-    font-weight: 500;
-    position: relative;
-    overflow: hidden;
-    margin: calc(0.375em / 2) 0;
+  display: flex;
+  align-items: center;
+  //justify-content: flex-end;
+  cursor: pointer;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  margin: calc(0.375em / 2) 0;
 }
 
 .form__radio input {
-    position: absolute;
-    left: -9999px;
+  position: absolute;
+  left: -9999px;
 }
 
 .form__radio p {
-    line-height: 42px;
+  line-height: 42px;
 }
 
-.form__radio input:checked+span {
-
-    &:before {
-        box-shadow: inset 0 0 0 0.2375em $secondary-color;
-    }
+.form__radio input:checked + span {
+  &:before {
+    box-shadow: inset 0 0 0 0.2375em $secondary-color;
+  }
 }
 
 .form__radio span {
-    display: flex;
-    align-items: center;
-    padding: 0.375em 1.25em 0.375em 0; //0.375em;
-    border-radius: 99em;
-    transition: 0.25s ease;
-    letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  padding: 0.375em 1.25em 0.375em 0; //0.375em;
+  border-radius: 99em;
+  transition: 0.25s ease;
+  letter-spacing: 0.05em;
 
-    &:before {
-        display: flex;
-        flex-shrink: 0;
-        content: "";
-        background-color: #fff;
-        width: 1.5em;
-        width: 18px;
-        height: 1.5em;
-        height: 18px;
-        border-radius: 50%;
-        margin-right: 0.5rem;
-        transition: 0.25s ease;
-        box-shadow: inset 0 0 0 0.125em $secondary-color;
-    }
+  &:before {
+    display: flex;
+    flex-shrink: 0;
+    content: "";
+    background-color: #fff;
+    width: 1.5em;
+    width: 18px;
+    height: 1.5em;
+    height: 18px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    transition: 0.25s ease;
+    box-shadow: inset 0 0 0 0.125em $secondary-color;
+  }
 }
 
 .form .form__button button {
-    position: relative;
-    color: $textColor;
-    border-radius: 5px;
-    background: $secondary-color;
-    border: 2px solid $secondary-color;
-    text-transform: uppercase;
-    width: 100%;
-    transition: opacity 0.3s ease-in;
-    opacity: 1;
-    line-height: initial;
+  position: relative;
+  color: $textColor;
+  border-radius: 5px;
+  background: $secondary-color;
+  border: 2px solid $secondary-color;
+  text-transform: uppercase;
+  width: 100%;
+  transition: opacity 0.3s ease-in;
+  opacity: 1;
+  line-height: initial;
 
-    @media screen and (min-width: 360px) {
-        width: 80%;
-    }
+  @media screen and (min-width: 360px) {
+    width: 80%;
+  }
 
-    @media screen and (min-width: 440px) {
-        max-width: 230px;
-    }
+  @media screen and (min-width: 440px) {
+    max-width: 230px;
+  }
 
-    &:hover {
-        opacity: 0.8;
-    }
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .form .form-links {
-    font-size: 15px;
+  font-size: 15px;
 
-    @media only screen and (min-width: 768px) {
-        font-size: 16px;
-    }
+  @media only screen and (min-width: 768px) {
+    font-size: 16px;
+  }
 }
 
 .form .err,
 .form .alert,
 //.err,
 .form .success {
-    color: $errors;
-    font-size: 14px;
-    position: relative;
-    @media only screen and (min-width: 768px) {
-        font-size: 15px;
-    }
+  color: $errors;
+  font-size: 14px;
+  position: relative;
+  @media only screen and (min-width: 768px) {
+    font-size: 15px;
+  }
 }
 
 .form .success {
-    color: $success;
+  color: $success;
 }
 
 .form .form-links:hover {
-    .link--underlined {
-        border-bottom-color: $textColor;
-    }
+  .link--underlined {
+    border-bottom-color: $textColor;
+  }
 }
 
 .form .link--underlined {
-    //color: $secondary-color;
-    font-weight: 500;
-    transition: all .3s;
-    border-bottom: 1px solid transparent;
+  //color: $secondary-color;
+  font-weight: 500;
+  transition: all 0.3s;
+  border-bottom: 1px solid transparent;
 
-    &:hover {
-        border-bottom-color: $textColor;
-    }
+  &:hover {
+    border-bottom-color: $textColor;
+  }
 }
 
 .form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) grayscale(1) brightness(2.5) sepia(1) hue-rotate(175deg);
-  }
-  
-  .form input[type="datetime-local"] {
-    line-height: 1.375;
-  }
+  filter: invert(1) grayscale(1) brightness(2.5) sepia(1) hue-rotate(175deg);
+}
+
+.form input[type="datetime-local"] {
+  line-height: 1.375;
+}
 
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* Firefox */
-input[type=number] {
-    -moz-appearance: textfield;
-    appearance: textfield;
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.form {
+  input:focus,
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:active,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:active,
+  textarea:-webkit-autofill:focus,
+  select:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:active,
+  select:-webkit-autofill:focus,
+  input:-internal-autofill-selected {
+    transition: background-color 5000s ease-in-out 0s;
+    outline: none !important;
+    -webkit-box-shadow: 0 0 0 30px rgba(51, 60, 68, 0.646) inset !important;
+  }
 }

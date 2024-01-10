@@ -1,20 +1,22 @@
-import react from 'react';
+import react, { useEffect} from 'react';
 import { getTokenFromCookie } from '../utils/jwt';
-import { Outlet } from 'react-router-dom';
-import { Navigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const RouteGuard = () => {
-    const hasValidJWT = () => {
-        let isValid = false;
-        getTokenFromCookie() ? isValid=true : isValid=false;
-        console.log(isValid);
-        return isValid;
-    }
+    const location = useLocation()
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if(!getTokenFromCookie()) {
+            navigate("/login", {
+                replace: true
+            })
+        }
+    }, [location])
 
     return (
-        <>
-        {hasValidJWT() ? <Outlet /> : <Navigate to="/login" replace />}
-        </>
+        <Outlet />
     )
 }
 

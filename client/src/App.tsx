@@ -28,19 +28,17 @@ function App() {
   return (
     <MainProvider>
       <BrowserRouter>
-        <Header />
         <Routes>
+          {/* 3D mapa se statickou konfiguraci pro DEBUG účely */}
+          <Route
+            path="/map-model"
+            element={<MapModel type="preview" />}
+          />
+          <Route
+            path="/map-model/:modelid"
+            element={<MapModel type="preview" />}
+          />
           <Route element={<PageLayout />}>
-            {/* 3D mapa se statickou konfiguraci pro DEBUG účely */}
-            <Route
-              path="/map-model"
-              element={<MapModel type="preview" />}
-            />
-            <Route
-              path="/map-model/:modelid"
-              element={<MapModel type="preview" />}
-            />
-
             <Route element={<PageLayoutWithFooter />}>
               <Route path="/" element={<Home />} />
               {/* auth */}

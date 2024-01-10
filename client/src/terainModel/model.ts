@@ -104,6 +104,8 @@ export class Model {
 	private enableSun: boolean = true;
 	private clock = new Clock();
 	private pathAnimation: gsap.core.Tween;
+	private markers: Group[] = [];
+	private disposed: boolean = false;
 
 	constructor(
 		private canvas: HTMLCanvasElement, viewHelperCanvasWrapper: HTMLElement, northArrowCanvasWrapper: HTMLElement,
@@ -176,6 +178,13 @@ export class Model {
 		*/
 	}
 
+	public destroy() {
+		console.log("calling destroy method on nodel")
+		this.scene.clear();
+		this.renderer.dispose();
+		this.disposed = true;
+	}
+
 	public setAnimateTrail(animateTrail: boolean) {
 		this.animateTrail = animateTrail;
 
@@ -211,11 +220,8 @@ export class Model {
 		const cube = new Mesh(geometry, material);
 		cube.position.set(x, y, z);
 		this.scene.add(cube);
-
 	}
 
-
-	private markers: Group[] = [];
 	//@ts-ignore
 	private async addMarker(x: number, y: number, z: number, color: Color = null) {
 
@@ -1006,6 +1012,7 @@ export class Model {
 		//if (isDevMode()) {
 		//	NgZone.assertNotInAngularZone();
 		//}
+		if(this.disposed) return; 
 
 		requestAnimationFrame(() => this.animate());
 
@@ -1090,62 +1097,174 @@ export class Model {
 
 	private addLabel(x: number, y: number, z: number, txt: string = 'TEST') {
 		const size = 0.01;
-
-
 		const canvas = document.createElement('canvas');
 		const ctx = canvas.getContext('2d');
-
-		const fontSize = 20;
-
+	  
+		const fontSize = 16;
+	  
 		ctx.font = `${fontSize}px Arial`;
-		ctx.textBaseline = 'top';
+		ctx.textBaseline = 'middle'; // Mění textBaseline na 'middle' pro vycentrování textu ve výšce
 		const textWidth = ctx.measureText(txt).width;
-
+	  
 		const width = textWidth + 10;
 		const height = fontSize + 4;
-
+	  
 		ctx.fillStyle = '#fff';
 		ctx.strokeStyle = '#000';
 		ctx.fillRect(0, 0, width, height);
 		ctx.strokeRect(0, 0, width, height);
-
+	  
 		ctx.fillStyle = '#000';
-		ctx.fillText(txt, (width - textWidth) / 2, (height - fontSize) / 2);
-
-
+		ctx.fillText(txt, (width - textWidth) / 2, height / 2);
+	  
 		const texture = new CanvasTexture(ctx.getImageData(0, 0, width, height));
 		texture.minFilter = LinearFilter;
 		texture.wrapS = ClampToEdgeWrapping;
 		texture.wrapT = ClampToEdgeWrapping;
-
+	  
 		const material = new SpriteMaterial({
-			map: texture,
-			transparent: true
+		  map: texture,
+		  transparent: true
 		});
 		const sprite = new Sprite(material);
 		sprite.position.set(x, y, z + 0.1);
 		sprite.scale.x = canvas.width * 0.0003;
 		sprite.scale.y = canvas.height * 0.0003;
-
+	  
 		sprite.name = 'label';
 		this.scene.add(sprite);
-
-
+	  
 		const lineMaterial = new LineBasicMaterial({
-			color: 0x0000ff
+		  color: 0x0000ff
 		});
-
+	  
 		const lineGeometry = new BufferGeometry().setFromPoints([
-			new Vector3(x, y, z),
-			new Vector3(x, y, z + 0.1)
+		  new Vector3(x, y, z),
+		  new Vector3(x, y, z + 0.1)
 		]);
 		const line = new Line(lineGeometry, lineMaterial);
-
+	  
 		this.scene.add(line);
-
 	}
 
-	public click(e: MouseEvent) {
+	/*private addImageSprite(x: number, y: number, z: number, imageUrl: string = '/assets/forest.jpg') {
+		const size = 0.01;
+		const canvas = document.createElement('canvas');
+		const ctx = canvas.getContext('2d');
+	
+		const image = new Image();
+		image.src = imageUrl;
+	
+		image.onload = () => {
+		  const width = 300 //image.width + 10;
+		  const height = 180 //image.height + 4;
+	
+		  canvas.width = width;
+		  canvas.height = height;
+	
+		  ctx.fillStyle = '#fff';
+		  ctx.strokeStyle = '#000';
+		  ctx.fillRect(0, 0, width, height);
+		  ctx.strokeRect(0, 0, width, height);
+	
+		  ctx.drawImage(image, 0, 0); // Adjust the position as needed
+	
+		  const texture = new CanvasTexture(canvas);
+		  texture.minFilter = LinearFilter;
+		  texture.wrapS = ClampToEdgeWrapping;
+		  texture.wrapT = ClampToEdgeWrapping;
+	
+		  const material = new SpriteMaterial({
+			map: texture,
+			transparent: true
+		  });
+	
+		  const sprite = new Sprite(material);
+		  sprite.position.set(x, y, z + 0.1);
+		  sprite.scale.x = canvas.width * 0.0003;
+		  sprite.scale.y = canvas.height * 0.0003;
+	
+		  sprite.name = 'imageSprite';
+		  this.scene.add(sprite);
+	
+		  const lineMaterial = new LineBasicMaterial({
+			color: 0x0000ff
+		  });
+	
+		  const lineGeometry = new BufferGeometry().setFromPoints([
+			new Vector3(x, y, z),
+			new Vector3(x, y, z + 0.1)
+		  ]);
+	
+		  const line = new Line(lineGeometry, lineMaterial);
+		  this.scene.add(line);
+		};
+	}*/
+	private addImageSprite(x: number, y: number, z: number, imageUrl: string = '/assets/forest.jpg') {
+		const canvasWidth = 300;
+		const canvasHeight = 160;
+	
+		const canvas = document.createElement('canvas');
+		const ctx = canvas.getContext('2d');
+	
+		const image = new Image();
+		image.src = imageUrl;
+	
+		image.onload = () => {
+		  const aspectRatio = image.width / image.height;
+		  let drawWidth = canvasWidth;
+		  let drawHeight = canvasHeight;
+	
+		  if (aspectRatio > 1) {
+			drawHeight = canvasWidth / aspectRatio;
+		  } else {
+			drawWidth = canvasHeight * aspectRatio;
+		  }
+	
+		  const xOffset = (canvasWidth - drawWidth) / 2;
+		  const yOffset = (canvasHeight - drawHeight) / 2;
+	
+		  canvas.width = canvasWidth;
+		  canvas.height = canvasHeight;
+	
+		  ctx.fillStyle = '#fff';
+		  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+	
+		  ctx.drawImage(image, xOffset, yOffset, drawWidth, drawHeight);
+	
+		  const texture = new CanvasTexture(canvas);
+		  texture.minFilter = LinearFilter;
+		  texture.wrapS = ClampToEdgeWrapping;
+		  texture.wrapT = ClampToEdgeWrapping;
+	
+		  const material = new SpriteMaterial({
+			map: texture,
+			transparent: true
+		  });
+	
+		  const sprite = new Sprite(material);
+		  sprite.position.set(x, y, z + 0.1);
+		  sprite.scale.x = canvas.width * 0.0003;
+		  sprite.scale.y = canvas.height * 0.0003;
+	
+		  sprite.name = 'imageSprite';
+		  this.scene.add(sprite);
+	
+		  const lineMaterial = new LineBasicMaterial({
+			color: 0x0000ff
+		  });
+	
+		  const lineGeometry = new BufferGeometry().setFromPoints([
+			new Vector3(x, y, z),
+			new Vector3(x, y, z + 0.1)
+		  ]);
+	
+		  const line = new Line(lineGeometry, lineMaterial);
+		  this.scene.add(line);
+		};
+	  }
+
+	public click(e: MouseEvent, options: any) {
 		const parent = this.canvas.getBoundingClientRect();
 
 		const objs = this.intersectObjects(e.clientX - parent.left, e.clientY - parent.top);
@@ -1154,9 +1273,20 @@ export class Model {
 		const map = objs.find(x => x.object.name == 'map');
 		if (map == null) { return; }
 
-		this.addSphere(map.point.x, map.point.y, map.point.z);
-
-		this.addLabel(map.point.x, map.point.y, map.point.z);
+		if(options) {
+			console.log(options)
+			if(options.stickerType === "sticker1") {
+				this.addSphere(map.point.x, map.point.y, map.point.z);
+			}
+			if(options.stickerType === "image") {
+				this.addImageSprite(map.point.x, map.point.y, map.point.z);
+			}
+			if(options.label) {
+				this.addLabel(map.point.x, map.point.y, map.point.z, options.label);
+			}
+		} else {
+			return
+		}
 
 		console.log('click', map.point.x, map.point.y, map.point.z);
 		const elevation = this.map.getTileWidthInMeters() * map.point.z

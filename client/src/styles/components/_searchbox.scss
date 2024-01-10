@@ -1,0 +1,26 @@
+mapbox-search-listbox .mbx0f4d771d--Results {
+    z-index: 10000;
+}
+
+.searchbox {
+    &__select {
+    position: relative;
+    }
+    &__options {
+        z-index: 10001;
+        position: absolute;
+        top: calc(100% + 4px);
+        background: rgb(51, 60, 68);
+        overflow-y: auto;
+        max-height: 260px;
+    }
+    &__option {
+        font-size: 14px;
+        transition: all 0.4s ease;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        &:hover {
+            background: rgb(67, 79, 90);
+        }
+    }
+}

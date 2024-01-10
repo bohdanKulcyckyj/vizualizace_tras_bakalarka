@@ -14,6 +14,7 @@ export const USER_DELETE = `${BASE_URL}/api/user/`
 export const MAP_NEW = `${BASE_URL}/api/map/new`;
 export const MAP_USER_MAPS = `${BASE_URL}/api/map/user-maps`;
 export const MAP_ALL_MAPS = `${BASE_URL}/api/map/all-maps`;
+export const MAP_UPLOAD_GPX = `${BASE_URL}/api/map/upload/gpx`;
 export const MAP_DETAIL = `${BASE_URL}/api/map/`
 export const MAP_EDIT = `${BASE_URL}/api/map/`
 export const MAP_DELETE = `${BASE_URL}/api/map/`
