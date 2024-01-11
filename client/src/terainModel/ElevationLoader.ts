@@ -6,7 +6,6 @@ export class ElevationLoader {
 
     public static async load(url: string): Promise<{ size: number; heights: number[] }> {
         const pixels = await ElevationLoader.getPixels(url);
-
         const planeSize = Math.sqrt(pixels.length / 4);
 
         const heights: number[] = [];

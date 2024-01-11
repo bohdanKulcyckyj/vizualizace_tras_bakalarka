@@ -2,7 +2,7 @@
 
 namespace api.Models.Forms
 {
-    public class ForgotPasswordVewModel
+    public class ForgotPasswordViewModel
     {
         [Required(ErrorMessage = "Email je povinný.")]
         [EmailAddress(ErrorMessage = "Nesprávný formát e-mailu.")]

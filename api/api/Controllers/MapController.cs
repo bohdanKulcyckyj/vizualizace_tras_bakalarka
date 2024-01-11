@@ -37,7 +37,7 @@ namespace api.Controllers
             this._signInManager = signInManager;
             this._hostingEnvironment = hostingEnvironment;
         }
-        [HttpPost("new")]
+        [HttpPost]
         [Authorize]
         public async Task<IActionResult> createNewMap([FromBody] Map m)
         {
@@ -61,7 +61,7 @@ namespace api.Controllers
             return BadRequest(new {Message = "Something went wrong"});
         }
 
-        [HttpGet("user-maps")]
+        [HttpGet]
         [Authorize]
         public async Task<IActionResult> getUserMaps()
         {

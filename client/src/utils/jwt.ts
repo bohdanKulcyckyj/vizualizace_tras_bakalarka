@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 
 export function saveTokenToCookie(token: string): void {
-    const expirationTimeInMinutes = 30;
+    const expirationTimeInMinutes = 60;
     const expirationDate = new Date();
     expirationDate.setTime(expirationDate.getTime() + expirationTimeInMinutes * 60 * 1000);
   

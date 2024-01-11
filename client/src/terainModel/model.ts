@@ -25,6 +25,8 @@ import CameraControls from 'camera-controls';
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ITileTextureDecorator, TileTextureDecorator } from './TileTextureDecorator';
+import { IMapObjectOptions, PIN_TYPE } from '../interfaces/MapInterfaces';
+import { latLng } from 'leaflet';
 
 const subsetOfTHREE = {
 	Vector2: Vector2,
@@ -106,6 +108,7 @@ export class Model {
 	private pathAnimation: gsap.core.Tween;
 	private markers: Group[] = [];
 	private disposed: boolean = false;
+	public options: IModelOptions;
 
 	constructor(
 		private canvas: HTMLCanvasElement, viewHelperCanvasWrapper: HTMLElement, northArrowCanvasWrapper: HTMLElement,
@@ -113,7 +116,7 @@ export class Model {
 	) {
 		this.width = canvas.width;
 		this.height = canvas.height;
-
+		this.options = options;
 		this.renderer = new WebGLRenderer({ alpha: true, antialias: true, canvas: canvas });
 		this.renderer.setSize(this.width, this.height);
 		this.renderer.setClearColor(0, 0);
@@ -170,8 +173,7 @@ export class Model {
 
 		const center = this.coordToModelPoint(this.map.center);
 		// this.addLabel(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters(), 'CENTER');
-
-		this.addMarker(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters());
+		//this.addMarker(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters());
 		/*
 		this.scene.position.x = -center.x;
 		this.scene.position.y = -center.y;
@@ -179,12 +181,62 @@ export class Model {
 	}
 
 	public destroy() {
-		console.log("calling destroy method on nodel")
 		this.scene.clear();
 		this.renderer.dispose();
 		this.disposed = true;
 	}
 
+	public async getNearFeatures(featureType: string, bboxString: string) {
+		try {	  
+		  const response = await fetch(
+			"https://overpass-api.de/api/interpreter",
+			{
+				method: "POST",
+				// The body contains the query
+				// to understand the query language see "The Programmatic Query Language" on
+				// https://wiki.openstreetmap.org/wiki/Overpass_API#The_Programmatic_Query_Language_(OverpassQL)
+				body: "data="+ encodeURIComponent(`
+					[bbox: ${bboxString}]
+					[out:json]
+					[timeout:90]
+					;
+					(
+						${featureType}
+							(
+							${bboxString}
+							 );
+					);
+					out geom;
+				`)
+			},
+		)
+	  
+		  if (!response.ok) {
+			throw new Error(`Error fetching feature: ${featureType} - ${response.status} ${response.statusText}`);
+		  }
+	  
+		  const responseData = await response.json();
+	  
+		  const mountainPeaks = responseData.elements.map(element => ({
+			name: element.tags?.name ?? '',
+			elevation: element.tags.ele,
+			latlng: {lat: element.lat, lng: element.lon}
+		  }));
+
+		  mountainPeaks.forEach(_peak => {	
+			const point = this.coordToModelPoint(_peak.latlng)
+			const parent = this.canvas.getBoundingClientRect();
+			const objs = this.intersectObjects(point.x - parent.left, point.y - parent.top);
+			const map = objs.find(x => x.object.name == 'map');
+			console.log("MAP!!", map)
+			this.addLabel(point.x, point.y, map?.point?.z ?? 0, `${_peak.name ? _peak.name + " " : ""}${_peak.elevation}m`)
+		  })
+		} catch (err) {
+		  console.error(`Error fetching feature: ${featureType}`, err.message);
+		  throw err;
+		}
+	  }
+	  
 	public setAnimateTrail(animateTrail: boolean) {
 		this.animateTrail = animateTrail;
 
@@ -301,6 +353,7 @@ export class Model {
 
 		const tilesGroup = new Group();
 		tilesGroup.name = 'model';
+		const heights = []
 
 		let tileMatrix: Promise<Group>[][] = [];
 
@@ -382,10 +435,6 @@ export class Model {
 			3167 / heightScale + 0.006
 		);
 
-
-
-		// ----
-
 		this.fixTileEdges(tileMatrix);
 
 		console.log(this.renderer.info);
@@ -393,8 +442,75 @@ export class Model {
 		setTimeout(() => {
 			this.fitCameraTo(new Box3().setFromObject(tilesGroup), this.camera as any);
 		}, 1000);
+
+		const minLat = this.options.bbox.southWest.lat;
+		const minLon = this.options.bbox.southWest.lng;
+		const maxLat = this.options.bbox.northEast.lat;
+		const maxLon = this.options.bbox.northEast.lng;
+		const bboxStr = `${minLat},${minLon},${maxLat},${maxLon}`;
+		const featureType = 'node["natural"="peak"]';
+		this.getNearFeatures(featureType, bboxStr);
 	}
 
+	public async drawTrail(_gpxUrl: string) {
+		const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
+		const trail = await this.loadTrail(_gpxUrl);
+		const tileDecorator: TileTextureDecorator = trail == null ? null : new TileTextureDecorator(trail, this.map);
+
+		const modelFromScene = this.scene.getObjectByName("model");
+		console.log(modelFromScene)
+		if (this.options.bbox != null) {
+			const t1 = this.getTileXYZ(this.options.bbox.northEast, this.options.zoom);
+
+			const t2 = this.getTileXYZ(this.options.bbox.southWest, this.options.zoom);
+
+			if (t1[0] < t2[0]) {
+				throw new Error('0');
+			}
+			if (t1[1] > t2[1]) {
+				throw new Error('1');
+			}
+
+			for (let i = t2[0]; i <= t1[0]; i++) {
+				for (let j = t1[1]; j <= t2[1]; j++) {
+					let x = i - xyz[0];
+					let y = xyz[1] - j;
+					const tile = await this.loadTile(x, y, this.map.zoom);
+					const tileLat = tile2lat(y, this.map.zoom);
+					const tileLng = tile2long(x, this.map.zoom);
+					tileDecorator?.decorate(tile.texture, tileLat, tileLng);
+				}
+			}
+		} else {
+			let modelTileSize = 4;
+			const low = Math.floor(modelTileSize / 2);
+			const up = low + modelTileSize;
+
+			for (let i = -low; i < up; i++) {
+
+				for (let j = -low; j < up; j++) {
+					// const x = xyz[0] + i;
+					// const y = xyz[1] - j;
+					let x = i;
+					let y = -j;
+					const tile = await this.loadTile(x, y, this.map.zoom);
+					const tileLat = tile2lat(y, this.map.zoom);
+					const tileLng = tile2long(x, this.map.zoom);
+					tileDecorator?.decorate(tile.texture, tileLat, tileLng);
+				}
+			}
+		}
+
+		//this.scene.add(tilesGroup);
+
+		//const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]));
+		//this.origin = origin;
+
+		if (trail != null) {
+			await this.addTrail(trail);
+		}
+		//this.fixTileEdges(tileMatrix);
+	}
 
 	public resetCamera() {
 		const bbox = new Box3();
@@ -415,9 +531,8 @@ export class Model {
 		this.controls.setFocalOffset( 0, 0, 0, true);
 	}
 
-
 	private async loadTrail(url: string) {
-		const gpxResponse = await fetch(url);
+		const gpxResponse = await fetch(url, { mode: "no-cors"});
 		const gpx = await gpxResponse.text();
 
 		let parser = new DOMParser();
@@ -642,7 +757,6 @@ export class Model {
 		}
 	}
 
-
 	private coordToModelPoint(coord: ILatLng): IPoint {
 		const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
 
@@ -694,6 +808,7 @@ export class Model {
 		]);
 
 		// -
+		this.options.center.alt = Math.max(this.options.center.alt, ...heights);
 
 		let sidesHeightMap: IContourHeightMap = {
 			left: [],
@@ -1249,7 +1364,8 @@ export class Model {
 	
 		  sprite.name = 'imageSprite';
 		  this.scene.add(sprite);
-	
+		  let tmp_obj = this.scene.getObjectByName('imageSprite');
+		  tmp_obj.name = 'changedImageSprite';
 		  const lineMaterial = new LineBasicMaterial({
 			color: 0x0000ff
 		  });
@@ -1264,31 +1380,15 @@ export class Model {
 		};
 	  }
 
-	public click(e: MouseEvent, options: any) {
+	public click(e: MouseEvent, options: IMapObjectOptions) {
 		const parent = this.canvas.getBoundingClientRect();
 
 		const objs = this.intersectObjects(e.clientX - parent.left, e.clientY - parent.top);
-
-		console.log(objs.map(x => x.object.name));
+		// console.log(objs.map(x => x.object.name));
 		const map = objs.find(x => x.object.name == 'map');
 		if (map == null) { return; }
-
-		if(options) {
-			console.log(options)
-			if(options.stickerType === "sticker1") {
-				this.addSphere(map.point.x, map.point.y, map.point.z);
-			}
-			if(options.stickerType === "image") {
-				this.addImageSprite(map.point.x, map.point.y, map.point.z);
-			}
-			if(options.label) {
-				this.addLabel(map.point.x, map.point.y, map.point.z, options.label);
-			}
-		} else {
-			return
-		}
-
-		console.log('click', map.point.x, map.point.y, map.point.z);
+		this.addObjectToMap(map.point.x, map.point.y, map.point.z, options)
+		console.log(objs)
 		const elevation = this.map.getTileWidthInMeters() * map.point.z
 
 
@@ -1296,10 +1396,21 @@ export class Model {
 			x: this.origin.x + (map.point.x + 0.5) * 256,
 			y: this.origin.y - (map.point.y - 0.5) * 256
 		});
-		console.log(clicLatLng.lat, clicLatLng.lng, elevation);
-
+		//console.log(clicLatLng.lat, clicLatLng.lng, elevation);
+		return {x: map.point.x, y: map.point.y, z: map.point.z};
 	}
 
+	private addObjectToMap(x: number, y: number, z: number, options: IMapObjectOptions) {
+		if(options.pinType === PIN_TYPE.PIN_GREEN) {
+			this.addSphere(x, y, z);
+		}
+		if(options.pinType === PIN_TYPE.PIN_IMAGE) {
+			this.addImageSprite(x, y, z);
+		}
+		if(options.label) {
+			this.addLabel(x, y-20, z, options.label);
+		}
+	}
 
 	private addNewLights() {
 

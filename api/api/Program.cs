@@ -1,11 +1,13 @@
 using api.DataAccess;
 using api.Models;
 using api.Services;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -27,6 +29,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         configuration.GetSection("CosmosDB:DatabaseName").Value
         );
 });
+//builder.Services.Configure<BlobServiceSettings>(configuration.GetSection("BlobServiceSettings"));
+// adding Azure Blob storage
+builder.Services.AddSingleton(_ =>
+    new BlobServiceClient(configuration.GetSection("BlobServiceSettings:ConnectionString").Value)
+);
+builder.Services.AddSingleton<IBlobService, BlobService>();
 // adding Email provider from Postmark
 builder.Services.Configure<PostmarkSettings>(configuration.GetSection("PostmarkSettings"));
 builder.Services.AddTransient<EmailSender>();
@@ -71,7 +79,7 @@ builder.Services.AddAuthentication(x => {
 
 builder.Services.AddCors(options =>
 {
-    var frontendURL = "http://localhost:3000";
+    var frontendURL = configuration.GetValue<string>("FrontendUrl");
     options.AddDefaultPolicy(builder =>
     {
         builder.WithOrigins(frontendURL)

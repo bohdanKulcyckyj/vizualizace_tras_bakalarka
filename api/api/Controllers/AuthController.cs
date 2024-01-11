@@ -94,7 +94,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordVewModel model)
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordViewModel model)
     {
         if (ModelState.IsValid)
         {
@@ -184,7 +184,7 @@ public class AuthController : ControllerBase
             _configuration["Jwt:JwtIssuer"],
             _configuration["Jwt:JwtAudience"],
             claims,
-            expires: DateTime.Now.AddMinutes(30),
+            expires: DateTime.Now.AddMinutes(60),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

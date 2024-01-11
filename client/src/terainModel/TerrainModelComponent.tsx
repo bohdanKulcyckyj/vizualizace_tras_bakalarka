@@ -5,10 +5,12 @@ import { Model } from './model';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMainContext } from '../context/MainContext';
 import { getTokenFromCookie } from '../utils/jwt';
-import { BASE_URL, MAP_DETAIL, MAP_UPLOAD_GPX } from '../api/endpoints';
+import { BASE_URL, MAP_DETAIL, UPLOAD_MEDIA } from '../api/endpoints';
 import Toolbar from '../components/toolbar/Toolbar';
+import { IMapObjectOptions, PIN_TYPE } from '../interfaces/MapInterfaces';
+import { getEventListeners } from 'events';
 
-function TerrainModelComponent({ type, options } : any) {
+const TerrainModelComponent = ({ type, options } : any) => {
   const { modelid } = useParams();
   const navigate = useNavigate();
   const wrapperRef = useRef(null);
@@ -17,9 +19,10 @@ function TerrainModelComponent({ type, options } : any) {
   const northArrowCanvasWrapperRef = useRef(null);
   const [model, setModel] = useState(null);
   const [gpxTrailUrl, setGpxTrailUrl] = useState(null);
-  const [pointWithLabel, setPointWithLabel] = useState(false);
-  const [pointLabel, setPointLabel] = useState('My Point');
-  const [newPointOptions, setNewPointOptions] = useState({stickerType: "image", label: "My Point"})
+  const [pointWithLabel, setPointWithLabel] = useState<boolean>(false);
+  const [pointLabel, setPointLabel] = useState<string>('My Point');
+  const [returningObj, setReturningObj] = useState<any>(null)
+  const [newPointOptions, setNewPointOptions] = useState<IMapObjectOptions>({pinType: PIN_TYPE.PIN_GREEN, label: "My Point"})
   const mainContext = useMainContext();
 
   const fileChangeHangler = async (event) => {
@@ -36,10 +39,9 @@ function TerrainModelComponent({ type, options } : any) {
       formData.append('file', uploadedFile);
 
       try {
-        const res = await axios.post(MAP_UPLOAD_GPX, formData, requestConfig);
-        console.log(res)
-        console.log(`${BASE_URL}/gpx/${res.data.fileName}`)
-        setGpxTrailUrl(`${BASE_URL}/gpx/${res.data.fileName}`)
+        const res = await axios.post(UPLOAD_MEDIA, formData, requestConfig);
+        setGpxTrailUrl(res.data.uri)
+        model.drawTrail(res.data.uri)
       }
       catch(e) {
         console.error(e);
@@ -47,8 +49,14 @@ function TerrainModelComponent({ type, options } : any) {
     }
   }
 
+  const handleMapClick = (e: MouseEvent): void => {
+    setReturningObj(model.click(e, newPointOptions))
+    console.log("event se spustil")
+  }
+
   const confirm = () => {
     console.log("confirm")
+    console.log(model.options)
   }
 
   const cancel = () => {
@@ -68,9 +76,9 @@ function TerrainModelComponent({ type, options } : any) {
     let newModel = null;
 
     const setup = async () => {
-      console.log(viewHelperCanvasWrapperRef.current);
-      console.log(northArrowCanvasWrapperRef.current);
-      console.log(canvasRef.current);
+      //console.log(viewHelperCanvasWrapperRef.current);
+      //console.log(northArrowCanvasWrapperRef.current);
+      //console.log(canvasRef.current);
 
       let token = getTokenFromCookie()
       const requestConfig = {
@@ -171,9 +179,6 @@ function TerrainModelComponent({ type, options } : any) {
       }
 
       window.addEventListener('keydown', (e) => keyEventHandler(e));
-      if(canvasRef.current && type === "edit") {
-        canvasRef.current.addEventListener('click', (e) => newModel.click(e, newPointOptions));
-      }
 
       const resize = () => {
         newModel.resize(
@@ -205,13 +210,26 @@ function TerrainModelComponent({ type, options } : any) {
       console.log("COMPONENT UNMOUNTED")
       window.removeEventListener('keydown', (e) => keyEventHandler(e));
       if(newModel) {
-        if(canvasRef.current && type === "edit") {
-          canvasRef.current.removeEventListener('click', (e) => newModel.click(e));
-        }
         newModel.destroy();
       }
     }
   }, [modelid]);
+
+  useEffect(() => {
+    if(model && canvasRef.current && type === "edit") {
+      canvasRef.current.removeEventListener("click", handleMapClick);
+
+      setTimeout(() => {
+        canvasRef.current.addEventListener("click", handleMapClick);
+      }, 10)
+    }
+
+    return () => {
+      if(canvasRef.current) {
+        canvasRef.current.removeEventListener("click", handleMapClick)
+      }
+    }
+  }, [model, canvasRef, newPointOptions])
 
   return (
     <>
@@ -223,7 +241,7 @@ function TerrainModelComponent({ type, options } : any) {
               <input name="gpx" type="file" placeholder="gpx" onChange={(e) => fileChangeHangler(e)} />
             </div>
             <div>
-              <p>Map Stickers</p>
+              <p>Map Pins</p>
               <div>
                 <label htmlFor="with-label">With Label</label>
                 <input onClick={() => setPointWithLabel(!pointWithLabel)} type="checkbox" name="with-label" id="with-label" value={pointWithLabel} />
@@ -233,8 +251,8 @@ function TerrainModelComponent({ type, options } : any) {
                 <input name="point-label" type="text"  />
               </div>}
               <div className="flex flex-col mt-2">
-                <div className="cursor-pointer" onClick={() => setNewPointOptions(newPointOptions => ({...newPointOptions, stickerType: "sticker1", label: pointWithLabel ? pointLabel : ""}))}>Sticker1</div>
-                <div className="cursor-pointer" onClick={() => setNewPointOptions(newPointOptions => ({...newPointOptions, stickerType: "image", label: pointWithLabel ? pointLabel : ""}))}>Image</div>
+                <div className="cursor-pointer" onClick={() => setNewPointOptions(newPointOptions => ({...newPointOptions, pinType: PIN_TYPE.PIN_GREEN, label: pointWithLabel ? pointLabel : ""}))}>Pin1</div>
+                <div className="cursor-pointer" onClick={() => setNewPointOptions(newPointOptions => ({...newPointOptions, pinType: PIN_TYPE.PIN_IMAGE, label: pointWithLabel ? pointLabel : ""}))}>Image</div>
               </div>
             </div>
           </div>
