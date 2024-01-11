@@ -333,6 +333,35 @@ input[type="number"] {
   appearance: textfield;
 }
 
+.form__input--file {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 40px;
+    border: 2px dashed $secondary-color;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    cursor: pointer;
+    padding: 0 1rem;
+  }
+  input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1000;
+    visibility: hidden;
+  }
+}
+
 .form {
   input:focus,
   input:-webkit-autofill,

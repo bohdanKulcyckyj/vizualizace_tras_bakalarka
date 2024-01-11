@@ -181,9 +181,9 @@ const LeafletMap = ({ projectId }) => {
   return (
     <div className="leaflet-map__container">
       <Toolbar>
-        <div className="flex flex-col justify-between h-full">
+        <div className="form flex flex-col justify-between h-full">
           <div>
-            <div className="flex flex-col mb-2">
+            <div className="form__input flex flex-col mb-2">
               <label htmlFor="mapName">Map name:</label>
               <input
                 className="text-black"
@@ -192,7 +192,7 @@ const LeafletMap = ({ projectId }) => {
                 onChange={(e) => setInputNameValue(e.target.value)}
               />
             </div>
-            <div className="searchbox__select flex flex-col mb-2">
+            <div className="form__input searchbox__select flex flex-col mb-2">
               <label htmlFor="location">Location:</label>
               <input
                 className="text-black"
