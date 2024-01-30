@@ -1,6 +1,5 @@
-import React from 'react';
-import { ButtonType } from '../../interfaces/IButton';
-import Table from '../../components/Table';
+import { ButtonType } from '../../interfaces/dashboard/Button';
+import Table from '../../components/dashboard/Table';
 import Aside from '../../components/Aside';
 import { MAP_ALL_MAPS, MAP_DELETE, MAP_USER_MAPS } from '../../api/endpoints';
 

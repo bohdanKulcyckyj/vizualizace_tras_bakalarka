@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Children } from '../../interfaces/IContextProvider'
+import { Children } from '../../interfaces/ContextProvider'
 import { IconContext } from 'react-icons';
 import { MdKeyboardArrowRight } from "react-icons/md";
 

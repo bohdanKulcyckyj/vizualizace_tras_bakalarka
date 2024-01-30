@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { IRedirectButton } from '../../interfaces/IButton'
+import { IRedirectButton } from '../../../interfaces/dashboard/Button'
 
 const RedirectButton: FC<IRedirectButton> = ({data, rowData}) => {
   return (

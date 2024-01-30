@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { SIGN_IN } from '../api/endpoints';
-import { saveTokenToCookie, getTokenFromCookie } from '../utils/jwt';
+import { saveTokenToCookie } from '../utils/jwt';
 import axios from 'axios';
-import { ILoginForm } from '../interfaces/Forms';
+import { ILoginForm } from '../interfaces/Form';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 

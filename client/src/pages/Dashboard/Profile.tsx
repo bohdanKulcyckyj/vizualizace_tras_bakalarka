@@ -1,6 +1,6 @@
 import React from 'react'
 import Aside from '../../components/Aside';
-import ProfileForm from '../../components/Profile';
+import ProfileForm from '../../components/dashboard/Profile';
 
 const Profile = ({ role }) => {
 

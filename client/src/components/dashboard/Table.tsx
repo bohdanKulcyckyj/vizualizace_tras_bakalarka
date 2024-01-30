@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import { FC, useState, useEffect } from 'react'
 import axios from 'axios'
-import { getTokenFromCookie } from '../utils/jwt'
-import { ITableProps } from '../interfaces/ITable'
-import { ButtonType, IButton } from '../interfaces/IButton'
+import { getTokenFromCookie } from '../../utils/jwt'
+import { ITableProps } from '../../interfaces/dashboard/Table'
+import { ButtonType, IButton } from '../../interfaces/dashboard/Button'
 import { Link } from 'react-router-dom'
 import { AiFillPlusCircle } from 'react-icons/ai'
 //buttons
-import DeleteButton from './Buttons/DeleteButton'
-import RedirectButton from './Buttons/RedirectButton'
-import UnpackButton from './Buttons/UnpackButton'
+import DeleteButton from './buttons/DeleteButton'
+import RedirectButton from './buttons/RedirectButton'
+import UnpackButton from './buttons/UnpackButton'
 //components
 import ConfirmDialog from './ConfirmDialog'
 
-const Table : React.FC<ITableProps> = ({config}) => {
+const Table : FC<ITableProps> = ({config}) => {
     const [data, setData] = useState<any[]>([])
     const [showTheDialog, setShowTheDialog] = useState<boolean>(false)
     const [deleteRoute, setDeleteRoute] = useState<string>('')
@@ -60,16 +60,16 @@ const Table : React.FC<ITableProps> = ({config}) => {
         }
     }
 
-    const transformColumnData = (_data, _index) => {
+    const transformColumnData = (_data, _rowIndex) => {
         return (
-            <tr key={_index}>
-                {config.tbody.map((_attribute, _index) => (
-                    <td key={_index}>
+            <tr key={_rowIndex}>
+                {config.tbody.map((_attribute, _dataIndex) => (
+                    <td key={_dataIndex}>
                         {_data[_attribute]}
                     </td>
                 ))}
-                {config.buttons.map((_button, _index) => (
-                    <td key={100 + _index}>
+                {config.buttons.map((_button, _buttonIndex) => (
+                    <td key={config.tbody.length + _buttonIndex}>
                         {retrieveButton(_button, _data)}
                     </td>
                 ))}

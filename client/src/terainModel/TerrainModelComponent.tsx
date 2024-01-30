@@ -7,7 +7,7 @@ import { useMainContext } from "../context/MainContext";
 import { getTokenFromCookie } from "../utils/jwt";
 import { BASE_URL, MAP_DETAIL, UPLOAD_MEDIA } from "../api/endpoints";
 import Toolbar from "../components/toolbar/Toolbar";
-import { IMapObjectOptions, PIN_TYPE } from "../interfaces/MapInterfaces";
+import { IMapObjectOptions, PIN_TYPE } from "../interfaces/dashboard/Map";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { FaMapMarkerAlt, FaImage } from "react-icons/fa";
 import { IconContext } from "react-icons";

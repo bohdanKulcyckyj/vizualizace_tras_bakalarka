@@ -1,4 +1,4 @@
-import { IButton } from "./IButton";
+import { IButton } from "./Button";
 
 export interface ITableConfig {
     heading: string;

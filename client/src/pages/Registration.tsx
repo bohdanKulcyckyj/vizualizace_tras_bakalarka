@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SIGN_UP} from '../api/endpoints';
 import axios from 'axios';
-import { IRegistrationForm } from '../interfaces/Forms';
+import { IRegistrationForm } from '../interfaces/Form';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 

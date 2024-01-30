@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { IDeleteButton } from '../../interfaces/IButton'
+import { IDeleteButton } from '../../../interfaces/dashboard/Button'
 
 const DeleteButton: FC<IDeleteButton> = ({ data, rowData, setShowTheDialog, setDeleteRoute }) => {
   const deleteRecord = () => {

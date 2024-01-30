@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FORGOT_PASSWORD } from '../api/endpoints';
 import axios from 'axios';
-import { IForgottenPasswordForm } from '../interfaces/Forms';
+import { IForgottenPasswordForm } from '../interfaces/Form';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 

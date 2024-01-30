@@ -82,7 +82,7 @@ public class AuthController : ControllerBase
                 }
                 var token = GenerateJwtToken(user, userRoles[0]);
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return Ok(new { token });
+                return Ok(new { token, role= userRoles[0] });
             }
             else
             {

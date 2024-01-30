@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { IUnpackButton } from '../../interfaces/IButton'
+import { IUnpackButton } from '../../../interfaces/dashboard/Button'
 
 const UnpackButton: FC<IUnpackButton> = ({ data }) => {
   return (

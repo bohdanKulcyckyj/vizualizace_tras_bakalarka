@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import defaultProfileImage from "../assets/images/profile.png";
 import { useForm } from "react-hook-form";
-import { IProfileForm } from "../interfaces/Forms";
+import { IProfileForm } from "../../interfaces/Form";
 import { Link } from 'react-router-dom';
-import { USER_DETAIL, USER_DETAIL_CHANGE } from "../api/endpoints";
-import { getTokenFromCookie } from "../utils/jwt";
+import { USER_DETAIL, USER_DETAIL_CHANGE } from "../../api/endpoints";
+import { getTokenFromCookie } from "../../utils/jwt";
 
 const Profile = () => {
   const [data, setData] = useState<any>({})

@@ -28,7 +28,7 @@ namespace api.Controllers
             this._signInManager = signInManager;
         }
 
-        [HttpGet("all-users")]
+        [HttpGet("users")]
         [Authorize(Roles = "User")]
         public async Task<IActionResult> GetUsers()
         {

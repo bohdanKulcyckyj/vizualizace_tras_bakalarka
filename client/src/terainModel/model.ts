@@ -25,7 +25,7 @@ import CameraControls from 'camera-controls';
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ITileTextureDecorator, TileTextureDecorator } from './TileTextureDecorator';
-import { IMapObjectOptions, PIN_TYPE } from '../interfaces/MapInterfaces';
+import { IMapObjectOptions, PIN_TYPE } from '../interfaces/dashboard/Map';
 import { latLng } from 'leaflet';
 
 const subsetOfTHREE = {
@@ -223,13 +223,16 @@ export class Model {
 			latlng: {lat: element.lat, lng: element.lon}
 		  }));
 
+		  console.log(mountainPeaks)
+
+		  const heightScale = this.map.getTileWidthInMeters();
 		  mountainPeaks.forEach(_peak => {	
 			const point = this.coordToModelPoint(_peak.latlng)
 			const parent = this.canvas.getBoundingClientRect();
 			const objs = this.intersectObjects(point.x - parent.left, point.y - parent.top);
 			const map = objs.find(x => x.object.name == 'map');
 			console.log("MAP!!", map)
-			this.addLabel(point.x, point.y, map?.point?.z ?? 0, `${_peak.name ? _peak.name + " " : ""}${_peak.elevation}m`)
+			this.addLabel(point.x, point.y, /*x.alt / heightScale*/0.25, `${_peak.name ? _peak.name + " " : ""}${_peak.elevation}m`)
 		  })
 		} catch (err) {
 		  console.error(`Error fetching feature: ${featureType}`, err.message);
@@ -325,7 +328,6 @@ export class Model {
 		this.scene.add(sphare);
 	}
 
-
 	private addLights() {
 
 		this.scene.add(new AmbientLight(0xffffff, 0.5));
@@ -353,7 +355,6 @@ export class Model {
 
 		const tilesGroup = new Group();
 		tilesGroup.name = 'model';
-		const heights = []
 
 		let tileMatrix: Promise<Group>[][] = [];
 
@@ -475,7 +476,7 @@ export class Model {
 				for (let j = t1[1]; j <= t2[1]; j++) {
 					let x = i - xyz[0];
 					let y = xyz[1] - j;
-					const tile = await this.loadTile(x, y, this.map.zoom);
+					const tile = await this.loadTile(x, y, this.map.zoom); // vybrat tile ze sceny a ne novy!!
 					const tileLat = tile2lat(y, this.map.zoom);
 					const tileLng = tile2long(x, this.map.zoom);
 					tileDecorator?.decorate(tile.texture, tileLat, tileLng);
@@ -493,7 +494,7 @@ export class Model {
 					// const y = xyz[1] - j;
 					let x = i;
 					let y = -j;
-					const tile = await this.loadTile(x, y, this.map.zoom);
+					const tile = await this.loadTile(x, y, this.map.zoom); // vybrat tile ze sceny a ne novy!!
 					const tileLat = tile2lat(y, this.map.zoom);
 					const tileLng = tile2long(x, this.map.zoom);
 					tileDecorator?.decorate(tile.texture, tileLat, tileLng);
@@ -807,7 +808,7 @@ export class Model {
 			new TextureLoader().loadAsync(textureUrl)
 		]);
 
-		// -
+		//nejvetsi alt na mape
 		this.options.center.alt = Math.max(this.options.center.alt, ...heights);
 
 		let sidesHeightMap: IContourHeightMap = {
@@ -901,7 +902,6 @@ export class Model {
 
 		return group;
 	}
-
 
 	private static groundMaterial = new Promise(async (resolve) =>{
 		const loader = new TextureLoader();
@@ -1059,7 +1059,6 @@ export class Model {
 		group.add(bottom);
 	}
 
-
 	private buildAxisControl(viewHelperCanvasWrapper: HTMLElement) {
 		const axisControl = new AxisControl(this, this.camera, viewHelperCanvasWrapper);
 		return axisControl;
@@ -1140,7 +1139,6 @@ export class Model {
 		this.render();
 	}
 
-
 	private initOrbitControls(camera: PerspectiveCamera | OrthographicCamera, domElement: HTMLCanvasElement) {
 
 		const controls = new CameraControls(camera, domElement);
@@ -1194,11 +1192,9 @@ export class Model {
 		return controls;
 	}
 
-
 	public cameraRotate(thetaDelta: number, phiDelta: number) {
 		throw new Error('not implemented');
 	}
-
 
 	private intersectObjects(offsetX: number, offsetY: number) {
 		var vec2 = new Vector2((offsetX / this.width) * 2 - 1, -(offsetY / this.height) * 2 + 1);
@@ -1208,7 +1204,6 @@ export class Model {
 		ray.setFromCamera(vec2, this.camera);
 		return ray.intersectObjects([this.scene], true);
 	}
-
 
 	private addLabel(x: number, y: number, z: number, txt: string = 'TEST') {
 		const size = 0.01;
@@ -1585,7 +1580,6 @@ export class Model {
 
 		iterateDate(this.map.center, x => setPos(x));
 	}
-
 
 	public resize(w: number, h: number) {
 		this.setCanvasSize(w, h);

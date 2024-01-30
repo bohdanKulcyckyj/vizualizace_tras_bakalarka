@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import IContextProvider, { Children } from '../interfaces/IContextProvider';
+import IContextProvider, { Children } from '../interfaces/ContextProvider';
 import { IModelOptions } from '../terainModel/model';
 
 const MainContext = createContext<IContextProvider>(null);;

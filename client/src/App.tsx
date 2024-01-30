@@ -1,28 +1,28 @@
-import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-//components
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+// routes
+import routes from './constants/routes'
+// components
 import PageLayout from "./components/PageLayout";
-import RouteGuard from "./components/RouteGuard";
-import TerrainModelComponent from "./terainModel/TerrainModelComponent";
-//pages
+import RouteGuard from "./components/dashboard/RouteGuard";
+import PageLayoutWithFooter from "./components/PageLayoutWithFooter";
+// pages
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Registration from "./pages/Registration";
 import ForgottenPassword from "./pages/ForgottenPassword";
 import MapModel from "./pages/MapModel";
-import Users from "./pages/Dashboard/Users";
-import Profile from "./pages/Dashboard/Profile";
+import Users from "./pages/dashboard/admin/Users";
+import Profile from "./pages/dashboard/Profile";
 import PageNotFound from "./pages/errors/404";
 import Forbidden from "./pages/errors/403";
-
-import { MainProvider } from "./context/MainContext";
-//scss
-import "./styles/main.scss";
 import MapDetail from "./pages/MapDetail";
-import Maps from "./pages/Dashboard/Maps";
-import PageLayoutWithFooter from "./components/PageLayoutWithFooter";
+import Maps from "./pages/dashboard/Maps";
+// context
+import { MainProvider } from "./context/MainContext";
+// scss
+import "./styles/main.scss";
+import { UserRole } from "./interfaces/User";
+import { ComponentMode } from "./interfaces/dashboard/ComponentProps";
 
 function App() {
   return (
@@ -32,45 +32,45 @@ function App() {
           {/* 3D mapa se statickou konfiguraci pro DEBUG účely */}
           <Route
             path="/map-model"
-            element={<MapModel type="preview" />}
+            element={<MapModel mode={ComponentMode.PREVEIW} />}
           />
           <Route
             path="/map-model/:modelid"
-            element={<MapModel type="preview" />}
+            element={<MapModel mode={ComponentMode.PREVEIW} />}
           />
           <Route element={<PageLayout />}>
             <Route element={<PageLayoutWithFooter />}>
-              <Route path="/" element={<Home />} />
+              <Route path={routes.home} element={<Home />} />
               {/* auth */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/registration" element={<Registration />} />
+              <Route path={routes.login} element={<Login />} />
+              <Route path={routes.register} element={<Registration />} />
               <Route
-                path="/forgotten-password"
+                path={routes.forgottenPasword}
                 element={<ForgottenPassword />}
               />
-              <Route path="/restore-password" element={<Home />} />
+              <Route path={routes.restorePassword} element={<Home />} />
             </Route>
 
             {/* Admin */}
             <Route path="/admin" element={<RouteGuard />}>
               <Route
-                path="/admin/map-model/:modelid"
-                element={<MapModel type="edit" />}
+                path={routes.dashboard.editMapModel(UserRole.ADMIN, ':modelid')}
+                element={<MapModel mode={ComponentMode.EDIT} />}
               />
               <Route
-                path="/admin/maps/new"
-                element={<MapDetail status="new" />}
+                path={routes.dashboard.newMap(UserRole.ADMIN)}
+                element={<MapDetail mode={ComponentMode.NEW} />}
               />
               <Route
-                path="/admin/maps/:mapid"
-                element={<MapDetail status="edit" />}
+                path={routes.dashboard.editMap(UserRole.ADMIN, ':mapid')}
+                element={<MapDetail mode={ComponentMode.EDIT} />}
               />
               <Route element={<PageLayoutWithFooter />}>
-                <Route path="/admin/maps" element={<Maps role="admin" />} />
-                <Route path="/admin/users" element={<Users />} />
+                <Route path={routes.dashboard.maps(UserRole.ADMIN)} element={<Maps role={UserRole.ADMIN} />} />
+                <Route path={routes.admin.users} element={<Users />} />
                 <Route
-                  path="/admin/profile"
-                  element={<Profile role="admin" />}
+                  path={routes.dashboard.profile(UserRole.ADMIN)}
+                  element={<Profile role={UserRole.ADMIN} />}
                 />
               </Route>
             </Route>

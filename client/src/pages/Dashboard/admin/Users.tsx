@@ -1,8 +1,8 @@
 import React from 'react'
-import { ButtonType } from '../../interfaces/IButton';
-import Aside from '../../components/Aside';
-import Table from '../../components/Table';
-import { USER_ALL_USERS } from '../../api/endpoints';
+import { ButtonType } from '../../../interfaces/dashboard/Button';
+import Aside from '../../../components/Aside';
+import Table from '../../../components/dashboard/Table';
+import { USER_ALL_USERS } from '../../../api/endpoints';
   
   const tableConfig = {
     heading: "",
