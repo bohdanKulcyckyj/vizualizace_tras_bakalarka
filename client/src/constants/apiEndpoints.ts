@@ -10,14 +10,14 @@ const apiEndpoints = {
     //dashboard
     getUserDetail: `${BASE_URL}/api/user`,
     updateUserDetail: `${BASE_URL}/api/user`,
-    deleteUser: (_id: string) => `${BASE_URL}/api/user/${_id}`, // admin only
+    deleteUser: (_id: string = '') => `${BASE_URL}/api/user/${_id}`, // admin only
     getUsers: `${BASE_URL}/api/user/users`, // admin only
     //maps
     newMap: `${BASE_URL}/api/map`,
     getUserMaps: `${BASE_URL}/api/map`,
     getMapDetail: (_id: string) => `${BASE_URL}/api/map/${_id}`,
     editMap: (_id: string) => `${BASE_URL}/api/map/${_id}`,
-    deleteMap: (_id: string) => `${BASE_URL}/api/map/${_id}`,
+    deleteMap: (_id: string = '') => `${BASE_URL}/api/map/${_id}`,
     getAllUsersMaps: `${BASE_URL}/api/map/all-maps`, // admin only
     //uploads
     uploadMedia: `${BASE_URL}/api/blob`,

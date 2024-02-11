@@ -1,18 +1,19 @@
 //@ts-nocheck
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Model } from "./model";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMainContext } from "../context/MainContext";
 import { getTokenFromCookie } from "../utils/jwt";
-import { BASE_URL, MAP_DETAIL, UPLOAD_MEDIA } from "../api/endpoints";
+import apiEndpoints from "../constants/apiEndpoints";
 import Toolbar from "../components/toolbar/Toolbar";
-import { IMapObjectOptions, PIN_TYPE } from "../interfaces/dashboard/Map";
+import { IMapObjectOptions, PIN_TYPE, PIN_COLORS } from "../interfaces/dashboard/Map";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { FaMapMarkerAlt, FaImage } from "react-icons/fa";
 import { IconContext } from "react-icons";
+import { ComponentMode } from "../interfaces/dashboard/ComponentProps";
 
-const TerrainModelComponent = ({ type, options }: any) => {
+const TerrainModelComponent = ({ mode, options }: any) => {
   const { modelid } = useParams();
   const navigate = useNavigate();
   const wrapperRef = useRef(null);
@@ -25,8 +26,9 @@ const TerrainModelComponent = ({ type, options }: any) => {
   const [pointLabel, setPointLabel] = useState<string>("My Point");
   const [returningObj, setReturningObj] = useState<any>(null);
   const [newPointOptions, setNewPointOptions] = useState<IMapObjectOptions>({
-    pinType: PIN_TYPE.PIN_GREEN,
+    pinType: PIN_TYPE.PIN_SIGN,
     label: "My Point",
+    color: null,
   });
   const mainContext = useMainContext();
 
@@ -44,7 +46,7 @@ const TerrainModelComponent = ({ type, options }: any) => {
       formData.append("file", uploadedFile);
 
       try {
-        const res = await axios.post(UPLOAD_MEDIA, formData, requestConfig);
+        const res = await axios.post(apiEndpoints.uploadMedia, formData, requestConfig);
         setGpxTrailName(uploadedFile.name);
         model.drawTrail(res.data.uri);
       } catch (e) {
@@ -54,10 +56,12 @@ const TerrainModelComponent = ({ type, options }: any) => {
   };
 
   const handleMapClick = (e: MouseEvent): void => {
-    setReturningObj(model.click(e, newPointOptions));
     console.log("event se spustil");
+    console.log(model);
+    console.log(newPointOptions);
+    setReturningObj(model.click(e, newPointOptions));
   };
-
+  // TODO: dopsat confirm
   const confirm = () => {
     console.log("confirm");
     console.log(model.options);
@@ -93,14 +97,10 @@ const TerrainModelComponent = ({ type, options }: any) => {
       let res, resData;
       if (modelid) {
         try {
-          res = await axios.get(MAP_DETAIL + modelid, requestConfig);
+          res = await axios.get(apiEndpoints.getMapDetail(modelid), requestConfig);
           console.log(res);
           resData = res.data;
-          resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl
-            ? BASE_URL + resData.mapModel.trailGpxUrl
-            : null;
-          console.log(resData.mapModel.trailGpxUrl);
-          console.log(resData);
+          resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl ?? null;
         } catch (e) {
           //navigate("/404");
           console.error(e);
@@ -220,7 +220,7 @@ const TerrainModelComponent = ({ type, options }: any) => {
   }, [modelid]);
 
   useEffect(() => {
-    if (model && canvasRef.current && type === "edit") {
+    if (model && canvasRef.current && mode === ComponentMode.EDIT) {
       canvasRef.current.removeEventListener("click", handleMapClick);
 
       setTimeout(() => {
@@ -237,7 +237,7 @@ const TerrainModelComponent = ({ type, options }: any) => {
 
   return (
     <>
-      {type === "edit" && (
+      {mode === ComponentMode.EDIT && (
         <Toolbar>
           <div className="form flex flex-col justify-between h-full">
             <div>
@@ -294,19 +294,20 @@ const TerrainModelComponent = ({ type, options }: any) => {
                   <p className="checkbox-label">With Label</p>
                 </label>
                 <div className="pins-container mt-2">
-                  <div
+                  {Object.values(PIN_COLORS).map((_value, _index) => (<div
                     className="cursor-pointer"
                     onClick={() =>
                       setNewPointOptions((newPointOptions) => ({
                         ...newPointOptions,
-                        pinType: PIN_TYPE.PIN_GREEN,
+                        pinType: PIN_TYPE.PIN_SIGN,
                         label: pointWithLabel ? pointLabel : "",
+                        color: _value
                       }))
                     }
                   >
                     <IconContext.Provider
                       value={{
-                        color: "red",
+                        color: `${_value}`,
                         size: "30px",
                         className: "pin-icon",
                       }}
@@ -315,7 +316,7 @@ const TerrainModelComponent = ({ type, options }: any) => {
                         <FaMapMarkerAlt />
                       </span>
                     </IconContext.Provider>
-                  </div>
+                  </div>))}
                   <div
                     className="cursor-pointer"
                     onClick={() =>
@@ -352,10 +353,10 @@ const TerrainModelComponent = ({ type, options }: any) => {
           </div>
         </Toolbar>
       )}
-      <div className={`${type === "edit" ? "ml-[20px]" : ""}`}>
+      <div className={`${mode === ComponentMode.EDIT ? "ml-[20px]" : ""}`}>
         <div
           className={`model-wrapper ${
-            type !== "preview" ? "fullscreen-with-nav" : "h-screen"
+            mode !== ComponentMode.PREVEIW ? "fullscreen-with-nav" : "h-screen"
           }`}
           ref={wrapperRef}
         >

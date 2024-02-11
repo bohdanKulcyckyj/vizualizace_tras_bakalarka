@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import IContextProvider, { Children } from '../interfaces/ContextProvider';
-import { IModelOptions } from '../terainModel/model';
+import { ILoggedUser } from '../interfaces/User';
 
 const MainContext = createContext<IContextProvider>(null);;
 
@@ -14,10 +14,11 @@ export const MainProvider = ({ children } : Children) => {
     enableShadow: false,
     enableSun: true,
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loggedUser, setLoggedUser] = useState<ILoggedUser>(null)
  
   return (
-    <MainContext.Provider value={{ config, setConfig, isLoading, setIsLoading }}>
+    <MainContext.Provider value={{ config, setConfig, isLoading, setIsLoading, loggedUser, setLoggedUser }}>
       {children}
     </MainContext.Provider>
   );

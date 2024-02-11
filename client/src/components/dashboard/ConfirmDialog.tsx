@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { getTokenFromCookie } from "../../utils/jwt";
 import axios from "axios";
 import gsap from "gsap";

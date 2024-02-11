@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import defaultProfileImage from "../assets/images/profile.png";
+import defaultProfileImage from "../../assets/images/profile.png";
 import { useForm } from "react-hook-form";
 import { IProfileForm } from "../../interfaces/Form";
 import { Link } from 'react-router-dom';
-import { USER_DETAIL, USER_DETAIL_CHANGE } from "../../api/endpoints";
 import { getTokenFromCookie } from "../../utils/jwt";
+import apiEndpoints from "../../constants/apiEndpoints";
 
 const Profile = () => {
   const [data, setData] = useState<any>({})
@@ -27,7 +27,7 @@ const Profile = () => {
         'Authorization': `Bearer ${token}`,
       }
     }
-    axios.post(USER_DETAIL_CHANGE, data, config)
+    axios.post(apiEndpoints.updateUserDetail, data, config)
     .then(res => {
       console.log(res)
       setSuccessMsg('Your profile was successfully changed')
@@ -45,7 +45,7 @@ const Profile = () => {
         'Authorization': `Bearer ${token}`,
       }
     }
-    axios.get(USER_DETAIL, config)
+    axios.get(apiEndpoints.getUserDetail, config)
     .then(res => setData({...res.data, createdAt: new Date().toLocaleDateString()})) // TODO: add createdAt property in API
     .catch(err => console.error(err))
   }, []);

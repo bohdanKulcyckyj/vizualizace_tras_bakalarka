@@ -17,12 +17,13 @@ import PageNotFound from "./pages/errors/404";
 import Forbidden from "./pages/errors/403";
 import MapDetail from "./pages/MapDetail";
 import Maps from "./pages/dashboard/Maps";
+// interfaces
+import { UserRole } from "./interfaces/User";
+import { ComponentMode } from "./interfaces/dashboard/ComponentProps";
 // context
 import { MainProvider } from "./context/MainContext";
 // scss
 import "./styles/main.scss";
-import { UserRole } from "./interfaces/User";
-import { ComponentMode } from "./interfaces/dashboard/ComponentProps";
 
 function App() {
   return (
@@ -78,20 +79,20 @@ function App() {
             {/* User */}
             <Route path="/user" element={<RouteGuard />}>
               <Route
-                path="/user/map-model/:modelid"
-                element={<MapModel type="edit" />}
+                path={routes.dashboard.editMapModel(UserRole.USER, ':modelid')}
+                element={<MapModel mode={ComponentMode.EDIT} />}
               />
               <Route
-                path="/user/maps/new"
-                element={<MapDetail status="new" />}
+                path={routes.dashboard.newMap(UserRole.USER)}
+                element={<MapDetail mode={ComponentMode.NEW} />}
               />
               <Route
-                path="/user/maps/:mapid"
-                element={<MapDetail status="edit" />}
+                path={routes.dashboard.editMap(UserRole.USER, ':mapid')}
+                element={<MapDetail mode={ComponentMode.EDIT} />}
               />
               <Route element={<PageLayoutWithFooter />}>
-                <Route path="/user/maps" element={<Maps role="user" />} />
-                <Route path="/user/profile" element={<Profile role="user" />} />
+                <Route path={routes.dashboard.maps(UserRole.USER)} element={<Maps role="user" />} />
+                <Route path={routes.dashboard.profile(UserRole.USER)} element={<Profile role="user" />} />
               </Route>
             </Route>
             <Route element={<PageLayoutWithFooter />}>

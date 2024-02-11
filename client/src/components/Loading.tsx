@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useMainContext } from "../context/MainContext";
 
 const Loading = () => {
@@ -13,8 +13,8 @@ const Loading = () => {
     }, [isLoading])
 
   return (
-    <div className={`loading__container ${isLoading ? "loading__container--active" : ""}`}>
-      <div className="lds-ellipsis">
+    <div className={`component-loading ${isLoading ? "component-loading--active" : ""}`}>
+      <div className="component-loading__container">
         <div></div>
         <div></div>
         <div></div>

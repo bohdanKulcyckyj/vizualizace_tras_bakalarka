@@ -1,29 +1,53 @@
 import { useState } from 'react';
-import { SIGN_IN } from '../api/endpoints';
+import apiEndpoints from '../constants/apiEndpoints';
 import { saveTokenToCookie } from '../utils/jwt';
 import axios from 'axios';
 import { ILoginForm } from '../interfaces/Form';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import routes from '../constants/routes';
+import { UserRoleMapper } from '../interfaces/User';
+import { useMainContext } from '../context/MainContext';
+import SubmitButton from '../components/dashboard/SubmitButton';
 
 export default function SignIn() {
   const [successMsg, setSuccessMsg] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [disable, setDisable] = useState<boolean>(false);
+  const { setLoggedUser } = useMainContext()
   const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors } } = useForm<ILoginForm>();
 
   const signIn = (data:ILoginForm) => {
-    axios.post(SIGN_IN, data)
+    setSuccessMsg('')
+    setErrorMsg('')
+    setDisable(true)
+    setLoading(true)
+
+    axios.post(apiEndpoints.login, data)
     .then(res => {
+      const { token, role } = res.data
       setSuccessMsg("Successfully logged in");
-      saveTokenToCookie(res.data.token);
-      navigate("/user/maps");
+      saveTokenToCookie(token);
+      setLoggedUser(() => ({
+        role: UserRoleMapper[role]
+      }))
+      navigate(routes.dashboard.maps(UserRoleMapper[role]));
     })
     .catch(err => {
-      console.error(err);
       setErrorMsg("Logging in failed");
     })
+    .finally(() => {
+      setDisable(false)
+      setLoading(false)
+    })
+
+    setTimeout(() => {
+      setSuccessMsg('')
+      setErrorMsg('')
+    }, 5000)
   };
 
   return (
@@ -72,7 +96,11 @@ export default function SignIn() {
             <Link className="tracking-wider form-links link--underlined" to="/forgotten-password" rel="noreferrer">Forgot your password?</Link>
           </div>
           <div className={`${successMsg || errorMsg ? "mb-4" : "mb-0"} transition-all flex justify-center mt-10`}>
-            <button className="primary-button">sign in</button>
+            <SubmitButton
+              label="sign in"
+              buttonType="submit"
+              isLoading={loading}
+              isDisable={disable} />
           </div>
 
           {errorMsg ? (

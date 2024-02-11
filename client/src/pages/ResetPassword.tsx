@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { FORGOT_PASSWORD } from '../api/endpoints';
+import { useState } from 'react';
+import apiEndpoints from '../constants/apiEndpoints';
 import axios from 'axios';
 import { IForgottenPasswordForm } from '../interfaces/Form';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import SubmitButton from '../components/dashboard/SubmitButton';
 
 export default function ResetPassword() {
   const [successMsg, setSuccessMsg] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [disable, setDisable] = useState<boolean>(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<IForgottenPasswordForm>();
 
   const sendData = (data:IForgottenPasswordForm) => {
-    axios.post(FORGOT_PASSWORD, data)
+    setSuccessMsg('')
+    setErrorMsg('')
+    setDisable(true)
+    setLoading(true)
+
+    axios.post(apiEndpoints.resetPassword, data)
     .then(res => {
       console.log(res);
       setSuccessMsg("Successfully logged in");
@@ -21,6 +28,15 @@ export default function ResetPassword() {
       console.error(err);
       setErrorMsg("Logging in failed");
     })
+    .finally(() => {
+      setDisable(false)
+      setLoading(false)
+    })
+
+    setTimeout(() => {
+      setSuccessMsg('')
+      setErrorMsg('')
+    }, 5000)
   };
 
   return (
@@ -49,7 +65,11 @@ export default function ResetPassword() {
           </div>
 
           <div className={`${successMsg || errorMsg ? "mb-4" : "mb-0"} transition-all flex justify-center mt-10`}>
-            <button className="primary-button">send</button>
+            <SubmitButton
+              label="reset password"
+              buttonType="submit"
+              isLoading={loading}
+              isDisable={disable} />
           </div>
 
           {errorMsg ? (

@@ -56,7 +56,13 @@ public class AuthController : ControllerBase
                 var token = GenerateJwtToken(user, "USER");
                 await _userManager.AddToRoleAsync(user, "USER");
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return Ok(new { token });
+
+                var userRoles = await _userManager.GetRolesAsync(user);
+                if (userRoles.Count() <= 0)
+                {
+                    return BadRequest(new { Message = "Uživatel nemá přiřazenou roli." });
+                }
+                return Ok(new { token, role = userRoles[0] });
             }
             else
             {

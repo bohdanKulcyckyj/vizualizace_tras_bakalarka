@@ -2,19 +2,19 @@ import React from 'react'
 import { ButtonType } from '../../../interfaces/dashboard/Button';
 import Aside from '../../../components/Aside';
 import Table from '../../../components/dashboard/Table';
-import { USER_ALL_USERS } from '../../../api/endpoints';
+import routes from '../../../constants/apiEndpoints';
   
   const tableConfig = {
     heading: "",
     colgroup: [30, 30, 20, 20],
-    getItemsRoute: USER_ALL_USERS,
+    getItemsRoute: routes.getUsers,
     thead: ["Name", "Email", "Created At", "Delete"],
     tbody: ["name", "email", "createdAt"],
     buttons: [
       {
         type: ButtonType.DELETE,
         label: "Delete",
-        actionUrlConstantPart: "/maps/map/",
+        actionUrlConstantPart: routes.deleteUser(),
         actionUrlDynamicPartKey: "id",
       }
     ]

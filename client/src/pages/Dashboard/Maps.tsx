@@ -1,13 +1,15 @@
 import { ButtonType } from '../../interfaces/dashboard/Button';
 import Table from '../../components/dashboard/Table';
 import Aside from '../../components/Aside';
-import { MAP_ALL_MAPS, MAP_DELETE, MAP_USER_MAPS } from '../../api/endpoints';
+import apiRoutes from '../../constants/apiEndpoints';
+import routes from '../../constants/routes';
+import { UserRole } from '../../interfaces/User';
 
-const tableConfig = (userType: string) => ({
+const tableConfig = (userType: UserRole) => ({
   heading: "",
-  colgroup: [25, 15, 15, 15, 15, 15], //[30, 25, 15, 15, 15],
-  getItemsRoute: userType === "admin" ? MAP_ALL_MAPS : MAP_USER_MAPS,
-  newItemRoute: `/${userType}/maps/new`,
+  colgroup: [25, 15, 15, 15, 15, 15],
+  getItemsRoute: userType === UserRole.ADMIN ? apiRoutes.getAllUsersMaps : apiRoutes.getUserMaps,
+  newItemRoute: routes.dashboard.newMap(userType),
   newItemRouteLabel: "new map",
   thead: ["Label", "Created at", "View model", "Model", "Map", "Delete"],
   tbody: ["name", "createdAt"],
@@ -21,19 +23,19 @@ const tableConfig = (userType: string) => ({
     {
       type: ButtonType.REDIRECT,
       label: "Edit",
-      actionUrlConstantPart: `/${userType}/map-model/`,
+      actionUrlConstantPart: `/${userType.toString()}/map-model/`,
       actionUrlDynamicPartKey: "id",
     },
     {
       type: ButtonType.REDIRECT,
       label: "Edit",
-      actionUrlConstantPart: `/${userType}/maps/`,
+      actionUrlConstantPart: `/${userType.toString()}/map/`,
       actionUrlDynamicPartKey: "id",
     },
     {
       type: ButtonType.DELETE,
       label: "Delete",
-      actionUrlConstantPart: MAP_DELETE,
+      actionUrlConstantPart: apiRoutes.deleteMap(),
       actionUrlDynamicPartKey: "id",
     }
   ]

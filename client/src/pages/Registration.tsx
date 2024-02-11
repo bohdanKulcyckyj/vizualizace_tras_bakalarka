@@ -1,29 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { SIGN_UP} from '../api/endpoints';
+import { useState } from 'react';
+import apiEndpoints from '../constants/apiEndpoints';
+import routes from '../constants/routes';
 import axios from 'axios';
+import { saveTokenToCookie } from '../utils/jwt';
 import { IRegistrationForm } from '../interfaces/Form';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserRoleMapper } from '../interfaces/User';
+import { useMainContext } from '../context/MainContext';
+import SubmitButton from '../components/dashboard/SubmitButton';
 
 export default function SignUp() {
   const [successMsg, setSuccessMsg] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [disable, setDisable] = useState<boolean>(false);
+  const { setLoggedUser } = useMainContext()
   const navigate = useNavigate();
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<IRegistrationForm>();
   const currentPassword = watch("password", "");
 
   const signUp = (data:IRegistrationForm) => {
-    axios.post(SIGN_UP, data)
+    setSuccessMsg('')
+    setErrorMsg('')
+    setDisable(true)
+    setLoading(true)
+
+    axios.post(apiEndpoints.registration, data)
     .then(res => {
-      console.log(res);
+      const { token, role } = res.data
+      saveTokenToCookie(token);
+      setLoggedUser(() => ({
+        role: UserRoleMapper[role]
+      }))
+      navigate(routes.dashboard.maps(UserRoleMapper[role]));
       setSuccessMsg("Registration was successful");
-      navigate("/admin/maps");
     })
     .catch(err => {
       console.error(err);
       setErrorMsg("Registration failed");
     })
+    .finally(() => {
+      setDisable(false)
+      setLoading(false)
+    })
+
+    setTimeout(() => {
+      setSuccessMsg('')
+      setErrorMsg('')
+    }, 5000)
   };
 
   return (
@@ -103,7 +129,11 @@ export default function SignUp() {
             <p className="font-medium mr-6 whitespace-nowrap form-links">Already have an account? <Link to="/login" className="tracking-wider font-medium link--underlined" rel="noreferrer">Sign in</Link></p>
           </div>
           <div className={`${successMsg || errorMsg ? "mb-4" : "mb-0"} transition-all flex justify-center mt-10`}>
-            <button className="primary-button">sign up</button>
+            <SubmitButton
+              label="sign up"
+              buttonType="submit"
+              isLoading={loading}
+              isDisable={disable} />
           </div>
 
           {errorMsg ? (

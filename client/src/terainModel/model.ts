@@ -78,7 +78,7 @@ export interface IModelOptions {
 	};
 	zoom: number;
 	trailGpxUrl: string;
-
+	mapObjects: IMapObjectOptions[];
 }
 
 
@@ -143,9 +143,6 @@ export class Model {
 
 		// -
 
-
-
-
 		this.map = new Map(
 			{
 				//lat: 49.54052265869064,
@@ -172,8 +169,10 @@ export class Model {
 		this.init();
 
 		const center = this.coordToModelPoint(this.map.center);
+		// MAPPING PREVIOUSLY ADDED OBJECTS BY USER
+		options?.mapObjects?.forEach(_obj => this.addObjectToMap(_obj.x, _obj.y, _obj.z, _obj))
 		// this.addLabel(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters(), 'CENTER');
-		//this.addMarker(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters());
+		this.addMarker(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters());
 		/*
 		this.scene.position.x = -center.x;
 		this.scene.position.y = -center.y;
@@ -226,19 +225,17 @@ export class Model {
 		  console.log(mountainPeaks)
 
 		  const heightScale = this.map.getTileWidthInMeters();
+		  const parent = this.canvas.getBoundingClientRect();
 		  mountainPeaks.forEach(_peak => {	
 			const point = this.coordToModelPoint(_peak.latlng)
-			const parent = this.canvas.getBoundingClientRect();
 			const objs = this.intersectObjects(point.x - parent.left, point.y - parent.top);
-			const map = objs.find(x => x.object.name == 'map');
-			console.log("MAP!!", map)
-			this.addLabel(point.x, point.y, /*x.alt / heightScale*/0.25, `${_peak.name ? _peak.name + " " : ""}${_peak.elevation}m`)
+			this.addLabel(point.x - 0.5, point.y + 0.5, (_peak.elevation ?? 0) / heightScale, `${_peak.name ? _peak.name + " " : ""}${_peak.elevation}m`)
 		  })
 		} catch (err) {
 		  console.error(`Error fetching feature: ${featureType}`, err.message);
 		  throw err;
 		}
-	  }
+	}
 	  
 	public setAnimateTrail(animateTrail: boolean) {
 		this.animateTrail = animateTrail;
@@ -289,7 +286,7 @@ export class Model {
 		const scale = 0.03;
 
 		let pin = gltf.scene.clone(true);
-		pin.position.setZ(3.195149291587768);
+		pin.position.setZ(z);//setZ(3.195149291587768);
 
 		if (color != null) {
 			const mesh = pin.getObjectByName('Curve') as Mesh;
@@ -717,7 +714,6 @@ export class Model {
 		this.pathAnimation = pathAnimation;
 	}
 
-
 	private fixTileEdges(tileMatrix: Promise<Group>[][]) {
 
 		async function getPositionBuffer(tile: Promise<Group>) {
@@ -785,7 +781,6 @@ export class Model {
 		mesh.position.setY(y);
 		return mesh;
 	}
-
 
 	private getTileXYZ(pos: ILatLng, zoom: number) {
 
@@ -1122,10 +1117,6 @@ export class Model {
 	}
 
 	public animate() {
-
-		//if (isDevMode()) {
-		//	NgZone.assertNotInAngularZone();
-		//}
 		if(this.disposed) return; 
 
 		requestAnimationFrame(() => this.animate());
@@ -1213,7 +1204,7 @@ export class Model {
 		const fontSize = 16;
 	  
 		ctx.font = `${fontSize}px Arial`;
-		ctx.textBaseline = 'middle'; // Mění textBaseline na 'middle' pro vycentrování textu ve výšce
+		ctx.textBaseline = 'middle'; // pro vycentrování textu ve výšce
 		const textWidth = ctx.measureText(txt).width;
 	  
 		const width = textWidth + 10;
@@ -1256,60 +1247,6 @@ export class Model {
 	  
 		this.scene.add(line);
 	}
-
-	/*private addImageSprite(x: number, y: number, z: number, imageUrl: string = '/assets/forest.jpg') {
-		const size = 0.01;
-		const canvas = document.createElement('canvas');
-		const ctx = canvas.getContext('2d');
-	
-		const image = new Image();
-		image.src = imageUrl;
-	
-		image.onload = () => {
-		  const width = 300 //image.width + 10;
-		  const height = 180 //image.height + 4;
-	
-		  canvas.width = width;
-		  canvas.height = height;
-	
-		  ctx.fillStyle = '#fff';
-		  ctx.strokeStyle = '#000';
-		  ctx.fillRect(0, 0, width, height);
-		  ctx.strokeRect(0, 0, width, height);
-	
-		  ctx.drawImage(image, 0, 0); // Adjust the position as needed
-	
-		  const texture = new CanvasTexture(canvas);
-		  texture.minFilter = LinearFilter;
-		  texture.wrapS = ClampToEdgeWrapping;
-		  texture.wrapT = ClampToEdgeWrapping;
-	
-		  const material = new SpriteMaterial({
-			map: texture,
-			transparent: true
-		  });
-	
-		  const sprite = new Sprite(material);
-		  sprite.position.set(x, y, z + 0.1);
-		  sprite.scale.x = canvas.width * 0.0003;
-		  sprite.scale.y = canvas.height * 0.0003;
-	
-		  sprite.name = 'imageSprite';
-		  this.scene.add(sprite);
-	
-		  const lineMaterial = new LineBasicMaterial({
-			color: 0x0000ff
-		  });
-	
-		  const lineGeometry = new BufferGeometry().setFromPoints([
-			new Vector3(x, y, z),
-			new Vector3(x, y, z + 0.1)
-		  ]);
-	
-		  const line = new Line(lineGeometry, lineMaterial);
-		  this.scene.add(line);
-		};
-	}*/
 	private addImageSprite(x: number, y: number, z: number, imageUrl: string = '/assets/forest.jpg') {
 		const canvasWidth = 300;
 		const canvasHeight = 160;
@@ -1373,31 +1310,37 @@ export class Model {
 		  const line = new Line(lineGeometry, lineMaterial);
 		  this.scene.add(line);
 		};
-	  }
-
+	}
 	public click(e: MouseEvent, options: IMapObjectOptions) {
-		const parent = this.canvas.getBoundingClientRect();
+		console.log("EVENT TRIGGERED WITH OPTIONS:")
+		console.log(options)
 
+		const parent = this.canvas.getBoundingClientRect();
 		const objs = this.intersectObjects(e.clientX - parent.left, e.clientY - parent.top);
-		// console.log(objs.map(x => x.object.name));
-		const map = objs.find(x => x.object.name == 'map');
+		const map = objs.find(x => x.object.name === 'map');
 		if (map == null) { return; }
 		this.addObjectToMap(map.point.x, map.point.y, map.point.z, options)
 		console.log(objs)
-		const elevation = this.map.getTileWidthInMeters() * map.point.z
-
-
-		const clicLatLng = this.map.unproject({
-			x: this.origin.x + (map.point.x + 0.5) * 256,
-			y: this.origin.y - (map.point.y - 0.5) * 256
-		});
+		this.options.mapObjects.push({
+			...options,
+			x: map.point.x, 
+			y: map.point.y, 
+			z: map.point.z,
+		})
+		//const elevation = this.map.getTileWidthInMeters() * map.point.z
+		//const clicLatLng = this.map.unproject({
+		//	x: this.origin.x + (map.point.x + 0.5) * 256,
+		//	y: this.origin.y - (map.point.y - 0.5) * 256
+		//});
 		//console.log(clicLatLng.lat, clicLatLng.lng, elevation);
 		return {x: map.point.x, y: map.point.y, z: map.point.z};
 	}
 
 	private addObjectToMap(x: number, y: number, z: number, options: IMapObjectOptions) {
-		if(options.pinType === PIN_TYPE.PIN_GREEN) {
-			this.addSphere(x, y, z);
+		console.log("ADDING OBJECT TO MAP")
+
+		if(options.pinType === PIN_TYPE.PIN_SIGN) {
+			this.addMarker(x, y, z, options.color ?? 0x000000);
 		}
 		if(options.pinType === PIN_TYPE.PIN_IMAGE) {
 			this.addImageSprite(x, y, z);

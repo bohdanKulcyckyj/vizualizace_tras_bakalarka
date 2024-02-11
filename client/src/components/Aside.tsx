@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { SIGN_OUT } from '../api/endpoints';
+import { FC, useState } from 'react'
+import routes from '../constants/apiEndpoints';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { adminSidebarData, userSidebarData } from '../data/ProfileSidebar';
@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { ISidebar } from '../interfaces/Sidebar';
 import { saveTokenToCookie } from '../utils/jwt';
 
-const Aside : React.FC<ISidebar> = (props) => {
+const Aside : FC<ISidebar> = (props) => {
   const [sidebarOpened, setSidebarOpened] = useState(window.innerWidth >= 1250);
   const toggleSidebar = () => {
       setSidebarOpened(!sidebarOpened)
@@ -16,7 +16,7 @@ const Aside : React.FC<ISidebar> = (props) => {
   const sidebarData = props.role === "admin" ? adminSidebarData : userSidebarData;
 
   const handleLogout = () => {
-    axios.get(SIGN_OUT)
+    axios.get(routes.logout)
     .then(res => console.log(res))
     .then(() => {
       saveTokenToCookie("")

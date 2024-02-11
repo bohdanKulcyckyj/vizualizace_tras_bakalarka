@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { getTokenFromCookie } from "../../utils/jwt";
 import { useNavigate } from "react-router-dom";
@@ -6,9 +6,12 @@ import L, { LatLngBounds, LatLngExpression } from "leaflet";
 import { AreaSelect } from "../../utils/leaflet";
 import Toolbar from "../toolbar/Toolbar";
 import { useSearchBoxCore } from "@mapbox/search-js-react";
-import { MAP_DETAIL, MAP_EDIT, MAP_NEW } from "../../api/endpoints";
+import apiEndpoints from "../../constants/apiEndpoints";
+import routes from "../../constants/routes";
+import { useMainContext } from "../../context/MainContext";
 
 const LeafletMap = ({ projectId }) => {
+  const { loggedUser } = useMainContext()
   const navigate = useNavigate();
   const [map, setMap] = useState(null);
   const [areaSelect, setAreaSelect] = useState(null);
@@ -53,7 +56,7 @@ const LeafletMap = ({ projectId }) => {
 
     if (projectId) {
       axios
-        .get(MAP_DETAIL + projectId, requestConfig)
+        .get(apiEndpoints.getMapDetail(projectId), requestConfig)
         .then((res) => {
           console.log(res);
           if (res.data) {
@@ -137,15 +140,15 @@ const LeafletMap = ({ projectId }) => {
     };
     if (projectId) {
       axios
-        .post(MAP_EDIT + projectId, newMap, requestConfig)
-        .then((res) => navigate("/map-model/" + projectId, { replace: true }))
+        .post(apiEndpoints.editMap(projectId), newMap, requestConfig)
+        .then((res) => navigate(routes.dashboard.editMapModel(loggedUser.role, projectId), { replace: true }))
         .catch((e) => window.alert("Failed to edit map"));
     } else {
       axios
-        .post(MAP_NEW, newMap, requestConfig)
+        .post(apiEndpoints.newMap, newMap, requestConfig)
         .then((res) => {
           if (res.data) {
-            navigate("/map-model/" + res.data.id, { replace: true });
+            navigate(routes.dashboard.editMapModel(loggedUser.role, res.data.id), { replace: true });
           }
         })
         .catch((e) => window.alert("Failed to edit map"));

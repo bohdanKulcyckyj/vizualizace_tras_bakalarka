@@ -7,3 +7,7 @@ export const UserRoleMapper: { [key: string] : UserRole } = {
     'Admin': UserRole.ADMIN,
     'User': UserRole.USER,
 }
+
+export interface ILoggedUser {
+    role: UserRole;
+}

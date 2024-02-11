@@ -2,7 +2,7 @@ import React from 'react'
 import { useParams } from 'react-router-dom';
 import LeafletMap from '../components/map/LeafletMap';
 
-const MapDetail = ({ status }) => {
+const MapDetail = ({ mode }) => {
   const { mapid } = useParams()
   return (
     <div>

@@ -1,7 +1,4 @@
-import React from 'react'
-
 const Home = () => {
-
   return (
     <section className="welcome-section">
       <div className='text-white absolute top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4 z-10'>
