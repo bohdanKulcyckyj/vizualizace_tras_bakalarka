@@ -1,17 +1,19 @@
+import { Color } from "three";
+
 export enum PIN_TYPE {
     PIN_IMAGE = 'PIN_IMAGE',
     PIN_SIGN = 'PIN_SIGN',
 }
 
 export enum PIN_COLORS {
-    RED = 0xfc0303,
-    GREEN = 0x03fc14,
-    BLUE = 0x0318fc
+    RED = "#fc0303",
+    GREEN = "#03fc14",
+    BLUE = "#0318fc"
 }
 
 export interface IMapObjectOptions {
     pinType: PIN_TYPE;
-    color?: number;
+    color?: Color;
     label?: string;
     x?: number;
     y?: number;

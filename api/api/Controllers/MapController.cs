@@ -139,7 +139,7 @@ namespace api.Controllers
             map.MapModel = m.MapModel;
             _context.SaveChanges();
 
-            return Ok(new { Message = "Your map was successfully changed"});
+            return Ok(new { map });
         }
 
         [HttpPost("upload/gpx")]

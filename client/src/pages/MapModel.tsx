@@ -1,5 +1,4 @@
-import React from 'react'
-import TerrainModelComponent from '../terainModel/TerrainModelComponent'
+import TerrainModelComponent from '../components/TerrainModel'
 import { ComponentMode } from '../interfaces/dashboard/ComponentProps'
 
 const MapModel = ({ mode }) => {

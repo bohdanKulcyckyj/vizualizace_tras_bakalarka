@@ -1,6 +1,5 @@
 import { useRef } from "react";
-import { getTokenFromCookie } from "../../utils/jwt";
-import axios from "axios";
+import { axiosWithAuth } from "../../utils/axiosWithAuth";
 import gsap from "gsap";
 
 const ConfirmDialog = (props) => {
@@ -20,16 +19,10 @@ const ConfirmDialog = (props) => {
                 duration: 0.7,
                 width: 0,
                 onComplete: function () {
-                    let token = getTokenFromCookie()
                     props.setShowTheDialog(false);
                     if (deleteItem) {
-                        const config = {
-                          headers: {
-                            'Authorization': `Bearer ${token}`,
-                          }
-                        }
-                        axios
-                        .delete(props.deleteRoute, config)
+                        axiosWithAuth
+                        .delete(props.deleteRoute)
                         .then((res) => {
                             props.update();
                         });

@@ -1,17 +1,18 @@
 //@ts-nocheck
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { Model } from "./model";
+import { axiosWithAuth, setHeadersConfig } from "../utils/axiosWithAuth";
+import { Model } from "../terainModel/model";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMainContext } from "../context/MainContext";
-import { getTokenFromCookie } from "../utils/jwt";
 import apiEndpoints from "../constants/apiEndpoints";
-import Toolbar from "../components/toolbar/Toolbar";
+import Toolbar from "./toolbar/Toolbar";
 import { IMapObjectOptions, PIN_TYPE, PIN_COLORS } from "../interfaces/dashboard/Map";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { FaMapMarkerAlt, FaImage } from "react-icons/fa";
 import { IconContext } from "react-icons";
 import { ComponentMode } from "../interfaces/dashboard/ComponentProps";
+import routes from "../constants/routes";
 
 const TerrainModelComponent = ({ mode, options }: any) => {
   const { modelid } = useParams();
@@ -23,25 +24,13 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const [model, setModel] = useState(null);
   const [gpxTrailName, setGpxTrailName] = useState("");
   const [pointWithLabel, setPointWithLabel] = useState<boolean>(false);
-  const [pointLabel, setPointLabel] = useState<string>("My Point");
-  const [returningObj, setReturningObj] = useState<any>(null);
-  const [newPointOptions, setNewPointOptions] = useState<IMapObjectOptions>({
-    pinType: PIN_TYPE.PIN_SIGN,
-    label: "My Point",
-    color: null,
-  });
+  const [newPointOptions, setNewPointOptions] = useState<IMapObjectOptions>(null);
   const mainContext = useMainContext();
 
-  const fileChangeHangler = async (event) => {
+  const fileChangeHangler = async (event): void => {
     const uploadedFile = event.target.files[0];
     if (uploadedFile) {
-      let token = getTokenFromCookie();
-      const requestConfig = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      };
+      requestConfig = setHeadersConfig({"Content-Type": "multipart/form-data"})
       const formData = new FormData();
       formData.append("file", uploadedFile);
 
@@ -56,15 +45,17 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   };
 
   const handleMapClick = (e: MouseEvent): void => {
-    console.log("event se spustil");
-    console.log(model);
-    console.log(newPointOptions);
-    setReturningObj(model.click(e, newPointOptions));
+    model.click(e, newPointOptions)
+    setNewPointOptions(null)
   };
-  // TODO: dopsat confirm
+
   const confirm = () => {
-    console.log("confirm");
-    console.log(model.options);
+    axiosWithAuth.post(apiEndpoints.editMap(modelid), model.options)
+    .then(res => {
+      if(res.data.map) {
+        navigate(routes.mapPreview(modelid))
+      }
+    })
   };
 
   const cancel = () => {
@@ -84,25 +75,15 @@ const TerrainModelComponent = ({ mode, options }: any) => {
     let newModel = null;
 
     const setup = async () => {
-      //console.log(viewHelperCanvasWrapperRef.current);
-      //console.log(northArrowCanvasWrapperRef.current);
-      //console.log(canvasRef.current);
-
-      let token = getTokenFromCookie();
-      const requestConfig = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
       let res, resData;
       if (modelid) {
         try {
-          res = await axios.get(apiEndpoints.getMapDetail(modelid), requestConfig);
+          res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid));
           console.log(res);
           resData = res.data;
           resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl ?? null;
         } catch (e) {
-          //navigate("/404");
+          navigate("/404");
           console.error(e);
         }
       }
@@ -219,22 +200,6 @@ const TerrainModelComponent = ({ mode, options }: any) => {
     };
   }, [modelid]);
 
-  useEffect(() => {
-    if (model && canvasRef.current && mode === ComponentMode.EDIT) {
-      canvasRef.current.removeEventListener("click", handleMapClick);
-
-      setTimeout(() => {
-        canvasRef.current.addEventListener("click", handleMapClick);
-      }, 10);
-    }
-
-    return () => {
-      if (canvasRef.current) {
-        canvasRef.current.removeEventListener("click", handleMapClick);
-      }
-    };
-  }, [model, canvasRef, newPointOptions]);
-
   return (
     <>
       {mode === ComponentMode.EDIT && (
@@ -277,37 +242,21 @@ const TerrainModelComponent = ({ mode, options }: any) => {
               </div>
               <div>
                 <p className="uppercase mb-2">Add Pin to map</p>
-                {pointWithLabel && (
-                  <div>
-                    <label htmlFor="point-label"></label>
-                    <input className="w-full" name="point-label" type="text" />
-                  </div>
-                )}
-                <label className={`form__checkbox transition-all ${pointWithLabel ? "mt-2" : "mt-0"}`}>
-                  <input
-                    onClick={() => setPointWithLabel(!pointWithLabel)}
-                    type="checkbox"
-                    name="with-label"
-                    id="with-label"
-                    value={pointWithLabel}
-                  />
-                  <p className="checkbox-label">With Label</p>
-                </label>
-                <div className="pins-container mt-2">
-                  {Object.values(PIN_COLORS).map((_value, _index) => (<div
+                <div className="pins-container mb-2">
+                  {Object.values(PIN_COLORS).map((_value, _index) => (
+                  <div
+                    key={_index}
                     className="cursor-pointer"
                     onClick={() =>
-                      setNewPointOptions((newPointOptions) => ({
+                      setNewPointOptions({
                         ...newPointOptions,
                         pinType: PIN_TYPE.PIN_SIGN,
-                        label: pointWithLabel ? pointLabel : "",
-                        color: _value
-                      }))
-                    }
-                  >
+                        color: _value.toString()
+                      })
+                    }>
                     <IconContext.Provider
                       value={{
-                        color: `${_value}`,
+                        color: `${_value.toString()}`,
                         size: "30px",
                         className: "pin-icon",
                       }}
@@ -320,11 +269,10 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   <div
                     className="cursor-pointer"
                     onClick={() =>
-                      setNewPointOptions((newPointOptions) => ({
+                      setNewPointOptions({
                         ...newPointOptions,
                         pinType: PIN_TYPE.PIN_IMAGE,
-                        label: pointWithLabel ? pointLabel : "",
-                      }))
+                      })
                     }
                   >
                     <IconContext.Provider
@@ -340,6 +288,24 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                     </IconContext.Provider>
                   </div>
                 </div>
+                {pointWithLabel && (
+                  <div>
+                    <label htmlFor="point-label"></label>
+                    <input className="w-full" name="point-label" type="text" value={newPointOptions?.label ?? ''} onChange={(e) => {
+                      setNewPointOptions({...newPointOptions, label: e.target.value})
+                    }} />
+                  </div>
+                )}
+                <label className={`form__checkbox transition-all ${pointWithLabel ? "mt-2" : "mt-0"}`}>
+                  <input
+                    onClick={() => setPointWithLabel(!pointWithLabel)}
+                    type="checkbox"
+                    name="with-label"
+                    id="with-label"
+                    value={pointWithLabel}
+                  />
+                  <p className="checkbox-label">With Label</p>
+                </label>
               </div>
             </div>
             <div className="flex justify-center items-center gap-6">
@@ -364,7 +330,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
             ref={canvasRef}
             width="1900"
             height="700"
-            //onClick={click}
+            onClick={(e) => handleMapClick(e)}
             //onMouseMove={move}
             //onMouseDown={down}
           ></canvas>

@@ -138,6 +138,9 @@ const LeafletMap = ({ projectId }) => {
       trailGpxUrl: null,
       zoom: 13,
     };
+
+    console.log(projectId)
+
     if (projectId) {
       axios
         .post(apiEndpoints.editMap(projectId), newMap, requestConfig)

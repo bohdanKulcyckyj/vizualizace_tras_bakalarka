@@ -35,8 +35,9 @@ function App() {
             path="/map-model"
             element={<MapModel mode={ComponentMode.PREVEIW} />}
           />
+          
           <Route
-            path="/map-model/:modelid"
+            path={routes.mapPreview(":modelid")}
             element={<MapModel mode={ComponentMode.PREVEIW} />}
           />
           <Route element={<PageLayout />}>

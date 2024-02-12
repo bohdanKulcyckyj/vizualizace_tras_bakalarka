@@ -1,6 +1,5 @@
 import { FC, useState, useEffect } from 'react'
-import axios from 'axios'
-import { getTokenFromCookie } from '../../utils/jwt'
+import { axiosWithAuth } from '../../utils/axiosWithAuth'
 import { ITableProps } from '../../interfaces/dashboard/Table'
 import { ButtonType, IButton } from '../../interfaces/dashboard/Button'
 import { Link } from 'react-router-dom'
@@ -23,13 +22,7 @@ const Table : FC<ITableProps> = ({config}) => {
     }
 
     useEffect(() => {
-        let token = getTokenFromCookie()
-        const requestConfig = {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        }
-        axios.get(config.getItemsRoute, requestConfig)
+        axiosWithAuth.get(config.getItemsRoute)
         .then(res => setData(res.data))
         .catch(err => console.error(err))
     }, [update])

@@ -7,6 +7,9 @@ const routes = {
     register: '/register',
     forgottenPasword: '/forgotten-password',
     restorePassword: '/restore-password',
+    notFound: '/404',
+    forbidden: '/403',
+    mapPreview: (_id: string = '') => `/map-model/${_id}`,
     dashboard: {
         editMapModel: (_role: UserRole, _id: string = '') => `/${_role.toString()}/map-model/${_id}`,
         editMap: (_role: UserRole, _id: string = '') => `/${_role.toString()}/map/${_id}`,

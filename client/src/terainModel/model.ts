@@ -130,19 +130,12 @@ export class Model {
 		this.camera = this.buildCamera();
 		console.log(this.camera);
 		this.scene = new ModelScene();
-		
 		this.controls = this.initOrbitControls(this.camera, this.renderer.domElement);
 		// this.controls.update(delta );
-
-
 		// -
 		this.axisControl = this.buildAxisControl(viewHelperCanvasWrapper);
-
-
 		this.northArrowControl = new NorthArrowControl(this.camera, northArrowCanvasWrapper, 0);
-
 		// -
-
 		this.map = new Map(
 			{
 				//lat: 49.54052265869064,
@@ -276,7 +269,6 @@ export class Model {
 
 	//@ts-ignore
 	private async addMarker(x: number, y: number, z: number, color: Color = null) {
-
 		const url = '/assets/pin.gltf';
 		const loader = new GLTFLoader()
 		const gltf = await loader.loadAsync(url);
@@ -385,7 +377,6 @@ export class Model {
 
 
 		} else {
-
 			let modelTileSize = 4;
 			const low = Math.floor(modelTileSize / 2);
 			const up = low + modelTileSize;
@@ -1311,16 +1302,22 @@ export class Model {
 		  this.scene.add(line);
 		};
 	}
-	public click(e: MouseEvent, options: IMapObjectOptions) {
+	public click(e: MouseEvent, options: IMapObjectOptions): void {
 		console.log("EVENT TRIGGERED WITH OPTIONS:")
 		console.log(options)
+
+		if(!options || !options?.pinType) return;
 
 		const parent = this.canvas.getBoundingClientRect();
 		const objs = this.intersectObjects(e.clientX - parent.left, e.clientY - parent.top);
 		const map = objs.find(x => x.object.name === 'map');
-		if (map == null) { return; }
+		console.log("map", map)
+		if (map == null) { return }
+		console.log("EVENT SE VYKONAVA")
+
 		this.addObjectToMap(map.point.x, map.point.y, map.point.z, options)
 		console.log(objs)
+		console.log(this.options)
 		this.options.mapObjects.push({
 			...options,
 			x: map.point.x, 
@@ -1333,14 +1330,13 @@ export class Model {
 		//	y: this.origin.y - (map.point.y - 0.5) * 256
 		//});
 		//console.log(clicLatLng.lat, clicLatLng.lng, elevation);
-		return {x: map.point.x, y: map.point.y, z: map.point.z};
 	}
 
 	private addObjectToMap(x: number, y: number, z: number, options: IMapObjectOptions) {
 		console.log("ADDING OBJECT TO MAP")
 
 		if(options.pinType === PIN_TYPE.PIN_SIGN) {
-			this.addMarker(x, y, z, options.color ?? 0x000000);
+			this.addMarker(x, y, z, options.color ? new Color(options.color) : 0x000000);
 		}
 		if(options.pinType === PIN_TYPE.PIN_IMAGE) {
 			this.addImageSprite(x, y, z);
