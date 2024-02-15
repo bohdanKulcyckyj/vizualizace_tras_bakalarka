@@ -9,6 +9,7 @@ import { useSearchBoxCore } from "@mapbox/search-js-react";
 import apiEndpoints from "../../constants/apiEndpoints";
 import routes from "../../constants/routes";
 import { useMainContext } from "../../context/MainContext";
+import { IMapConfiguration } from "../../interfaces/dashboard/Map";
 
 const LeafletMap = ({ projectId }) => {
   const { loggedUser } = useMainContext()
@@ -122,7 +123,8 @@ const LeafletMap = ({ projectId }) => {
         Authorization: `Bearer ${token}`,
       },
     };
-    const newMap = {
+    
+    const newMap: IMapConfiguration = {
       mapModel: {
         center: {
           lat: (bounds.getNorthEast().lat + bounds.getSouthWest().lat) / 2,
@@ -133,28 +135,35 @@ const LeafletMap = ({ projectId }) => {
           northEast: bounds.getNorthEast(),
           southWest: bounds.getSouthWest(),
         },
+        trailGpxUrl: null,
+        zoom: 13,
+        mapObjects: []
       },
       name: inputNameValue,
-      trailGpxUrl: null,
-      zoom: 13,
     };
-
-    console.log(projectId)
 
     if (projectId) {
       axios
         .post(apiEndpoints.editMap(projectId), newMap, requestConfig)
-        .then((res) => navigate(routes.dashboard.editMapModel(loggedUser.role, projectId), { replace: true }))
-        .catch((e) => window.alert("Failed to edit map"));
+        .then((res) =>  {
+          if(loggedUser?.role) {
+            navigate(routes.dashboard.editMapModel(loggedUser.role, projectId), { replace: true })
+          } else {
+            navigate(-1)
+          }
+        })
+        .catch((e) => console.error(e));
     } else {
       axios
         .post(apiEndpoints.newMap, newMap, requestConfig)
         .then((res) => {
-          if (res.data) {
+          if (res.data && loggedUser?.role) {
             navigate(routes.dashboard.editMapModel(loggedUser.role, res.data.id), { replace: true });
+          } else {
+            navigate(-1)
           }
         })
-        .catch((e) => window.alert("Failed to edit map"));
+        .catch((e) => console.error(e));
     }
   };
 

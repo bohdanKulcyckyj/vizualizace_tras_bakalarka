@@ -46,7 +46,7 @@ namespace api.Controllers
 
                 var blobUri = await _blobService.UploadFileAsync(file, generatedName);
 
-                return Ok(new { fileName = generatedName, uri = blobUri });
+                return Ok(new { fileName = generatedName });
             }
             catch (RequestFailedException ex)
             {

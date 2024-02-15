@@ -7,12 +7,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useMainContext } from "../context/MainContext";
 import apiEndpoints from "../constants/apiEndpoints";
 import Toolbar from "./toolbar/Toolbar";
-import { IMapObjectOptions, PIN_TYPE, PIN_COLORS } from "../interfaces/dashboard/Map";
+import { IMapObjectOptions, PIN_TYPE, PIN_COLORS, IMapConfiguration } from "../interfaces/dashboard/Map";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { FaMapMarkerAlt, FaImage } from "react-icons/fa";
 import { IconContext } from "react-icons";
 import { ComponentMode } from "../interfaces/dashboard/ComponentProps";
-import routes from "../constants/routes";
+import Popup from "./popup/Popup";
+import { v4 as uuidv4 } from 'uuid'
 
 const TerrainModelComponent = ({ mode, options }: any) => {
   const { modelid } = useParams();
@@ -22,22 +23,24 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const viewHelperCanvasWrapperRef = useRef(null);
   const northArrowCanvasWrapperRef = useRef(null);
   const [model, setModel] = useState(null);
+  const [editingMapData, setEditingMapData] = useState<IMapConfiguration>(null)
   const [gpxTrailName, setGpxTrailName] = useState("");
   const [pointWithLabel, setPointWithLabel] = useState<boolean>(false);
   const [newPointOptions, setNewPointOptions] = useState<IMapObjectOptions>(null);
   const mainContext = useMainContext();
+  const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false)
 
   const fileChangeHangler = async (event): void => {
     const uploadedFile = event.target.files[0];
     if (uploadedFile) {
-      requestConfig = setHeadersConfig({"Content-Type": "multipart/form-data"})
+      const requestConfig = setHeadersConfig({"Content-Type": "multipart/form-data"})
       const formData = new FormData();
       formData.append("file", uploadedFile);
 
       try {
         const res = await axios.post(apiEndpoints.uploadMedia, formData, requestConfig);
         setGpxTrailName(uploadedFile.name);
-        model.drawTrail(res.data.uri);
+        model.drawTrail(res.data.fileName, uploadedFile);
       } catch (e) {
         console.error(e);
       }
@@ -45,15 +48,21 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   };
 
   const handleMapClick = (e: MouseEvent): void => {
+    console.log(model.clickedObject(e))
     model.click(e, newPointOptions)
     setNewPointOptions(null)
   };
 
   const confirm = () => {
-    axiosWithAuth.post(apiEndpoints.editMap(modelid), model.options)
+    const newMapConfiguration = {
+      ...editingMapData,
+      mapModel: model.options
+    }
+
+    axiosWithAuth.post(apiEndpoints.editMap(modelid), newMapConfiguration)
     .then(res => {
       if(res.data.map) {
-        navigate(routes.mapPreview(modelid))
+        navigate(-1)
       }
     })
   };
@@ -79,8 +88,8 @@ const TerrainModelComponent = ({ mode, options }: any) => {
       if (modelid) {
         try {
           res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid));
-          console.log(res);
           resData = res.data;
+          setEditingMapData(resData);
           resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl ?? null;
         } catch (e) {
           navigate("/404");
@@ -202,6 +211,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
 
   return (
     <>
+      {mode === ComponentMode.EDIT && <Popup isPopupOpened={isPinPopupOpened} setIsPopupOpened={setIsPinPopupOpened}>
+        <div>Yooooo</div>
+      </Popup>}
       {mode === ComponentMode.EDIT && (
         <Toolbar>
           <div className="form flex flex-col justify-between h-full">
@@ -249,7 +261,8 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                     className="cursor-pointer"
                     onClick={() =>
                       setNewPointOptions({
-                        ...newPointOptions,
+                        ...newPointOptions, 
+                        id: uuidv4(),
                         pinType: PIN_TYPE.PIN_SIGN,
                         color: _value.toString()
                       })
@@ -271,6 +284,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                     onClick={() =>
                       setNewPointOptions({
                         ...newPointOptions,
+                        id: uuidv4(),
                         pinType: PIN_TYPE.PIN_IMAGE,
                       })
                     }
@@ -292,7 +306,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   <div>
                     <label htmlFor="point-label"></label>
                     <input className="w-full" name="point-label" type="text" value={newPointOptions?.label ?? ''} onChange={(e) => {
-                      setNewPointOptions({...newPointOptions, label: e.target.value})
+                      setNewPointOptions({...newPointOptions, id: uuidv4(), label: e.target.value})
                     }} />
                   </div>
                 )}

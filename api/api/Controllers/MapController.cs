@@ -46,9 +46,13 @@ namespace api.Controllers
             {
                 return NotFound();
             }
-            if((ModelState.IsValid))
+            if(ModelState.IsValid)
             {
                 m.Id = Guid.NewGuid().ToString("N");
+                if(m.MapModel != null)
+                {
+                    m.MapModel.zoom = m.MapModel.zoom > 0 ? m.MapModel.zoom : 13;
+                }
                 currentUser.Maps.Add(m);
                 _context.SaveChanges();
                 

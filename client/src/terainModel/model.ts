@@ -9,7 +9,7 @@ import {
 	PCFSoftShadowMap, LineCurve3, CurvePath, Clock, CubicBezierCurve3,
 	Box3, MeshStandardMaterial, Color, Sphere, Vector4, Matrix4
 } from 'three';
-
+import axios from 'axios';
 import gsap from 'gsap';
 
 import { AxisControl } from './AxisControl';
@@ -27,6 +27,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { ITileTextureDecorator, TileTextureDecorator } from './TileTextureDecorator';
 import { IMapObjectOptions, PIN_TYPE } from '../interfaces/dashboard/Map';
 import { latLng } from 'leaflet';
+import apiEndpoints from '../constants/apiEndpoints';
+import { axiosWithAuth, setHeadersConfig } from '../utils/axiosWithAuth';
 
 const subsetOfTHREE = {
 	Vector2: Vector2,
@@ -60,7 +62,6 @@ interface IContourHeightMap {
 	bottom: number[];
 }
 
-
 export interface IModelCoord {
 	lat: number;
 	lng: number;
@@ -77,10 +78,9 @@ export interface IModelOptions {
 		southWest: IModelCoord;
 	};
 	zoom: number;
-	trailGpxUrl: string;
+	trailGpxUrl: string | null;
 	mapObjects: IMapObjectOptions[];
 }
-
 
 enum TileBorderEnum {
 	NONE = 0,
@@ -136,22 +136,11 @@ export class Model {
 		this.axisControl = this.buildAxisControl(viewHelperCanvasWrapper);
 		this.northArrowControl = new NorthArrowControl(this.camera, northArrowCanvasWrapper, 0);
 		// -
-		this.map = new Map(
-			{
-				//lat: 49.54052265869064,
-				//lng: 18.391556789721125,
-
+		this.map = new Map({
 				lat: options.center.lat,
 				lng: options.center.lng,
-
-				//lat: 42.55591269199303,
-				//lng: 44.815057608950255
 			},
-
-			// 412.1
 			options.center.alt,
-
-
 			options.zoom
 		);
 
@@ -161,11 +150,10 @@ export class Model {
 
 		this.init();
 
-		const center = this.coordToModelPoint(this.map.center);
+		//const center = this.coordToModelPoint(this.map.center);
 		// MAPPING PREVIOUSLY ADDED OBJECTS BY USER
 		options?.mapObjects?.forEach(_obj => this.addObjectToMap(_obj.x, _obj.y, _obj.z, _obj))
-		// this.addLabel(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters(), 'CENTER');
-		this.addMarker(center.x - 0.5, center.y + 0.5, this.map.centerAltitude / this.map.getTileWidthInMeters());
+
 		/*
 		this.scene.position.x = -center.x;
 		this.scene.position.y = -center.y;
@@ -291,6 +279,7 @@ export class Model {
 		console.log('box',  box.getCenter(t), t);
 		*/
 		let pinGroup = new Group();
+		pinGroup.name = "PIN_COLORED"
 		pinGroup.add(pin);
 
 		pin.rotateX(Math.PI);
@@ -305,7 +294,6 @@ export class Model {
 
 		this.markers.push(pinGroup);
 		//pinGroup.quaternion.copy( this.camera.quaternion );
-
 	}
 
 	private addSphere(x: number, y: number, z: number) {
@@ -337,10 +325,8 @@ export class Model {
 	public async init() {
 		const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
 		const trail = this.options.trailGpxUrl == null ? null : await this.loadTrail(this.options.trailGpxUrl);
-		//'./assets/export2.gpx'
 		//@ts-ignore
 		const tileDecorator: TileTextureDecorator = trail == null ? null : new TileTextureDecorator(trail, this.map);
-
 
 		const tilesGroup = new Group();
 		tilesGroup.name = 'model';
@@ -426,8 +412,6 @@ export class Model {
 
 		this.fixTileEdges(tileMatrix);
 
-		console.log(this.renderer.info);
-
 		setTimeout(() => {
 			this.fitCameraTo(new Box3().setFromObject(tilesGroup), this.camera as any);
 		}, 1000);
@@ -441,13 +425,34 @@ export class Model {
 		this.getNearFeatures(featureType, bboxStr);
 	}
 
-	public async drawTrail(_gpxUrl: string) {
+	public async drawTrail(_gpxId: string, _gpx: File) {
 		const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
-		const trail = await this.loadTrail(_gpxUrl);
+
+		const fileContent = await _gpx.text(); 
+		let parser = new DOMParser();
+		const doc = parser.parseFromString(fileContent, 'text/xml');
+		let trail: ILatLngAlt[] = [];
+		doc.querySelectorAll('trkpt').forEach(x => {
+			const point: ILatLngAlt = {
+				//@ts-ignore
+				lat: parseFloat(x.getAttribute('lat')),
+				//@ts-ignore
+				lng: parseFloat(x.getAttribute('lon')),
+				//@ts-ignore
+				alt: parseFloat(x.textContent)
+			};
+			trail.push(point);
+		});
+
+		this.options.trailGpxUrl = _gpxId;
+		//@ts-ignore
 		const tileDecorator: TileTextureDecorator = trail == null ? null : new TileTextureDecorator(trail, this.map);
 
-		const modelFromScene = this.scene.getObjectByName("model");
-		console.log(modelFromScene)
+		const tilesGroup = new Group();
+		tilesGroup.name = 'model';
+
+		let tileMatrix: Promise<Group>[][] = [];
+
 		if (this.options.bbox != null) {
 			const t1 = this.getTileXYZ(this.options.bbox.northEast, this.options.zoom);
 
@@ -461,44 +466,75 @@ export class Model {
 			}
 
 			for (let i = t2[0]; i <= t1[0]; i++) {
+				let tmp: Promise<Group>[] = [];
+				tileMatrix.push(tmp);
 				for (let j = t1[1]; j <= t2[1]; j++) {
-					let x = i - xyz[0];
-					let y = xyz[1] - j;
-					const tile = await this.loadTile(x, y, this.map.zoom); // vybrat tile ze sceny a ne novy!!
-					const tileLat = tile2lat(y, this.map.zoom);
-					const tileLng = tile2long(x, this.map.zoom);
-					tileDecorator?.decorate(tile.texture, tileLat, tileLng);
+
+					tmp.push(this.addTileMesh(
+						xyz, i - xyz[0], xyz[1] - j, tilesGroup,
+						(i == t2[0] ? TileBorderEnum.LEFT : TileBorderEnum.NONE)
+						| (i == t1[0] ? TileBorderEnum.RIGHT : TileBorderEnum.NONE)
+						| (j == t1[1] ? TileBorderEnum.TOP : TileBorderEnum.NONE)
+						| (j == t2[1] ? TileBorderEnum.BOTTOM : TileBorderEnum.NONE),
+						tileDecorator
+					));
 				}
 			}
+
+
 		} else {
 			let modelTileSize = 4;
 			const low = Math.floor(modelTileSize / 2);
 			const up = low + modelTileSize;
 
 			for (let i = -low; i < up; i++) {
-
+				let tmp: Promise<Group>[] = [];
+				tileMatrix.push(tmp);
 				for (let j = -low; j < up; j++) {
 					// const x = xyz[0] + i;
 					// const y = xyz[1] - j;
-					let x = i;
-					let y = -j;
-					const tile = await this.loadTile(x, y, this.map.zoom); // vybrat tile ze sceny a ne novy!!
-					const tileLat = tile2lat(y, this.map.zoom);
-					const tileLng = tile2long(x, this.map.zoom);
-					tileDecorator?.decorate(tile.texture, tileLat, tileLng);
+
+					tmp.push(this.addTileMesh(
+						xyz, i, -j, tilesGroup,
+						(i == -low ? TileBorderEnum.LEFT : TileBorderEnum.NONE)
+						| (i == up - 1 ? TileBorderEnum.RIGHT : TileBorderEnum.NONE)
+						| (j == -low ? TileBorderEnum.TOP : TileBorderEnum.NONE)
+						| (j == up - 1 ? TileBorderEnum.BOTTOM : TileBorderEnum.NONE),
+						tileDecorator
+					));
 				}
 			}
 		}
 
-		//this.scene.add(tilesGroup);
+		this.scene.add(tilesGroup);
 
-		//const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]));
-		//this.origin = origin;
+		const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]));
+		this.origin = origin;
 
 		if (trail != null) {
 			await this.addTrail(trail);
 		}
-		//this.fixTileEdges(tileMatrix);
+
+		const heightScale = this.map.getTileWidthInMeters();
+
+
+		const tmpPoint = this.map.project({
+			lat: 45.8549300,
+			lng: 6.8175289
+		});
+
+
+		this.addSphere(
+			(tmpPoint.x - origin.x) / 256 - 0.5,
+			(origin.y - tmpPoint.y) / 256 + 0.5,
+			3167 / heightScale + 0.006
+		);
+
+		this.fixTileEdges(tileMatrix);
+
+		setTimeout(() => {
+			this.fitCameraTo(new Box3().setFromObject(tilesGroup), this.camera as any);
+		}, 1000);
 	}
 
 	public resetCamera() {
@@ -520,12 +556,13 @@ export class Model {
 		this.controls.setFocalOffset( 0, 0, 0, true);
 	}
 
-	private async loadTrail(url: string) {
-		const gpxResponse = await fetch(url, { mode: "no-cors"});
-		const gpx = await gpxResponse.text();
+	private async loadTrail(sourceId: string) {
+		const requestConfig = setHeadersConfig({responseType: 'blob'})
+		const gpxResponse = await axios.get(apiEndpoints.getUploadedMedia(sourceId), requestConfig)
+		const fileContent = await gpxResponse.data; 
 
 		let parser = new DOMParser();
-		const doc = parser.parseFromString(gpx, 'text/xml');
+		const doc = parser.parseFromString(fileContent, 'text/xml');
 		let gpxPoints: ILatLngAlt[] = [];
 		doc.querySelectorAll('trkpt').forEach(x => {
 			const point: ILatLngAlt = {
@@ -1178,7 +1215,7 @@ export class Model {
 		throw new Error('not implemented');
 	}
 
-	private intersectObjects(offsetX: number, offsetY: number) {
+	public intersectObjects(offsetX: number, offsetY: number) {
 		var vec2 = new Vector2((offsetX / this.width) * 2 - 1, -(offsetY / this.height) * 2 + 1);
 		var ray = new Raycaster();
 		// ray.linePrecision = 0.2;
@@ -1285,10 +1322,10 @@ export class Model {
 		  sprite.scale.x = canvas.width * 0.0003;
 		  sprite.scale.y = canvas.height * 0.0003;
 	
-		  sprite.name = 'imageSprite';
+		  sprite.name = 'PIN_IMAGE';
 		  this.scene.add(sprite);
-		  let tmp_obj = this.scene.getObjectByName('imageSprite');
-		  tmp_obj.name = 'changedImageSprite';
+		//   let tmp_obj = this.scene.getObjectByName('imageSprite');
+		//   tmp_obj.name = 'changedImageSprite';
 		  const lineMaterial = new LineBasicMaterial({
 			color: 0x0000ff
 		  });
@@ -1330,6 +1367,13 @@ export class Model {
 		//	y: this.origin.y - (map.point.y - 0.5) * 256
 		//});
 		//console.log(clicLatLng.lat, clicLatLng.lng, elevation);
+	}
+	public clickedObject(e: MouseEvent) {
+		const parent = this.canvas.getBoundingClientRect();
+		const objs = this.intersectObjects(e.clientX - parent.left, e.clientY - parent.top);
+		const map = objs.find(x => x.object.name === 'map');
+		if (map == null) { return }
+		return objs
 	}
 
 	private addObjectToMap(x: number, y: number, z: number, options: IMapObjectOptions) {

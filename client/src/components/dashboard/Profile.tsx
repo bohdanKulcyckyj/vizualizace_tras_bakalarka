@@ -9,7 +9,7 @@ import apiEndpoints from "../../constants/apiEndpoints";
 
 const Profile = () => {
   const [data, setData] = useState<any>({})
-  const [isFieldsDisabled, setIsFieldsDisabled] = useState(true);
+  const [isFieldsDisabled, setIsFieldsDisabled] = useState<boolean>(true);
   const [successMsg, setSuccessMsg] = useState<string>("");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
@@ -46,7 +46,7 @@ const Profile = () => {
       }
     }
     axios.get(apiEndpoints.getUserDetail, config)
-    .then(res => setData({...res.data, createdAt: new Date().toLocaleDateString()})) // TODO: add createdAt property in API
+    .then(res => setData({...res.data}))
     .catch(err => console.error(err))
   }, []);
 

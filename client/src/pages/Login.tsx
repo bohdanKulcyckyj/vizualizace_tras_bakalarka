@@ -31,9 +31,9 @@ export default function SignIn() {
       const { token, role } = res.data
       setSuccessMsg("Successfully logged in");
       saveTokenToCookie(token);
-      setLoggedUser(() => ({
+      setLoggedUser({
         role: UserRoleMapper[role]
-      }))
+      })
       navigate(routes.dashboard.maps(UserRoleMapper[role]));
     })
     .catch(err => {

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { getTokenFromCookie } from "./jwt";
 
 export const axiosWithAuth = axios.create({
@@ -7,9 +7,10 @@ export const axiosWithAuth = axios.create({
     },
 });
 
-export const setHeadersConfig = (extraHeaders = {}) => {
+export const setHeadersConfig = (extraHeaders = {}): AxiosRequestConfig => {
   return {
     ...axiosWithAuth.defaults,
+    // @ts-ignore
     headers: {
       ...axiosWithAuth.defaults.headers,
       ...extraHeaders,
