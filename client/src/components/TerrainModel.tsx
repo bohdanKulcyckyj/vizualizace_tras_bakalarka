@@ -10,10 +10,14 @@ import Toolbar from "./toolbar/Toolbar";
 import { IMapObjectOptions, PIN_TYPE, PIN_COLORS, IMapConfiguration } from "../interfaces/dashboard/Map";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { FaMapMarkerAlt, FaImage } from "react-icons/fa";
+import { SlDirection } from "react-icons/sl";
 import { IconContext } from "react-icons";
 import { ComponentMode } from "../interfaces/dashboard/ComponentProps";
 import Popup from "./popup/Popup";
 import { v4 as uuidv4 } from 'uuid'
+import PinPopup from "./popup/PinPopup";
+import PinPreviewPopup from "./popup/PinPreviewPopup";
+import { Gallery } from "./Gallery";
 
 const TerrainModelComponent = ({ mode, options }: any) => {
   const { modelid } = useParams();
@@ -25,10 +29,10 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const [model, setModel] = useState(null);
   const [editingMapData, setEditingMapData] = useState<IMapConfiguration>(null)
   const [gpxTrailName, setGpxTrailName] = useState("");
-  const [pointWithLabel, setPointWithLabel] = useState<boolean>(false);
   const [newPointOptions, setNewPointOptions] = useState<IMapObjectOptions>(null);
   const mainContext = useMainContext();
   const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false)
+  const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1)
 
   const fileChangeHangler = async (event): void => {
     const uploadedFile = event.target.files[0];
@@ -40,7 +44,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
       try {
         const res = await axios.post(apiEndpoints.uploadMedia, formData, requestConfig);
         setGpxTrailName(uploadedFile.name);
-        model.drawTrail(res.data.fileName, uploadedFile);
+        model.drawTrail(res.data.file);
       } catch (e) {
         console.error(e);
       }
@@ -48,10 +52,51 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   };
 
   const handleMapClick = (e: MouseEvent): void => {
-    console.log(model.clickedObject(e))
-    model.click(e, newPointOptions)
-    setNewPointOptions(null)
+    const clickedObjects = model.clickedObjects(e)
+
+    if(!newPointOptions || !newPointOptions?.pinType) {
+      let currObject = null
+      for(let i = 0; i < clickedObjects.length; i++) {
+        let tmp = clickedObjects[i]
+        if(Object.hasOwn(tmp.object, "isClickable") && Object.hasOwn(tmp.object, "pinId")) {
+          currObject = tmp.object
+          break;
+        }
+      }
+      console.log(currObject)
+      if(currObject) {
+        const selectedObjectData = model?.options?.mapObjects?.find(_item => _item.id === currObject.pinId)
+        if(selectedObjectData) {
+          setNewPointOptions({...selectedObjectData, event: e})
+          setIsPinPopupOpened(true)
+        }
+      }
+    } else {
+      if(clickedObjects.length > 0) {
+        if(!newPointOptions || !newPointOptions?.pinType) return
+        setNewPointOptions(newPointOptions => ({...newPointOptions, event: e}))
+        setIsPinPopupOpened(true)
+        console.log(newPointOptions)
+      }
+    }
   };
+
+  const handleNewPin = (): void => {
+    if(!Object.hasOwn(newPointOptions, 'event') || !(newPointOptions?.event)) return
+    
+    if(model.options.mapObjects.find(_item => _item.id === newPointOptions.id)) {
+      const { x, y, z, ...rest } = newPointOptions
+
+      model.removeObjectFromMap(newPointOptions.id)
+      model.addObjectToMap(x, y, z, rest)   
+    } else {
+      const { event, ...restOptions } = newPointOptions;
+      model.click(event, restOptions)
+    }
+
+    setNewPointOptions(null)
+    setIsPinPopupOpened(false)
+  }
 
   const confirm = () => {
     const newMapConfiguration = {
@@ -211,8 +256,16 @@ const TerrainModelComponent = ({ mode, options }: any) => {
 
   return (
     <>
-      {mode === ComponentMode.EDIT && <Popup isPopupOpened={isPinPopupOpened} setIsPopupOpened={setIsPinPopupOpened}>
-        <div>Yooooo</div>
+      {mode === ComponentMode.PREVEIW && <>
+      <Popup isPopupOpened={isPinPopupOpened} setIsPopupOpened={setIsPinPopupOpened} onClose={() => setNewPointOptions(null)}>
+        <PinPreviewPopup setImageIndex={setPreviewImageIndex} formState={newPointOptions} />
+      </Popup>
+      {newPointOptions?.images?.length > 0 && (<div className="relative z-[10001]">
+        <Gallery index={previewImageIndex} setIndex={setPreviewImageIndex} images={newPointOptions.images} />
+      </div>)}
+      </>}
+      {mode === ComponentMode.EDIT && <Popup isPopupOpened={isPinPopupOpened} setIsPopupOpened={setIsPinPopupOpened} onClose={() => setNewPointOptions(null)}>
+        <PinPopup formState={newPointOptions} setFormState={setNewPointOptions} onSubmit={handleNewPin} />
       </Popup>}
       {mode === ComponentMode.EDIT && (
         <Toolbar>
@@ -252,6 +305,40 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   </label>
                 </div>
               </div>
+              <div className="mb-6">
+                <div className="mb-2">
+                  <label htmlFor="pgx">Garmin FIT</label>
+                </div>
+                <div className="form__input--file mb-2">
+                  <label>
+                    {gpxTrailName ? (
+                      <div className="flex justify-center items-center overflow-hidden">
+                        <span className="mx-2 oveflow-hidden">
+                          {gpxTrailName}
+                        </span>
+                      </div>
+                    ) : (
+                      <IconContext.Provider
+                        value={{
+                          color: "#2EEBC9",
+                          size: "30px",
+                          className: "upload-icon",
+                        }}
+                      >
+                        <span>
+                          <MdOutlineFileUpload />
+                        </span>
+                      </IconContext.Provider>
+                    )}
+                    <input
+                      name="fit"
+                      type="file"
+                      placeholder="fit"
+                      onChange={(e) => fileChangeHangler(e)}
+                    />
+                  </label>
+                </div>
+              </div>
               <div>
                 <p className="uppercase mb-2">Add Pin to map</p>
                 <div className="pins-container mb-2">
@@ -285,6 +372,28 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                       setNewPointOptions({
                         ...newPointOptions,
                         id: uuidv4(),
+                        pinType: PIN_TYPE.PIN_LABEL,
+                      })
+                    }
+                  >
+                    <IconContext.Provider
+                      value={{
+                        color: "white",
+                        size: "30px",
+                        className: "pin-icon",
+                      }}
+                    >
+                      <span>
+                        <SlDirection />
+                      </span>
+                    </IconContext.Provider>
+                  </div>
+                  <div
+                    className="cursor-pointer"
+                    onClick={() =>
+                      setNewPointOptions({
+                        ...newPointOptions,
+                        id: uuidv4(),
                         pinType: PIN_TYPE.PIN_IMAGE,
                       })
                     }
@@ -302,24 +411,6 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                     </IconContext.Provider>
                   </div>
                 </div>
-                {pointWithLabel && (
-                  <div>
-                    <label htmlFor="point-label"></label>
-                    <input className="w-full" name="point-label" type="text" value={newPointOptions?.label ?? ''} onChange={(e) => {
-                      setNewPointOptions({...newPointOptions, id: uuidv4(), label: e.target.value})
-                    }} />
-                  </div>
-                )}
-                <label className={`form__checkbox transition-all ${pointWithLabel ? "mt-2" : "mt-0"}`}>
-                  <input
-                    onClick={() => setPointWithLabel(!pointWithLabel)}
-                    type="checkbox"
-                    name="with-label"
-                    id="with-label"
-                    value={pointWithLabel}
-                  />
-                  <p className="checkbox-label">With Label</p>
-                </label>
               </div>
             </div>
             <div className="flex justify-center items-center gap-6">

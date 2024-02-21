@@ -4,6 +4,7 @@ import { IModelOptions } from "../../terainModel/model";
 export enum PIN_TYPE {
     PIN_IMAGE = 'PIN_IMAGE',
     PIN_SIGN = 'PIN_SIGN',
+    PIN_LABEL = 'PIN_LABEL'
 }
 
 export enum PIN_COLORS {
@@ -15,17 +16,19 @@ export enum PIN_COLORS {
 export interface IMapObjectOptions {
     pinType: PIN_TYPE;
     id: string;
-    color?: Color;
+    color?: Color | string;
     label?: string;
-    imageUrl?: string;
+    images?: string[];
     x?: number;
     y?: number;
     z?: number;
+    event?: MouseEvent;
 }
 
 export const pinTypeMapper: { [key: string] : PIN_TYPE } = {
     'PIN_IMAGE': PIN_TYPE.PIN_IMAGE,
     'PIN_SIGN': PIN_TYPE.PIN_SIGN,
+    'PIN_LABEL': PIN_TYPE.PIN_LABEL
 }
 
 export interface IMapConfiguration  {

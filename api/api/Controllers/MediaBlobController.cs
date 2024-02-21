@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing.Constraints;
+using api.Utils;
+using Dynastream.Fit;
 
 namespace api.Controllers
 {
@@ -46,11 +48,33 @@ namespace api.Controllers
 
                 var blobUri = await _blobService.UploadFileAsync(file, generatedName);
 
-                return Ok(new { fileName = generatedName });
+                return Ok(new { file = blobUri });
             }
             catch (RequestFailedException ex)
             {
                 return StatusCode((int)ex.Status, ex.Message);
+            }
+        }
+        [HttpPost("fit")]
+        public async Task<IActionResult> UploadFitFile([FromForm] IFormFile file)
+        {
+            Console.WriteLine("Hhh");
+
+            if (file == null || file.Length <= 0)
+                return BadRequest("File is empty");
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+
+                List<RecordMesg> fitRecords = await FitParser.ParseFitFile(memoryStream);
+
+                foreach(RecordMesg record in fitRecords)
+                {
+                    Console.WriteLine("record");
+                }
+
+                return Ok(fitRecords);
             }
         }
         [HttpDelete("{fileName}")]

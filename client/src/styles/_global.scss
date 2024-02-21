@@ -37,6 +37,16 @@ h1 {
   }
 }
 
+h2 {
+  font-size: 38px;
+  line-height: 1.4;
+  font-weight: 600;
+  text-transform: uppercase;
+  @media only screen and (min-width: 1024px) {
+    font-size: 52px;
+  }
+}
+
 .page-section {
   width: 100%;
   margin-bottom: 4rem;

@@ -152,6 +152,7 @@ export class Model {
 
 		//const center = this.coordToModelPoint(this.map.center);
 		// MAPPING PREVIOUSLY ADDED OBJECTS BY USER
+		console.log(options?.mapObjects)
 		options?.mapObjects?.forEach(_obj => this.addObjectToMap(_obj.x, _obj.y, _obj.z, _obj))
 
 		/*
@@ -256,12 +257,10 @@ export class Model {
 	}
 
 	//@ts-ignore
-	private async addMarker(x: number, y: number, z: number, color: Color = null) {
+	private async addMarker(x: number, y: number, z: number, pinId: string, color: Color = null) {
 		const url = '/assets/pin.gltf';
 		const loader = new GLTFLoader()
 		const gltf = await loader.loadAsync(url);
-
-		console.log(gltf);
 
 		const scale = 0.03;
 
@@ -289,6 +288,8 @@ export class Model {
 		pinGroup.scale.z = scale;
 
 		pinGroup.position.set(x, y, z);
+		pinGroup.pinId = pinId;
+		pinGroup.isClickable = true;
 
 		this.scene.add(pinGroup);
 
@@ -425,26 +426,10 @@ export class Model {
 		this.getNearFeatures(featureType, bboxStr);
 	}
 
-	public async drawTrail(_gpxId: string, _gpx: File) {
+	public async drawTrail(source: string) {
 		const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
-
-		const fileContent = await _gpx.text(); 
-		let parser = new DOMParser();
-		const doc = parser.parseFromString(fileContent, 'text/xml');
-		let trail: ILatLngAlt[] = [];
-		doc.querySelectorAll('trkpt').forEach(x => {
-			const point: ILatLngAlt = {
-				//@ts-ignore
-				lat: parseFloat(x.getAttribute('lat')),
-				//@ts-ignore
-				lng: parseFloat(x.getAttribute('lon')),
-				//@ts-ignore
-				alt: parseFloat(x.textContent)
-			};
-			trail.push(point);
-		});
-
-		this.options.trailGpxUrl = _gpxId;
+		let trail: ILatLngAlt[] = await this.loadTrail(source);
+		this.options.trailGpxUrl = source;
 		//@ts-ignore
 		const tileDecorator: TileTextureDecorator = trail == null ? null : new TileTextureDecorator(trail, this.map);
 
@@ -556,9 +541,8 @@ export class Model {
 		this.controls.setFocalOffset( 0, 0, 0, true);
 	}
 
-	private async loadTrail(sourceId: string) {
-		const requestConfig = setHeadersConfig({responseType: 'blob'})
-		const gpxResponse = await axios.get(apiEndpoints.getUploadedMedia(sourceId), requestConfig)
+	private async loadTrail(sourceUrl: string) {
+		const gpxResponse = await axios.get(sourceUrl)
 		const fileContent = await gpxResponse.data; 
 
 		let parser = new DOMParser();
@@ -1224,7 +1208,7 @@ export class Model {
 		return ray.intersectObjects([this.scene], true);
 	}
 
-	private addLabel(x: number, y: number, z: number, txt: string = 'TEST') {
+	private addLabel(x: number, y: number, z: number, pinId: string = "", txt: string = 'TEST') {
 		const size = 0.01;
 		const canvas = document.createElement('canvas');
 		const ctx = canvas.getContext('2d');
@@ -1261,6 +1245,8 @@ export class Model {
 		sprite.scale.y = canvas.height * 0.0003;
 	  
 		sprite.name = 'label';
+		sprite.pinId = pinId;
+		sprite.isClickable = !!pinId;
 		this.scene.add(sprite);
 	  
 		const lineMaterial = new LineBasicMaterial({
@@ -1275,7 +1261,8 @@ export class Model {
 	  
 		this.scene.add(line);
 	}
-	private addImageSprite(x: number, y: number, z: number, imageUrl: string = '/assets/forest.jpg') {
+
+	private addImageSprite(x: number, y: number, z: number, pinId: string, imageUrl: string = '/assets/forest.jpg') {
 		const canvasWidth = 300;
 		const canvasHeight = 160;
 	
@@ -1283,6 +1270,7 @@ export class Model {
 		const ctx = canvas.getContext('2d');
 	
 		const image = new Image();
+		image.crossOrigin = "Anonymous";
 		image.src = imageUrl;
 	
 		image.onload = () => {
@@ -1323,6 +1311,8 @@ export class Model {
 		  sprite.scale.y = canvas.height * 0.0003;
 	
 		  sprite.name = 'PIN_IMAGE';
+		  sprite.pinId = pinId;
+		  sprite.isClickable = true;
 		  this.scene.add(sprite);
 		//   let tmp_obj = this.scene.getObjectByName('imageSprite');
 		//   tmp_obj.name = 'changedImageSprite';
@@ -1339,25 +1329,20 @@ export class Model {
 		  this.scene.add(line);
 		};
 	}
+
 	public click(e: MouseEvent, options: IMapObjectOptions): void {
 		console.log("EVENT TRIGGERED WITH OPTIONS:")
 		console.log(options)
-
 		if(!options || !options?.pinType) return;
 
-		const parent = this.canvas.getBoundingClientRect();
-		const objs = this.intersectObjects(e.clientX - parent.left, e.clientY - parent.top);
-		const map = objs.find(x => x.object.name === 'map');
-		console.log("map", map)
-		if (map == null) { return }
-		console.log("EVENT SE VYKONAVA")
-
+		const intersectedObjects = this.clickedObjects(e);
+		console.log(intersectedObjects)
+		if(intersectedObjects.length === 0) return;
+		const map = intersectedObjects.find(x => x.object.name === 'map');
 		this.addObjectToMap(map.point.x, map.point.y, map.point.z, options)
-		console.log(objs)
-		console.log(this.options)
 		this.options.mapObjects.push({
 			...options,
-			x: map.point.x, 
+			x: map.point.x,
 			y: map.point.y, 
 			z: map.point.z,
 		})
@@ -1368,26 +1353,35 @@ export class Model {
 		//});
 		//console.log(clicLatLng.lat, clicLatLng.lng, elevation);
 	}
-	public clickedObject(e: MouseEvent) {
+
+	public clickedObjects(e: MouseEvent): Intersection<Object3D<Object3DEventMap>>[] {
 		const parent = this.canvas.getBoundingClientRect();
 		const objs = this.intersectObjects(e.clientX - parent.left, e.clientY - parent.top);
 		const map = objs.find(x => x.object.name === 'map');
-		if (map == null) { return }
+		if (map == null) { return []}
 		return objs
 	}
 
-	private addObjectToMap(x: number, y: number, z: number, options: IMapObjectOptions) {
+	public addObjectToMap(x: number, y: number, z: number, options: IMapObjectOptions) {
 		console.log("ADDING OBJECT TO MAP")
 
 		if(options.pinType === PIN_TYPE.PIN_SIGN) {
-			this.addMarker(x, y, z, options.color ? new Color(options.color) : 0x000000);
+			this.addMarker(x, y, z + 0.09, options.id, options.color ? new Color(options.color) : 0x000000);
 		}
-		if(options.pinType === PIN_TYPE.PIN_IMAGE) {
-			this.addImageSprite(x, y, z);
+		if(options.pinType == PIN_TYPE.PIN_IMAGE) {
+			this.addImageSprite(x, y, z, options.id, options.images?.length > 0 ?  options.images[0] : null);
 		}
-		if(options.label) {
-			this.addLabel(x, y-20, z, options.label);
+		if(options.pinType == PIN_TYPE.PIN_LABEL && options.label) {		
+			this.addLabel(x, y, z, options.id, options.label);
 		}
+	}
+
+	public removeObjectFromMap(pinId: string) {
+		console.log(this.scene)
+		const itemToDelete = this.scene.children.find(_item => _item.pinId === pinId)
+		console.log(itemToDelete)
+		this.scene.remove(itemToDelete)
+		console.log(this.scene)
 	}
 
 	private addNewLights() {

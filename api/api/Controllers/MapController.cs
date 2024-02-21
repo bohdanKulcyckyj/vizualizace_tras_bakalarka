@@ -27,8 +27,15 @@ namespace api.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly IBlobService _blobService;
 
-        public MapController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, ApplicationDbContext context, IWebHostEnvironment hostingEnvironment)
+        public MapController(UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            SignInManager<ApplicationUser> signInManager,
+            IConfiguration configuration,
+            ApplicationDbContext context,
+            IWebHostEnvironment hostingEnvironment,
+            IBlobService blobService)
         {
             this._context = context;
             this._configuration = configuration;
@@ -36,6 +43,7 @@ namespace api.Controllers
             this._roleManager = roleManager;
             this._signInManager = signInManager;
             this._hostingEnvironment = hostingEnvironment;
+            this._blobService = blobService;
         }
         [HttpPost]
         [Authorize]
@@ -107,12 +115,6 @@ namespace api.Controllers
         [HttpGet("{mapId}")]
         public async Task<IActionResult> getMapById(string mapId)
         {
-            /*var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
-            if (currentUser == null)
-            {
-                return NotFound();
-            }*/
-
             var map = _context.getMapById(mapId);
 
             if (map == null)
@@ -133,7 +135,7 @@ namespace api.Controllers
                 return NotFound();
             }
 
-            var map = currentUser.Maps.FirstOrDefault(m => m.Id == mapId);
+            var map = currentUser?.Maps?.FirstOrDefault(m => m.Id == mapId);
 
             if (map == null)
             {
@@ -174,7 +176,6 @@ namespace api.Controllers
             }
         }
 
-
         [HttpDelete("{mapId}")]
         [Authorize]
         public async Task<IActionResult> deleteMap(string mapId)
@@ -185,12 +186,27 @@ namespace api.Controllers
                 return NotFound();
             }
 
-            var map = currentUser.Maps.FirstOrDefault(m => m.Id == mapId);
+            var map = currentUser?.Maps?.FirstOrDefault(m => m.Id == mapId);
 
             if (map == null)
             {
                 return NotFound();
             }
+
+            if(map?.MapModel?.mapObjects?.Count > 0)
+            {
+                foreach(MapModelUserAddedObject mapModelObject in map.MapModel.mapObjects)
+                {
+                    if(mapModelObject?.images?.Count > 0)
+                    {
+                        foreach(string imageName in mapModelObject.images)
+                        {
+                            await _blobService.DeleteBlobAsync(imageName);
+                        }
+                    }
+                }
+            }
+
             currentUser.Maps.Remove(map);
             await _context.SaveChangesAsync();
 

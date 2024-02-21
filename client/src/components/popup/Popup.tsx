@@ -13,12 +13,13 @@ const Popup: React.FC<{
   isPopupOpened: boolean;
   setIsPopupOpened: Dispatch<SetStateAction<boolean>>;
   children: ReactNode;
-}> = ({ isPopupOpened, setIsPopupOpened, children }) => {
+  onClose?: () => void;
+}> = ({ isPopupOpened, setIsPopupOpened, children, onClose }) => {
   const pricePopupRef = useRef(null);
   const timeline = gsap.timeline({
     defaults: { duration: 0.2, ease: "power1.out" },
-  });
-  const popupId = Math.random().toString(36).substr(2, 9);
+  })
+  const popupId = Math.random().toString(36).substr(2, 9)
 
   const togglePopup = (action = null) => {
     const popup = document.querySelector(`#popup-window-${popupId}`);
@@ -49,16 +50,23 @@ const Popup: React.FC<{
         setIsPopupOpened(false);
       }
     }
-  };
+  }
 
   const popupCoverClickHandle = (e) => {
     if (
       pricePopupRef.current !== e.target &&
       !pricePopupRef.current.contains(e.target)
     ) {
-      togglePopup("close");
+      closePopup()
     }
-  };
+  }
+
+  const closePopup = () => {
+    togglePopup("close");
+    if(onClose) {
+      onClose()
+    }
+  }
 
   useEffect(() => {
     togglePopup();
@@ -87,7 +95,7 @@ const Popup: React.FC<{
                 <div>
                   <GrClose
                     className="cursor-pointer"
-                    onClick={() => togglePopup("close")}
+                    onClick={closePopup}
                   />
                 </div>
               </IconContext.Provider>
