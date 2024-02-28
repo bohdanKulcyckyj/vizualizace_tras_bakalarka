@@ -1,23 +1,30 @@
 //@ts-nocheck
-import { useEffect, useRef, useState } from "react";
-import axios from "axios";
-import { axiosWithAuth, setHeadersConfig } from "../utils/axiosWithAuth";
-import { Model } from "../terainModel/model";
-import { useParams, useNavigate } from "react-router-dom";
-import { useMainContext } from "../context/MainContext";
-import apiEndpoints from "../constants/apiEndpoints";
-import Toolbar from "./toolbar/Toolbar";
-import { IMapObjectOptions, PIN_TYPE, PIN_COLORS, IMapConfiguration } from "../interfaces/dashboard/Map";
-import { MdOutlineFileUpload } from "react-icons/md";
-import { FaMapMarkerAlt, FaImage } from "react-icons/fa";
-import { SlDirection } from "react-icons/sl";
-import { IconContext } from "react-icons";
-import { ComponentMode } from "../interfaces/dashboard/ComponentProps";
-import Popup from "./popup/Popup";
-import { v4 as uuidv4 } from 'uuid'
-import PinPopup from "./popup/PinPopup";
-import PinPreviewPopup from "./popup/PinPreviewPopup";
-import { Gallery } from "./Gallery";
+import { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
+import { axiosWithAuth, setHeadersConfig } from '../utils/axiosWithAuth';
+import { Model } from '../terainModel/model';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useMainContext } from '../context/MainContext';
+import apiEndpoints from '../constants/apiEndpoints';
+import Toolbar from './toolbar/Toolbar';
+import {
+  IMapObjectOptions,
+  PIN_TYPE,
+  PIN_COLORS,
+  IMapConfiguration,
+} from '../interfaces/dashboard/Map';
+import { MdOutlineFileUpload } from 'react-icons/md';
+import { FaMapMarkerAlt, FaImage } from 'react-icons/fa';
+import { SlDirection } from 'react-icons/sl';
+import { IconContext } from 'react-icons';
+import { ComponentMode } from '../interfaces/dashboard/ComponentProps';
+import Popup from './popup/Popup';
+import { v4 as uuidv4 } from 'uuid';
+import PinPopup from './popup/PinPopup';
+import PinPreviewPopup from './popup/PinPreviewPopup';
+import { Gallery } from './Gallery';
+import { Group } from 'three';
+import MapTourControllers from './MapTourControllers';
 
 const TerrainModelComponent = ({ mode, options }: any) => {
   const { modelid } = useParams();
@@ -27,24 +34,32 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const viewHelperCanvasWrapperRef = useRef(null);
   const northArrowCanvasWrapperRef = useRef(null);
   const [model, setModel] = useState(null);
-  const [editingMapData, setEditingMapData] = useState<IMapConfiguration>(null)
-  const [gpxTrailName, setGpxTrailName] = useState("");
-  const [newPointOptions, setNewPointOptions] = useState<IMapObjectOptions>(null);
+  const [editingMapData, setEditingMapData] = useState<IMapConfiguration>(null);
+  const [gpxTrailName, setGpxTrailName] = useState('');
+  const [newPointOptions, setNewPointOptions] =
+    useState<IMapObjectOptions>(null);
   const mainContext = useMainContext();
-  const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false)
-  const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1)
+  const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false);
+  const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1);
 
   const fileChangeHangler = async (event): void => {
     const uploadedFile = event.target.files[0];
     if (uploadedFile) {
-      const requestConfig = setHeadersConfig({"Content-Type": "multipart/form-data"})
+      const requestConfig = setHeadersConfig({
+        'Content-Type': 'multipart/form-data',
+      });
       const formData = new FormData();
-      formData.append("file", uploadedFile);
+      formData.append('file', uploadedFile);
 
       try {
-        const res = await axios.post(apiEndpoints.uploadMedia, formData, requestConfig);
-        setGpxTrailName(uploadedFile.name);
-        model.drawTrail(res.data.file);
+        const res = await axios.post(
+          apiEndpoints.uploadMedia,
+          formData,
+          requestConfig
+        );
+        console.log(res.data);
+        //setGpxTrailName(uploadedFile.name);
+        //model.drawTrail(res.data.file);
       } catch (e) {
         console.error(e);
       }
@@ -52,64 +67,89 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   };
 
   const handleMapClick = (e: MouseEvent): void => {
-    const clickedObjects = model.clickedObjects(e)
+    const clickedObjects = model.clickedObjects(e);
 
-    if(!newPointOptions || !newPointOptions?.pinType) {
-      let currObject = null
-      for(let i = 0; i < clickedObjects.length; i++) {
-        let tmp = clickedObjects[i]
-        if(Object.hasOwn(tmp.object, "isClickable") && Object.hasOwn(tmp.object, "pinId")) {
-          currObject = tmp.object
+    if (!newPointOptions || !newPointOptions?.pinType) {
+      let currObject = null;
+      for (let i = 0; i < clickedObjects.length; i++) {
+        let tmp = clickedObjects[i];
+        let parent = tmp.object?.parent;
+
+        while (parent instanceof Group) {
+          if (
+            Object.hasOwn(parent, 'isClickable') &&
+            Object.hasOwn(parent, 'pinId')
+          ) {
+            currObject = parent;
+            break;
+          }
+          parent = parent.parent;
+        }
+
+        if (
+          Object.hasOwn(tmp.object, 'isClickable') &&
+          Object.hasOwn(tmp.object, 'pinId')
+        ) {
+          currObject = tmp.object;
           break;
         }
       }
-      console.log(currObject)
-      if(currObject) {
-        const selectedObjectData = model?.options?.mapObjects?.find(_item => _item.id === currObject.pinId)
-        if(selectedObjectData) {
-          setNewPointOptions({...selectedObjectData, event: e})
-          setIsPinPopupOpened(true)
+      console.log(currObject);
+      if (currObject) {
+        const selectedObjectData = model?.options?.mapObjects?.find(
+          (_item) => _item.id === currObject.pinId
+        );
+        if (selectedObjectData) {
+          setNewPointOptions({ ...selectedObjectData, event: e });
+          setIsPinPopupOpened(true);
         }
       }
     } else {
-      if(clickedObjects.length > 0) {
-        if(!newPointOptions || !newPointOptions?.pinType) return
-        setNewPointOptions(newPointOptions => ({...newPointOptions, event: e}))
-        setIsPinPopupOpened(true)
-        console.log(newPointOptions)
+      if (clickedObjects.length > 0) {
+        if (!newPointOptions || !newPointOptions?.pinType) return;
+        setNewPointOptions((newPointOptions) => ({
+          ...newPointOptions,
+          event: e,
+        }));
+        setIsPinPopupOpened(true);
+        console.log(newPointOptions);
       }
     }
   };
 
   const handleNewPin = (): void => {
-    if(!Object.hasOwn(newPointOptions, 'event') || !(newPointOptions?.event)) return
-    
-    if(model.options.mapObjects.find(_item => _item.id === newPointOptions.id)) {
-      const { x, y, z, ...rest } = newPointOptions
+    if (!Object.hasOwn(newPointOptions, 'event') || !newPointOptions?.event)
+      return;
 
-      model.removeObjectFromMap(newPointOptions.id)
-      model.addObjectToMap(x, y, z, rest)   
+    if (
+      model.options.mapObjects.find((_item) => _item.id === newPointOptions.id)
+    ) {
+      const { x, y, z, ...rest } = newPointOptions;
+
+      model.removeObjectFromMap(newPointOptions.id);
+      model.addObjectToMap(x, y, z, rest);
     } else {
       const { event, ...restOptions } = newPointOptions;
-      model.click(event, restOptions)
+      model.click(event, restOptions);
     }
 
-    setNewPointOptions(null)
-    setIsPinPopupOpened(false)
-  }
+    setNewPointOptions(null);
+    setIsPinPopupOpened(false);
+  };
 
   const confirm = () => {
     const newMapConfiguration = {
       ...editingMapData,
-      mapModel: model.options
-    }
+      mapModel: model.options,
+    };
 
-    axiosWithAuth.post(apiEndpoints.editMap(modelid), newMapConfiguration)
-    .then(res => {
-      if(res.data.map) {
-        navigate(-1)
-      }
-    })
+    axiosWithAuth
+      .post(apiEndpoints.editMap(modelid), newMapConfiguration)
+      .then((res) => {
+        if (res.data.map) {
+          navigate(-1);
+        }
+      });
   };
 
   const cancel = () => {
@@ -134,20 +174,26 @@ const TerrainModelComponent = ({ mode, options }: any) => {
         try {
           res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid));
           resData = res.data;
-          setEditingMapData(resData);
-          resData.mapModel.trailGpxUrl = resData.mapModel.trailGpxUrl ?? null;
+          console.log(resData.map);
+          console.log(resData.mapPoints);
+          setEditingMapData(resData.map);
+          resData.map.mapModel.trailGpxUrl =
+            resData.map.mapModel.trailGpxUrl ?? null;
         } catch (e) {
-          navigate("/404");
+          navigate('/404');
           console.error(e);
         }
       }
-      console.log("OPTIONS: ", options ?? resData.mapModel);
+      console.log('OPTIONS: ', options ?? resData.map.mapModel);
       newModel = new Model(
         canvasRef.current,
         viewHelperCanvasWrapperRef.current,
         northArrowCanvasWrapperRef.current,
-        options ?? resData.mapModel
+        options ?? resData.map.mapModel
       );
+      if (resData.mapPoints) {
+        newModel.displayNearFeatures(JSON.parse(resData.mapPoints));
+      }
       newModel.animate();
       setModel(newModel);
       //const controls = new CameraControls(newModel.camera, canvasRef.current);
@@ -217,7 +263,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
         }
       };
 
-      window.addEventListener("keydown", (e) => keyEventHandler(e));
+      window.addEventListener('keydown', (e) => keyEventHandler(e));
 
       const resize = () => {
         newModel.resize(
@@ -246,8 +292,8 @@ const TerrainModelComponent = ({ mode, options }: any) => {
     }
 
     return () => {
-      console.log("COMPONENT UNMOUNTED");
-      window.removeEventListener("keydown", (e) => keyEventHandler(e));
+      console.log('COMPONENT UNMOUNTED');
+      window.removeEventListener('keydown', (e) => keyEventHandler(e));
       if (newModel) {
         newModel.destroy();
       }
@@ -256,39 +302,64 @@ const TerrainModelComponent = ({ mode, options }: any) => {
 
   return (
     <>
-      {mode === ComponentMode.PREVEIW && <>
-      <Popup isPopupOpened={isPinPopupOpened} setIsPopupOpened={setIsPinPopupOpened} onClose={() => setNewPointOptions(null)}>
-        <PinPreviewPopup setImageIndex={setPreviewImageIndex} formState={newPointOptions} />
-      </Popup>
-      {newPointOptions?.images?.length > 0 && (<div className="relative z-[10001]">
-        <Gallery index={previewImageIndex} setIndex={setPreviewImageIndex} images={newPointOptions.images} />
-      </div>)}
-      </>}
-      {mode === ComponentMode.EDIT && <Popup isPopupOpened={isPinPopupOpened} setIsPopupOpened={setIsPinPopupOpened} onClose={() => setNewPointOptions(null)}>
-        <PinPopup formState={newPointOptions} setFormState={setNewPointOptions} onSubmit={handleNewPin} />
-      </Popup>}
+      {mode === ComponentMode.PREVEIW && (
+        <>
+          <Popup
+            isPopupOpened={isPinPopupOpened}
+            setIsPopupOpened={setIsPinPopupOpened}
+            onClose={() => setNewPointOptions(null)}
+          >
+            <PinPreviewPopup
+              setImageIndex={setPreviewImageIndex}
+              formState={newPointOptions}
+            />
+          </Popup>
+          {newPointOptions?.images?.length > 0 && (
+            <div className='relative z-[10001]'>
+              <Gallery
+                index={previewImageIndex}
+                setIndex={setPreviewImageIndex}
+                images={newPointOptions.images}
+              />
+            </div>
+          )}
+        </>
+      )}
+      {mode === ComponentMode.EDIT && (
+        <Popup
+          isPopupOpened={isPinPopupOpened}
+          setIsPopupOpened={setIsPinPopupOpened}
+          onClose={() => setNewPointOptions(null)}
+        >
+          <PinPopup
+            formState={newPointOptions}
+            setFormState={setNewPointOptions}
+            onSubmit={handleNewPin}
+          />
+        </Popup>
+      )}
       {mode === ComponentMode.EDIT && (
         <Toolbar>
-          <div className="form flex flex-col justify-between h-full">
+          <div className='form flex flex-col justify-between h-full'>
             <div>
-              <div className="mb-6">
-                <div className="mb-2">
-                  <label htmlFor="pgx">GPX trail</label>
+              <div className='mb-6'>
+                <div className='mb-2'>
+                  <label htmlFor='pgx'>GPX or FIT trail</label>
                 </div>
-                <div className="form__input--file mb-2">
+                <div className='form__input--file mb-2'>
                   <label>
                     {gpxTrailName ? (
-                      <div className="flex justify-center items-center overflow-hidden">
-                        <span className="mx-2 oveflow-hidden">
+                      <div className='flex justify-center items-center overflow-hidden'>
+                        <span className='mx-2 oveflow-hidden'>
                           {gpxTrailName}
                         </span>
                       </div>
                     ) : (
                       <IconContext.Provider
                         value={{
-                          color: "#2EEBC9",
-                          size: "30px",
-                          className: "upload-icon",
+                          color: '#2EEBC9',
+                          size: '30px',
+                          className: 'upload-icon',
                         }}
                       >
                         <span>
@@ -297,77 +368,45 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                       </IconContext.Provider>
                     )}
                     <input
-                      name="gpx"
-                      type="file"
-                      placeholder="gpx"
-                      onChange={(e) => fileChangeHangler(e)}
-                    />
-                  </label>
-                </div>
-              </div>
-              <div className="mb-6">
-                <div className="mb-2">
-                  <label htmlFor="pgx">Garmin FIT</label>
-                </div>
-                <div className="form__input--file mb-2">
-                  <label>
-                    {gpxTrailName ? (
-                      <div className="flex justify-center items-center overflow-hidden">
-                        <span className="mx-2 oveflow-hidden">
-                          {gpxTrailName}
-                        </span>
-                      </div>
-                    ) : (
-                      <IconContext.Provider
-                        value={{
-                          color: "#2EEBC9",
-                          size: "30px",
-                          className: "upload-icon",
-                        }}
-                      >
-                        <span>
-                          <MdOutlineFileUpload />
-                        </span>
-                      </IconContext.Provider>
-                    )}
-                    <input
-                      name="fit"
-                      type="file"
-                      placeholder="fit"
+                      name='gpx'
+                      type='file'
+                      placeholder='gpx'
                       onChange={(e) => fileChangeHangler(e)}
                     />
                   </label>
                 </div>
               </div>
               <div>
-                <p className="uppercase mb-2">Add Pin to map</p>
-                <div className="pins-container mb-2">
+                <p className='uppercase mb-2'>Add Pin to map</p>
+                <div className='pins-container mb-2'>
                   {Object.values(PIN_COLORS).map((_value, _index) => (
-                  <div
-                    key={_index}
-                    className="cursor-pointer"
-                    onClick={() =>
-                      setNewPointOptions({
-                        ...newPointOptions, 
-                        id: uuidv4(),
-                        pinType: PIN_TYPE.PIN_SIGN,
-                        color: _value.toString()
-                      })
-                    }>
-                    <IconContext.Provider
-                      value={{
-                        color: `${_value.toString()}`,
-                        size: "30px",
-                        className: "pin-icon",
-                      }}
+                    <div
+                      key={_index}
+                      className='cursor-pointer'
+                      onClick={() =>
+                        setNewPointOptions({
+                          ...newPointOptions,
+                          id: uuidv4(),
+                          pinType: PIN_TYPE.PIN_SIGN,
+                          color: _value.toString(),
+                        })
+                      }
                     >
-                      <span>
-                        <FaMapMarkerAlt />
-                      </span>
-                    </IconContext.Provider>
-                  </div>))}
+                      <IconContext.Provider
+                        value={{
+                          color: `${_value.toString()}`,
+                          size: '30px',
+                          className: 'pin-icon',
+                        }}
+                      >
+                        <span>
+                          <FaMapMarkerAlt />
+                        </span>
+                      </IconContext.Provider>
+                    </div>
+                  ))}
                   <div
-                    className="cursor-pointer"
+                    className='cursor-pointer'
                     onClick={() =>
                       setNewPointOptions({
                         ...newPointOptions,
@@ -378,9 +417,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   >
                     <IconContext.Provider
                       value={{
-                        color: "white",
-                        size: "30px",
-                        className: "pin-icon",
+                        color: 'white',
+                        size: '30px',
+                        className: 'pin-icon',
                       }}
                     >
                       <span>
@@ -389,7 +428,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                     </IconContext.Provider>
                   </div>
                   <div
-                    className="cursor-pointer"
+                    className='cursor-pointer'
                     onClick={() =>
                       setNewPointOptions({
                         ...newPointOptions,
@@ -400,9 +439,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   >
                     <IconContext.Provider
                       value={{
-                        color: "white",
-                        size: "30px",
-                        className: "pin-icon",
+                        color: 'white',
+                        size: '30px',
+                        className: 'pin-icon',
                       }}
                     >
                       <span>
@@ -413,41 +452,48 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-center items-center gap-6">
-              <button onClick={confirm} className="primary-button">
+            <div className='flex justify-center items-center gap-6'>
+              <button onClick={confirm} className='primary-button'>
                 Save
               </button>
-              <button onClick={cancel} className="secondary-button">
+              <button onClick={cancel} className='secondary-button'>
                 Back
               </button>
             </div>
           </div>
         </Toolbar>
       )}
-      <div className={`${mode === ComponentMode.EDIT ? "ml-[20px]" : ""}`}>
+
+      <MapTourControllers
+        onStart={() => model.setAnimateTrail(true)}
+        onPause={() => model.setAnimateTrail(false)}
+        onStop={() => model.setAnimateTrail(false)}
+      />
+
+      <div className={`${mode === ComponentMode.EDIT ? 'ml-[20px]' : ''}`}>
         <div
           className={`model-wrapper ${
-            mode !== ComponentMode.PREVEIW ? "fullscreen-with-nav" : "h-screen"
+            mode !== ComponentMode.PREVEIW ? 'fullscreen-with-nav' : 'h-screen'
           }`}
           ref={wrapperRef}
         >
           <canvas
             ref={canvasRef}
-            width="1900"
-            height="700"
+            width='1900'
+            height='700'
             onClick={(e) => handleMapClick(e)}
             //onMouseMove={move}
             //onMouseDown={down}
           ></canvas>
           <div
             ref={viewHelperCanvasWrapperRef}
-            className="axis-control"
-            style={{ width: "128px", height: "128px" }}
+            className='axis-control'
+            style={{ width: '128px', height: '128px' }}
           ></div>
           <div
             ref={northArrowCanvasWrapperRef}
-            className="north-arrow-control"
-            style={{ width: "128px", height: "128px" }}
+            className='north-arrow-control'
+            style={{ width: '128px', height: '128px' }}
           ></div>
         </div>
       </div>
