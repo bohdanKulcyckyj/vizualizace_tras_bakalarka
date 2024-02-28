@@ -10,6 +10,7 @@ namespace api.Services
         public Task<BlobDownloadInfo> GetBlobAsync(string name);
         public Task<IEnumerable<string>> ListBlobsAsync();
         public Task<Uri> UploadFileAsync(IFormFile file, string fileName);
+        public Task<Uri> UploadMemoryStreamAsync(MemoryStream stream, string fileName);
         public Task DeleteBlobAsync(string blobName);
     }
 
@@ -67,6 +68,16 @@ namespace api.Services
             {
                 await blobClient.UploadAsync(stream, true);
             }
+
+            return blobClient.Uri;
+        }
+
+        public async Task<Uri> UploadMemoryStreamAsync(MemoryStream stream, string fileName)
+        {
+            var blobClient = _containerClient.GetBlobClient(fileName);
+
+            // Nahrajte obsah ze streamu do Blob Storage
+            await blobClient.UploadAsync(stream, true);
 
             return blobClient.Uri;
         }

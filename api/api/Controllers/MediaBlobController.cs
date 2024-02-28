@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing.Constraints;
 using api.Utils;
 using Dynastream.Fit;
+using Newtonsoft.Json;
 
 namespace api.Controllers
 {
@@ -39,13 +40,38 @@ namespace api.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
+            if (file == null || file.Length <= 0)
+            {
+                return BadRequest("Invalid file");
+            }
+
             try
             {
-                if (file == null || file.Length == 0)
-                    return BadRequest("Invalid file");
+                string fitFileExtension = ".fit";
+                var fileExtension = Path.GetExtension(file.FileName);
+                bool hasFitExtension = string.Equals(fitFileExtension, fileExtension, StringComparison.OrdinalIgnoreCase);
+                if (hasFitExtension)
+                {
+                    List<FitRecord> fitRecords = await FitParser.ParseFitFile(file);
+                    string json = JsonConvert.SerializeObject(fitRecords);
+
+                    using (var stream = new MemoryStream())
+                    using (var writer = new StreamWriter(stream, leaveOpen: true))
+                    {
+                        writer.Write(json);
+                        writer.Flush();
+                        stream.Seek(0, SeekOrigin.Begin);
+
+                        var generatedFitName = $"{Guid.NewGuid()}_fit_records.json";
+                        var blobFitUri = await _blobService.UploadMemoryStreamAsync(stream, generatedFitName);
+
+                        return Ok(new { file = blobFitUri });
+                    }
+
+                    // Potřebuju vytvořit json soubor a poslat ho do _blogService.UploadFileAsync
+                }
 
                 var generatedName = $"{Guid.NewGuid()}_{file.FileName}";
-
                 var blobUri = await _blobService.UploadFileAsync(file, generatedName);
 
                 return Ok(new { file = blobUri });
@@ -53,28 +79,6 @@ namespace api.Controllers
             catch (RequestFailedException ex)
             {
                 return StatusCode((int)ex.Status, ex.Message);
-            }
-        }
-        [HttpPost("fit")]
-        public async Task<IActionResult> UploadFitFile([FromForm] IFormFile file)
-        {
-            Console.WriteLine("Hhh");
-
-            if (file == null || file.Length <= 0)
-                return BadRequest("File is empty");
-
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                await file.CopyToAsync(memoryStream);
-
-                List<RecordMesg> fitRecords = await FitParser.ParseFitFile(memoryStream);
-
-                foreach(RecordMesg record in fitRecords)
-                {
-                    Console.WriteLine("record");
-                }
-
-                return Ok(fitRecords);
             }
         }
         [HttpDelete("{fileName}")]

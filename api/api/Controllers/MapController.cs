@@ -116,13 +116,12 @@ namespace api.Controllers
         public async Task<IActionResult> getMapById(string mapId)
         {
             var map = _context.getMapById(mapId);
-
             if (map == null)
             {
                 return NotFound();
             }
-
-            return Ok(map);
+            string mapPoints = await new OverpassApi(map.MapModel.bbox).GetMapPoints();
+            return Ok(new { map, mapPoints });
         }
 
         [HttpPost("{mapId}")]
