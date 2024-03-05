@@ -264,7 +264,7 @@ export class Model {
       this.animateTrail = animateTrail;
 
       if (animateTrail) {
-        this.pathAnimation?.play(0);
+        this.pathAnimation?.play(true);
       } else {
         this.pathAnimation?.pause();
         this.controls.enabled = true;
@@ -619,24 +619,27 @@ export class Model {
   }
 
   private async loadTrail(sourceUrl: string) {
-    const gpxResponse = await axios.get(sourceUrl);
-    const fileContent = await gpxResponse.data;
-
-    let parser = new DOMParser();
-    const doc = parser.parseFromString(fileContent, 'text/xml');
-    let gpxPoints: ILatLngAlt[] = [];
-    doc.querySelectorAll('trkpt').forEach((x) => {
-      const point: ILatLngAlt = {
-        //@ts-ignore
-        lat: parseFloat(x.getAttribute('lat')),
-        //@ts-ignore
-        lng: parseFloat(x.getAttribute('lon')),
-        //@ts-ignore
-        alt: parseFloat(x.textContent),
-      };
-      gpxPoints.push(point);
-    });
-    return gpxPoints;
+    try {
+      const response = await axios.get(sourceUrl);
+      const fileContent = response.data;
+      const pathPoints: ILatLngAlt[] = [];
+      fileContent.forEach(_point => {
+        const { latitude, longitude, elevation } = _point
+        const newPoint: ILatLngAlt = {
+          //@ts-ignore
+          lat: latitude,
+          //@ts-ignore
+          lng: longitude,
+          //@ts-ignore
+          alt: (elevation || 0),
+        };
+        
+        pathPoints.push(newPoint)
+      })
+      return pathPoints
+    } catch(e) {
+      console.error(e)
+    }  
   }
 
   private async addTrail(gpxPoints: ILatLngAlt[]) {
@@ -667,10 +670,10 @@ export class Model {
       });
     }
 
-    const SIMPLIFY = true;
+    const SIMPLIFY = false;
     let path = new CurvePath();
 
-    const cameraElevation = 0.1;
+    const cameraElevation = 0;
 
     let vectors: Vector3[];
     if (SIMPLIFY) {
@@ -769,44 +772,10 @@ export class Model {
             .getPointAt(Math.min(value + 0.1, 1))
             .clone() as Vector3;
 
-          // chceme se dívat trochu dolů
-          pos2.z -= 0.0015;
-
-          //this.camera.position.copy(pos);
-          /*this.controls.setLookAt(
-            pos.x,
-            pos.y,
-            pos.z,
-            pos2.x,
-            pos2.y,
-            pos2.z,
-            false
-          );*/
           const mySphere = this.scene.children.find(
             (_item) => _item.pinId === 'TRAIL_SPHERE'
           );
           mySphere.position.set(pos.x, pos.y, pos.z);
-
-          /*
-							path.getPoint(value, _tmp);
-							path.getPoint(value + 0.1, _tmp);
-		
-							const cameraX = _tmp.x;
-							const cameraY = _tmp.y;
-							const cameraZ = _tmp.z;
-							const lookAtX = 0;
-							const lookAtY = 0;
-							const lookAtZ = 0;
-		
-							this.controls.setLookAt(
-								cameraX,
-								cameraY,
-								cameraZ,
-								lookAtX,
-								lookAtY,
-								lookAtZ,
-								false, // IMPORTANT! disable cameraControls's transition and leave it to gsap.
-							);*/
         },
         onStart: () => {
           this.controls.enabled = false;

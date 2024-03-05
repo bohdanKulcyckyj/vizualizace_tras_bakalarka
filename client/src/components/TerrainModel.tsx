@@ -58,8 +58,8 @@ const TerrainModelComponent = ({ mode, options }: any) => {
           requestConfig
         );
         console.log(res.data);
-        //setGpxTrailName(uploadedFile.name);
-        //model.drawTrail(res.data.file);
+        setGpxTrailName(uploadedFile.name);
+        model.drawTrail(res.data.file);
       } catch (e) {
         console.error(e);
       }
@@ -377,7 +377,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                 </div>
               </div>
               <div>
-                <p className='uppercase mb-2'>Add Pin to map</p>
+                <p className='mb-2'>Add Pin to map</p>
                 <div className='pins-container mb-2'>
                   {Object.values(PIN_COLORS).map((_value, _index) => (
                     <div
