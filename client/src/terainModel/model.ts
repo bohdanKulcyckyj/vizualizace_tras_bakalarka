@@ -259,17 +259,26 @@ export class Model {
     });
   }
 
-  public setAnimateTrail(animateTrail: boolean) {
-    if (this.animationTrail !== animateTrail) {
-      this.animateTrail = animateTrail;
+  public pauseTrailAnimation() {
+    if(!this.animationTrail) return;
+    this.animationTrail = false
+    this.pathAnimation?.pause();
+    this.controls.enabled = true;
+  }
 
-      if (animateTrail) {
-        this.pathAnimation?.play(true);
-      } else {
-        this.pathAnimation?.pause();
-        this.controls.enabled = true;
-      }
-    }
+  public playTrailAnimation() {
+    if(this.animationTrail) return;
+    this.animationTrail = true
+    const currentTime = this.pathAnimation ? this.pathAnimation.time() : 0;
+    this.pathAnimation?.play();
+    this.pathAnimation?.time(currentTime);
+  }
+
+  public stopTrailAnimation() {
+    this.animationTrail = false
+    this.pathAnimation?.pause();
+    this.pathAnimation?.time(0);
+    this.controls.enabled = true;
   }
 
   public setEnableShadow(enable: boolean) {
@@ -783,12 +792,8 @@ export class Model {
         onComplete: () => {
           this.controls.enabled = true;
           this.animateTrail = false;
-          this.setAnimateTrail(false);
+          this.stopTrailAnimation();
         },
-        //onRepeat: () => {
-        //  this.animateTrail = false;
-        //  this.setAnimateTrail(false);
-        //},
       }
     );
 
@@ -1376,7 +1381,7 @@ export class Model {
     y: number,
     z: number,
     pinId: string,
-    imageUrl: string = '/assets/forest.jpg'
+    imageUrl: string = ''
   ) {
     const canvasWidth = 300;
     const canvasHeight = 160;

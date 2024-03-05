@@ -281,7 +281,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
       const enableShadow = mainContext.enableShadow;
       const enableSun = mainContext.enableSun;
 
-      newModel.setAnimateTrail(animateTrail);
+      if(animateTrail) {
+        newModel.playTrailAnimation();
+      }
       newModel.setEnableShadow(enableShadow);
       newModel.setEnableSun(enableSun);
       setModel(newModel);
@@ -465,9 +467,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
       )}
 
       <MapTourControllers
-        onStart={() => model.setAnimateTrail(true)}
-        onPause={() => model.setAnimateTrail(false)}
-        onStop={() => model.setAnimateTrail(false)}
+        onStart={() => model.playTrailAnimation()}
+        onPause={() => model.pauseTrailAnimation()}
+        onStop={() => model.stopTrailAnimation()}
       />
 
       <div className={`${mode === ComponentMode.EDIT ? 'ml-[20px]' : ''}`}>
