@@ -47,13 +47,30 @@ namespace api.Controllers
 
             try
             {
-                string fitFileExtension = ".fit";
+                const string fitFileExtension = ".fit";
+                const string gpxFileExtension = ".gpx";
                 var fileExtension = Path.GetExtension(file.FileName);
                 bool hasFitExtension = string.Equals(fitFileExtension, fileExtension, StringComparison.OrdinalIgnoreCase);
-                if (hasFitExtension)
+                bool hasGpxExtension = string.Equals(gpxFileExtension, fileExtension, StringComparison.OrdinalIgnoreCase);
+
+                Console.WriteLine(hasFitExtension);
+                Console.WriteLine(hasGpxExtension);
+
+                if (hasFitExtension || hasGpxExtension)
                 {
-                    List<FitRecord> fitRecords = await FitParser.ParseFitFile(file);
-                    string json = JsonConvert.SerializeObject(fitRecords);
+                    List<PathRecord> pathRecords = new List<PathRecord>();
+                    Console.WriteLine("Nic se nedeje zatim");
+                    if (hasFitExtension)
+                    {
+                        pathRecords = await PathParser.ParseFitFile(file);
+                    }
+                    if(hasGpxExtension)
+                    {
+                        Console.WriteLine("Error happended during parsing");
+                        pathRecords = PathParser.ParseGpxFile(file);
+                        Console.WriteLine("Error happended after parsing");
+                    }
+                    string json = JsonConvert.SerializeObject(pathRecords);
 
                     using (var stream = new MemoryStream())
                     using (var writer = new StreamWriter(stream, leaveOpen: true))
@@ -62,19 +79,18 @@ namespace api.Controllers
                         writer.Flush();
                         stream.Seek(0, SeekOrigin.Begin);
 
-                        var generatedFitName = $"{Guid.NewGuid()}_fit_records.json";
-                        var blobFitUri = await _blobService.UploadMemoryStreamAsync(stream, generatedFitName);
+                        var generatedFitName = $"{Guid.NewGuid()}_path_records.json";
+                        var blobPathFileUri = await _blobService.UploadMemoryStreamAsync(stream, generatedFitName);
 
-                        return Ok(new { file = blobFitUri });
+                        return Ok(new { file = blobPathFileUri });
                     }
+                } else
+                {
+                    var generatedName = $"{Guid.NewGuid()}_{file.FileName}";
+                    var blobUri = await _blobService.UploadFileAsync(file, generatedName);
 
-                    // Potřebuju vytvořit json soubor a poslat ho do _blogService.UploadFileAsync
+                    return Ok(new { file = blobUri });
                 }
-
-                var generatedName = $"{Guid.NewGuid()}_{file.FileName}";
-                var blobUri = await _blobService.UploadFileAsync(file, generatedName);
-
-                return Ok(new { file = blobUri });
             }
             catch (RequestFailedException ex)
             {

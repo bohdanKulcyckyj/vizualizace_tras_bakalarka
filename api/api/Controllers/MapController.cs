@@ -120,7 +120,7 @@ namespace api.Controllers
             {
                 return NotFound();
             }
-            string mapPoints = await new OverpassApi(map.MapModel.bbox).GetMapPoints();
+            string mapPoints = ""; //await new OverpassApi(map.MapModel.bbox).GetMapPoints();
             return Ok(new { map, mapPoints });
         }
 
