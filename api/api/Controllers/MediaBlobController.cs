@@ -53,22 +53,16 @@ namespace api.Controllers
                 bool hasFitExtension = string.Equals(fitFileExtension, fileExtension, StringComparison.OrdinalIgnoreCase);
                 bool hasGpxExtension = string.Equals(gpxFileExtension, fileExtension, StringComparison.OrdinalIgnoreCase);
 
-                Console.WriteLine(hasFitExtension);
-                Console.WriteLine(hasGpxExtension);
-
                 if (hasFitExtension || hasGpxExtension)
                 {
-                    List<PathRecord> pathRecords = new List<PathRecord>();
-                    Console.WriteLine("Nic se nedeje zatim");
+                    List<TrailRecord> pathRecords = new List<TrailRecord>();
                     if (hasFitExtension)
                     {
-                        pathRecords = await PathParser.ParseFitFile(file);
+                        pathRecords = await TrailParser.ParseFitFile(file);
                     }
                     if(hasGpxExtension)
                     {
-                        Console.WriteLine("Error happended during parsing");
-                        pathRecords = PathParser.ParseGpxFile(file);
-                        Console.WriteLine("Error happended after parsing");
+                        pathRecords = TrailParser.ParseGpxFile(file);
                     }
                     string json = JsonConvert.SerializeObject(pathRecords);
 

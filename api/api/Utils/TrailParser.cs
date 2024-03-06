@@ -16,7 +16,7 @@ using DateTime = Dynastream.Fit.DateTime;
 
 namespace api.Utils
 {
-    public class PathRecord
+    public class TrailRecord
     {
         [JsonProperty("latitude")]
         public double? Latitude { get; set; }
@@ -31,11 +31,11 @@ namespace api.Utils
             return $"{Latitude}-{Longitude}-{Elevation}-{Timestamp}";
         }
     }
-    public class PathParser
+    public class TrailParser
     {
-        public static List<PathRecord> ParseGpxFile(IFormFile file)
+        public static List<TrailRecord> ParseGpxFile(IFormFile file)
         {
-            List<PathRecord> gpxRecords = new List<PathRecord>();
+            List<TrailRecord> gpxRecords = new List<TrailRecord>();
 
             using (var stream = file.OpenReadStream())
             {
@@ -52,7 +52,7 @@ namespace api.Utils
 
                     string timestamp = trkpt.Element(ns + "time")?.Value ?? "";
 
-                    PathRecord record = new PathRecord
+                    TrailRecord record = new TrailRecord
                     {
                         Latitude = latitude,
                         Longitude = longitude,
@@ -66,9 +66,9 @@ namespace api.Utils
 
             return gpxRecords;
         }
-        public static async Task<List<PathRecord>> ParseFitFile(IFormFile file)
+        public static async Task<List<TrailRecord>> ParseFitFile(IFormFile file)
         {
-            List<PathRecord> fitRecords = new List<PathRecord>();
+            List<TrailRecord> fitRecords = new List<TrailRecord>();
 
             using (MemoryStream memoryStream = new MemoryStream())
             {
@@ -104,7 +104,7 @@ namespace api.Utils
 
                     DateTime timestamp = record.GetTimestamp();
                     string formattedTimestamp = timestamp.ToString();
-                    PathRecord fitRecord = new PathRecord
+                    TrailRecord fitRecord = new TrailRecord
                     {
                         Latitude = latitude,
                         Longitude = longitude,
