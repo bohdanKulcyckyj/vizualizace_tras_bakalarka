@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
 import PinPopup from './popup/PinPopup';
 import PinPreviewPopup from './popup/PinPreviewPopup';
 import { Gallery } from './Gallery';
-import { Group } from 'three';
+import { Group, Object3D, Object3DEventMap } from 'three';
 import MapTourControllers from './MapTourControllers';
 
 const TerrainModelComponent = ({ mode, options }: any) => {
@@ -57,7 +57,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
           formData,
           requestConfig
         );
-        console.log(res.data);
+
         setGpxTrailName(uploadedFile.name);
         model.drawTrail(res.data.file);
       } catch (e) {
@@ -152,6 +152,11 @@ const TerrainModelComponent = ({ mode, options }: any) => {
       });
   };
 
+  const handleOnTrailPointReached = (point: IMapObjectOptions): void => {
+    setNewPointOptions(point)
+    setIsPinPopupOpened(true)
+  }
+
   const cancel = () => {
     navigate(-1);
   };
@@ -195,6 +200,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
         newModel.displayNearFeatures(JSON.parse(resData.mapPoints));
       }
       newModel.animate();
+      newModel.onTrailPointReachedCallback = handleOnTrailPointReached
       setModel(newModel);
       //const controls = new CameraControls(newModel.camera, canvasRef.current);
       const controls = newModel.controls;

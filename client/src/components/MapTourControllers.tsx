@@ -13,6 +13,7 @@ const MapTourControllers: FC<{
   onPause: () => void;
   onStop: () => void;
 }> = ({ onStart, onPause, onStop }) => {
+  const [isPanelOpened, setIsPanelOpened] = useState<boolean>(false)
   const [activeController, setActiveController] =
     useState<MapTourController | null>(null);
 
@@ -30,7 +31,10 @@ const MapTourControllers: FC<{
   };
 
   return (
-    <div className='map-tour__panel'>
+    <div className={`map-tour__panel ${isPanelOpened ? 'map-tour__panel--active' : ''}`}>
+      {isPanelOpened ? (
+      <>
+      <div className="map-tour__minimize" onClick={() => setIsPanelOpened(false)}></div>
       <div className='map-tour__time mb-4'>
         <p>18:06:00 24. September 2022</p>
       </div>
@@ -69,6 +73,9 @@ const MapTourControllers: FC<{
           </span>
         </IconContext.Provider>
       </div>
+      </>) : (
+        <button className="map-tour__trail-button" onClick={() => setIsPanelOpened(true)}>Animate trail</button>
+      )}
     </div>
   );
 };

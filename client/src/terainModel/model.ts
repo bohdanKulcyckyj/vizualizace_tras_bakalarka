@@ -45,6 +45,7 @@ import {
   Sphere,
   Vector4,
   Matrix4,
+  Vector,
 } from 'three';
 import axios from 'axios';
 import gsap from 'gsap';
@@ -149,13 +150,14 @@ export class Model {
   private northArrowControl: NorthArrowControl;
   private origin: IPoint;
   private map: Map;
-  private animateTrail: boolean = true;
   private enableSun: boolean = true;
   private clock = new Clock();
   private pathAnimation: gsap.core.Tween;
   private markers: Group[] = [];
   private disposed: boolean = false;
   public options: IModelOptions;
+  // call TerainModel component method to set popup data about reached point
+  public onTrailPointReachedCallback: (point: IMapObjectOptions) => void;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -732,30 +734,10 @@ export class Model {
     const line = new Line(geometry, material);
     this.scene.add(line);
 
-    // ----
+    this.setTrailAnimation(path)
+  }
 
-    /*
-		// let clock = new Clock();
-		const updateCamera = () => {
-			const time = this.clock.getElapsedTime();
-			const looptime = 30;
-
-			const t = (time % looptime) / looptime;
-			const t2 = ((time + 0.1) % looptime) / looptime;
-
-			const pos = path.getPointAt(t) as Vector3;
-			const pos2 = path.getPointAt(t2).clone() as Vector3;
-
-			// chceme se dívat trochu dolů
-			pos2.z -= 0.0015;
-
-			this.camera.position.copy(pos);
-			this.camera.lookAt(pos2);
-		};
-
-		this.updateCamera = updateCamera;
-*/
-
+  private setTrailAnimation(path: CurvePath<Vector>) {
     const { x, y, z } = path.getPointAt(0) as Vector3;
     this.addSphere(x, y, z, 'TRAIL_SPHERE');
 
@@ -773,13 +755,7 @@ export class Model {
         repeat: 0,
         onUpdateParams: [animationProgress],
         onUpdate: ({ value }) => {
-          //const t = (time % looptime) / looptime;
-          //const t2 = ((time + 0.1) % looptime) / looptime;
-
           const pos = path.getPointAt(value) as Vector3;
-          const pos2 = path
-            .getPointAt(Math.min(value + 0.1, 1))
-            .clone() as Vector3;
 
           const mySphere = this.scene.children.find(
             (_item) => _item.pinId === 'TRAIL_SPHERE'
