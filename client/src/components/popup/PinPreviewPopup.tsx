@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from "react";
-import { IMapObjectOptions, PIN_TYPE } from "../../interfaces/dashboard/Map";
+import { IMapObjectOptions, PIN_TYPE } from "../../interfaces/dashboard/MapModel";
 
 const PinPreviewPopup: React.FC<{
   formState: IMapObjectOptions;

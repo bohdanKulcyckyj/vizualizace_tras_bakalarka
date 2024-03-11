@@ -1,10 +1,19 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { getTokenFromCookie } from "./jwt";
 
-export const axiosWithAuth = axios.create({
+let axiosWithAuth = axios.create();
+
+export const updateAuthHeaders = (token: string) => {
+  axiosWithAuth = axios.create({
     headers: {
-      Authorization: `Bearer ${getTokenFromCookie()}`,
+      Authorization: `Bearer ${token}`,
     },
+  });
+};
+
+axiosWithAuth.interceptors.request.use((config) => {
+  config.headers.Authorization = `Bearer ${getTokenFromCookie()}`;
+  return config;
 });
 
 export const setHeadersConfig = (extraHeaders = {}): AxiosRequestConfig => {
@@ -17,3 +26,5 @@ export const setHeadersConfig = (extraHeaders = {}): AxiosRequestConfig => {
     },
   };
 };
+
+export { axiosWithAuth };

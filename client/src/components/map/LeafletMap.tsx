@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { getTokenFromCookie } from "../../utils/jwt";
 import { useNavigate } from "react-router-dom";
-import L, { LatLngBounds, LatLngExpression } from "leaflet";
+import L, { LatLng, LatLngBounds, LatLngExpression } from "leaflet";
 import { AreaSelect } from "../../utils/leaflet";
 import Toolbar from "../toolbar/Toolbar";
 import { useSearchBoxCore } from "@mapbox/search-js-react";
 import apiEndpoints from "../../constants/apiEndpoints";
 import routes from "../../constants/routes";
 import { useMainContext } from "../../context/MainContext";
-import { IMapConfiguration } from "../../interfaces/dashboard/Map";
+import { IMapDTO } from "../../interfaces/dashboard/MapModel";
+import { axiosWithAuth } from "../../utils/axiosWithAuth";
 
 const LeafletMap = ({ projectId }) => {
   const { loggedUser } = useMainContext()
@@ -20,6 +19,7 @@ const LeafletMap = ({ projectId }) => {
   const [inputAddress, setInputAddress] = useState<string>("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [mapCenter, setMapCenter] = useState<LatLngExpression>([51.505, -0.09]);
+  const [mapZoom, setMapZoom] = useState<number>(13)
   const searchBoxCore = useSearchBoxCore({
     accessToken: process.env.REACT_APP_MAP_BOX_TOKEN,
   });
@@ -27,8 +27,10 @@ const LeafletMap = ({ projectId }) => {
   const currentSessionToken = "test-123";
 
   useEffect(() => {
-    // Define your Leaflet map
-    const leafletMap = L.map("map").setView(mapCenter, 13);
+    const leafletMap = L.map("map").setView(mapCenter, mapZoom);
+    leafletMap.on("zoomend", () => {
+      setMapZoom(leafletMap.getZoom())
+    })
 
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -48,28 +50,21 @@ const LeafletMap = ({ projectId }) => {
     });
     areaSelectInstance.addTo(leafletMap);
 
-    let token = getTokenFromCookie();
-    const requestConfig = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-
     if (projectId) {
-      axios
-        .get(apiEndpoints.getMapDetail(projectId), requestConfig)
+      axiosWithAuth
+        .get(apiEndpoints.getMapDetail(projectId))
         .then((res) => {
-          console.log(res);
-          if (res.data) {
-            console.log(res.data.mapModel);
-            leafletMap.setView(
-              [res.data.mapModel.center.lat, res.data.mapModel.center.lng],
-              res.data.mapModel.zoom
+          if (res.data.map) {
+            const mapData = res.data.map
+            leafletMap.setView( 
+              new LatLng(mapData.mapModel.center.lat, mapData.mapModel.center.lng),
+              mapData.mapModel.zoom
             );
+            setInputNameValue(mapData.name)
             areaSelectInstance.setBounds(
               new L.LatLngBounds(
-                res.data.mapModel.bbox.southWest,
-                res.data.mapModel.bbox.northEast
+                mapData.mapModel.bbox.southWest,
+                mapData.mapModel.bbox.northEast
               )
             );
           }
@@ -110,21 +105,12 @@ const LeafletMap = ({ projectId }) => {
     console.log(bounds);
 
     const dist = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
-    console.log("dist:", dist);
 
     if (dist > 20000 * 2) {
-      // Display a snackbar or any other notification
       return;
     }
-
-    let token = getTokenFromCookie();
-    const requestConfig = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
     
-    const newMap: IMapConfiguration = {
+    const newMap: IMapDTO = {
       mapModel: {
         center: {
           lat: (bounds.getNorthEast().lat + bounds.getSouthWest().lat) / 2,
@@ -136,15 +122,15 @@ const LeafletMap = ({ projectId }) => {
           southWest: bounds.getSouthWest(),
         },
         trailGpxUrl: null,
-        zoom: 13,
+        zoom: mapZoom,
         mapObjects: []
       },
       name: inputNameValue,
     };
 
     if (projectId) {
-      axios
-        .post(apiEndpoints.editMap(projectId), newMap, requestConfig)
+      axiosWithAuth
+        .post(apiEndpoints.editMap(projectId), newMap)
         .then((res) =>  {
           if(loggedUser?.role) {
             navigate(routes.dashboard.editMapModel(loggedUser.role, projectId), { replace: true })
@@ -154,8 +140,8 @@ const LeafletMap = ({ projectId }) => {
         })
         .catch((e) => console.error(e));
     } else {
-      axios
-        .post(apiEndpoints.newMap, newMap, requestConfig)
+      axiosWithAuth
+        .post(apiEndpoints.newMap, newMap)
         .then((res) => {
           if (res.data && loggedUser?.role) {
             navigate(routes.dashboard.editMapModel(loggedUser.role, res.data.id), { replace: true });

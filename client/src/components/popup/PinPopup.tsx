@@ -6,9 +6,8 @@ import {
 import { MdOutlineFileUpload } from "react-icons/md";
 import { IconContext } from "react-icons";
 import { FaMapMarkerAlt } from "react-icons/fa";
-import { IMapObjectOptions, PIN_TYPE } from "../../interfaces/dashboard/Map";
-import { PIN_COLORS } from "../../interfaces/dashboard/Map";
-import { Color } from "three";
+import { IMapObjectOptions, PIN_TYPE } from "../../interfaces/dashboard/MapModel";
+import { PIN_COLORS } from "../../interfaces/dashboard/MapModel";
 
 const PinPopup: React.FC<{
   formState: IMapObjectOptions;
@@ -39,9 +38,6 @@ const PinPopup: React.FC<{
     <div>
       <div className="form">
         <div className="mb-6">
-          <div className="mb-8">
-            <label htmlFor="image">New Pin</label>
-          </div>
           <div className="mb-2">
             <input
               className="w-full"

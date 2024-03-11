@@ -1,9 +1,9 @@
 import { FC, useState, useEffect } from 'react'
-import { axiosWithAuth } from '../../utils/axiosWithAuth'
 import { ITableProps } from '../../interfaces/dashboard/Table'
 import { ButtonType, IButton } from '../../interfaces/dashboard/Button'
 import { Link } from 'react-router-dom'
 import { AiFillPlusCircle } from 'react-icons/ai'
+import { toast } from 'sonner'
 //buttons
 import DeleteButton from './buttons/DeleteButton'
 import RedirectButton from './buttons/RedirectButton'
@@ -11,21 +11,9 @@ import UnpackButton from './buttons/UnpackButton'
 //components
 import ConfirmDialog from './ConfirmDialog'
 
-const Table : FC<ITableProps> = ({config}) => {
-    const [data, setData] = useState<any[]>([])
+const Table : FC<ITableProps> = ({data, getData, config}) => {
     const [showTheDialog, setShowTheDialog] = useState<boolean>(false)
     const [deleteRoute, setDeleteRoute] = useState<string>('')
-    const [update, updateState] = useState<number>(0)
-
-    const forceUpdate = () => {
-        updateState(update + 1)
-    }
-
-    useEffect(() => {
-        axiosWithAuth.get(config.getItemsRoute)
-        .then(res => setData(res.data))
-        .catch(err => console.error(err))
-    }, [update])
 
     const retrieveButton = (buttonData : IButton, rowData: any) => {
         switch(buttonData.type) {
@@ -70,16 +58,20 @@ const Table : FC<ITableProps> = ({config}) => {
         )
     }
 
+    useEffect(() => {
+        if(showTheDialog) {
+            toast(<ConfirmDialog
+                showTheDialog={setShowTheDialog}
+                setShowTheDialog={setShowTheDialog}
+                update={getData}
+                deleteRoute={deleteRoute}
+            />, { position: 'bottom-center', unstyled: true, duration: 10000, onDismiss: () => setShowTheDialog(false) })
+        }
+    }, [showTheDialog])
+
   return (
     <div className="table-component">
-        <ConfirmDialog
-            showTheDialog={showTheDialog}
-            setShowTheDialog={setShowTheDialog}
-            update={forceUpdate}
-            deleteRoute={deleteRoute}
-        />
-
-        {(config.heading || config.newItemRoute) && <div className="table-component__title flex justify-end my-2">
+        {/* {(config.heading || config.newItemRoute) && <div className="table-component__title flex justify-end my-2">
             {config.newItemRoute && (
                 <Link className="flex gap-3" to={config.newItemRoute}>
                     <AiFillPlusCircle className="text-[1.2em] hover:rotate-90 duration-300 ease-in-out"/>
@@ -87,7 +79,7 @@ const Table : FC<ITableProps> = ({config}) => {
                 </Link>
             )}
             {config.heading && <h2>{config.heading}</h2>}
-        </div>}
+        </div>} */}
         <table className="table-component__table">
             <colgroup>
                 {config.colgroup.map((_colWidth, _index) => (

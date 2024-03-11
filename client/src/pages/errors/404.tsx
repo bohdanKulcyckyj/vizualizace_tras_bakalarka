@@ -1,5 +1,5 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
+import routes from '../../constants/routes'
 
 const PageNotFound = () => {
   return (
@@ -8,7 +8,7 @@ const PageNotFound = () => {
             <h1>404</h1>
             <p className="text-center mb-6">Page not found</p>
             <div className="flex justify-center">
-                <Link to="/">
+                <Link to={routes.home}>
                     <button className="primary-button">Home</button>
                 </Link>
             </div>

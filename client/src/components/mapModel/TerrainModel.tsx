@@ -1,30 +1,32 @@
 //@ts-nocheck
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { axiosWithAuth, setHeadersConfig } from '../utils/axiosWithAuth';
-import { Model } from '../terainModel/model';
+import { axiosWithAuth, setHeadersConfig } from '../../utils/axiosWithAuth';
+import { Model } from '../../terainModel/model';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useMainContext } from '../context/MainContext';
-import apiEndpoints from '../constants/apiEndpoints';
-import Toolbar from './toolbar/Toolbar';
+import { useMainContext } from '../../context/MainContext';
+import apiEndpoints from '../../constants/apiEndpoints';
+import Toolbar from '../toolbar/Toolbar';
 import {
   IMapObjectOptions,
   PIN_TYPE,
   PIN_COLORS,
-  IMapConfiguration,
-} from '../interfaces/dashboard/Map';
+  IMapDTO,
+} from '../../interfaces/dashboard/MapModel';
 import { MdOutlineFileUpload } from 'react-icons/md';
 import { FaMapMarkerAlt, FaImage } from 'react-icons/fa';
 import { SlDirection } from 'react-icons/sl';
 import { IconContext } from 'react-icons';
-import { ComponentMode } from '../interfaces/dashboard/ComponentProps';
-import Popup from './popup/Popup';
+import { ComponentMode } from '../../interfaces/dashboard/ComponentProps';
+import Popup from '../popup/Popup';
 import { v4 as uuidv4 } from 'uuid';
-import PinPopup from './popup/PinPopup';
-import PinPreviewPopup from './popup/PinPreviewPopup';
-import { Gallery } from './Gallery';
-import { Group, Object3D, Object3DEventMap } from 'three';
+import PinPopup from '../popup/PinPopup';
+import PinPreviewPopup from '../popup/PinPreviewPopup';
+import { Gallery } from '../Gallery';
+import { Group } from 'three';
 import MapTourControllers from './MapTourControllers';
+import { toast } from 'sonner';
+import { getPinTitle } from '../../utils/pins';
 
 const TerrainModelComponent = ({ mode, options }: any) => {
   const { modelid } = useParams();
@@ -34,7 +36,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const viewHelperCanvasWrapperRef = useRef(null);
   const northArrowCanvasWrapperRef = useRef(null);
   const [model, setModel] = useState(null);
-  const [editingMapData, setEditingMapData] = useState<IMapConfiguration>(null);
+  const [editingMapData, setEditingMapData] = useState<IMapDTO>(null);
   const [gpxTrailName, setGpxTrailName] = useState('');
   const [newPointOptions, setNewPointOptions] =
     useState<IMapObjectOptions>(null);
@@ -389,16 +391,18 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                 <div className='pins-container mb-2'>
                   {Object.values(PIN_COLORS).map((_value, _index) => (
                     <div
+                      title={getPinTitle(PIN_TYPE.PIN_SIGN)}
                       key={_index}
                       className='cursor-pointer'
-                      onClick={() =>
+                      onClick={() => {
                         setNewPointOptions({
                           ...newPointOptions,
                           id: uuidv4(),
                           pinType: PIN_TYPE.PIN_SIGN,
                           color: _value.toString(),
                         })
-                      }
+                        toast("Click on the map to place new pin", { position: 'bottom-center'})
+                      }}
                     >
                       <IconContext.Provider
                         value={{
@@ -414,6 +418,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                     </div>
                   ))}
                   <div
+                    title={getPinTitle(PIN_TYPE.PIN_LABEL)}
                     className='cursor-pointer'
                     onClick={() =>
                       setNewPointOptions({
@@ -436,14 +441,16 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                     </IconContext.Provider>
                   </div>
                   <div
+                    title={getPinTitle(PIN_TYPE.PIN_IMAGE)}
                     className='cursor-pointer'
-                    onClick={() =>
+                    onClick={() => {
                       setNewPointOptions({
                         ...newPointOptions,
                         id: uuidv4(),
                         pinType: PIN_TYPE.PIN_IMAGE,
                       })
-                    }
+                      toast("Click on the map to place new pin", { position: 'bottom-center'})
+                    }}
                   >
                     <IconContext.Provider
                       value={{

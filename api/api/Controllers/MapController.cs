@@ -57,6 +57,7 @@ namespace api.Controllers
             if(ModelState.IsValid)
             {
                 m.Id = Guid.NewGuid().ToString("N");
+                m.CreatedAt = DateTime.Now;
                 if(m.MapModel != null)
                 {
                     m.MapModel.zoom = m.MapModel.zoom > 0 ? m.MapModel.zoom : 13;

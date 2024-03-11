@@ -1,5 +1,4 @@
 import { Color } from 'three';
-import { IModelOptions } from '../../terainModel/model';
 
 export enum PIN_TYPE {
   PIN_IMAGE = 'PIN_IMAGE',
@@ -31,10 +30,11 @@ export const pinTypeMapper: { [key: string]: PIN_TYPE } = {
   PIN_LABEL: PIN_TYPE.PIN_LABEL,
 };
 
-export interface IMapConfiguration {
+export interface IMapDTO {
   id?: string;
   name: string;
-  mapModel: IModelOptions;
+  createdAt?: string | Date;
+  mapModel: IMapModelConfig;
 }
 
 export interface MapPointDTO {
@@ -47,3 +47,23 @@ export interface MapPointDTO {
     [key: string]: string;
   };
 }
+
+export interface IModelCoord {
+    lat: number;
+    lng: number;
+  }
+
+export interface IMapModelConfig {
+    center: {
+      lat: number;
+      lng: number;
+      alt: number;
+    };
+    bbox: {
+      northEast: IModelCoord;
+      southWest: IModelCoord;
+    };
+    zoom: number;
+    trailGpxUrl: string | null;
+    mapObjects: IMapObjectOptions[];
+  }

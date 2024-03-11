@@ -6,9 +6,11 @@ import { adminSidebarData, userSidebarData } from '../data/ProfileSidebar';
 import { Link } from 'react-router-dom';
 import { ISidebar } from '../interfaces/Sidebar';
 import { saveTokenToCookie } from '../utils/jwt';
+import { useMainContext } from '../context/MainContext';
 
 const Aside : FC<ISidebar> = (props) => {
   const [sidebarOpened, setSidebarOpened] = useState(window.innerWidth >= 1250);
+  const { setLoggedUser } = useMainContext()
   const toggleSidebar = () => {
       setSidebarOpened(!sidebarOpened)
   }
@@ -20,6 +22,7 @@ const Aside : FC<ISidebar> = (props) => {
     .then(res => console.log(res))
     .then(() => {
       saveTokenToCookie("")
+      setLoggedUser(null)
       navigate("/")
     })
     .catch(err => console.error(err))

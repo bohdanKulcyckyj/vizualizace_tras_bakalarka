@@ -8,7 +8,7 @@ const DeleteButton: FC<IDeleteButton> = ({ data, rowData, setShowTheDialog, setD
   }
 
   return (
-    <button onClick={() => deleteRecord()} className='delete-button'>{data.label}</button>
+    <button onClick={deleteRecord} className='delete-button'>{data.label}</button>
   )
 }
 

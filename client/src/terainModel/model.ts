@@ -73,13 +73,12 @@ import {
   TileTextureDecorator,
 } from './TileTextureDecorator';
 import {
+  IMapModelConfig,
   IMapObjectOptions,
   MapPointDTO,
   PIN_TYPE,
-} from '../interfaces/dashboard/Map';
+} from '../interfaces/dashboard/MapModel';
 import { latLng } from 'leaflet';
-import apiEndpoints from '../constants/apiEndpoints';
-import { axiosWithAuth, setHeadersConfig } from '../utils/axiosWithAuth';
 import { MapPointTypeDefaultValue } from '../utils/MapPointTypeDefaultValue';
 
 const subsetOfTHREE = {
@@ -111,26 +110,6 @@ interface IContourHeightMap {
   bottom: number[];
 }
 
-export interface IModelCoord {
-  lat: number;
-  lng: number;
-}
-
-export interface IModelOptions {
-  center: {
-    lat: number;
-    lng: number;
-    alt: number;
-  };
-  bbox: {
-    northEast: IModelCoord;
-    southWest: IModelCoord;
-  };
-  zoom: number;
-  trailGpxUrl: string | null;
-  mapObjects: IMapObjectOptions[];
-}
-
 enum TileBorderEnum {
   NONE = 0,
   TOP = 1,
@@ -155,7 +134,7 @@ export class Model {
   private pathAnimation: gsap.core.Tween;
   private markers: Group[] = [];
   private disposed: boolean = false;
-  public options: IModelOptions;
+  public options: IMapModelConfig;
   // call TerainModel component method to set popup data about reached point
   public onTrailPointReachedCallback: (point: IMapObjectOptions) => void;
 
@@ -163,7 +142,7 @@ export class Model {
     private canvas: HTMLCanvasElement,
     viewHelperCanvasWrapper: HTMLElement,
     northArrowCanvasWrapper: HTMLElement,
-    private options: IModelOptions
+    private options: IMapModelConfig
   ) {
     this.width = canvas.width;
     this.height = canvas.height;

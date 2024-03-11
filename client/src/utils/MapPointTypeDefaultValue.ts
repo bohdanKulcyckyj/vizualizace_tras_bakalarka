@@ -1,4 +1,4 @@
-import { MapPointDTO } from '../interfaces/dashboard/Map';
+import { MapPointDTO } from '../interfaces/dashboard/MapModel';
 
 export function MapPointTypeDefaultValue(points: MapPointDTO[]): MapPointDTO[] {
   points.forEach((point) => {

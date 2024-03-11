@@ -98,11 +98,11 @@ function App() {
               <Route element={<PageLayoutWithFooter />}>
                 <Route
                   path={routes.dashboard.maps(UserRole.USER)}
-                  element={<Maps role='user' />}
+                  element={<Maps role={UserRole.USER} />}
                 />
                 <Route
                   path={routes.dashboard.profile(UserRole.USER)}
-                  element={<Profile role='user' />}
+                  element={<Profile role={UserRole.USER} />}
                 />
               </Route>
             </Route>

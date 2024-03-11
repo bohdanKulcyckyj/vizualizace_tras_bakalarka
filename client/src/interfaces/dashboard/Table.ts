@@ -1,4 +1,5 @@
 import { IButton } from "./Button";
+import { IMapDTO } from "./MapModel";
 
 export interface ITableConfig {
     heading: string;
@@ -13,4 +14,6 @@ export interface ITableConfig {
 
 export interface ITableProps {
     config: ITableConfig;
+    data: IMapDTO[]
+    getData: () => void
 };

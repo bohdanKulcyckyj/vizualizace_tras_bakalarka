@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+import { updateAuthHeaders } from './axiosWithAuth';
 
 export function saveTokenToCookie(token: string): void {
     const expirationTimeInMinutes = 60;
@@ -13,5 +14,9 @@ export function saveTokenToCookie(token: string): void {
   }
 
 export function getTokenFromCookie() : string | undefined {
-    return Cookies.get('jwtToken');
+  const token = Cookies.get('jwtToken')
+  if(token) {
+    updateAuthHeaders(token)
+  }
+  return token
 }

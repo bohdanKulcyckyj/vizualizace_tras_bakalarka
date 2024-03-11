@@ -1,40 +1,26 @@
 import { useRef } from "react";
 import { axiosWithAuth } from "../../utils/axiosWithAuth";
 import gsap from "gsap";
+import { toast } from "sonner";
 
 const ConfirmDialog = (props) => {
     const deleteBarRef = useRef();
-    if (props.showTheDialog && deleteBarRef.current) {
-        gsap.to(deleteBarRef.current, {
-            opacity: 1,
-            duration: 0.7,
-            width: "fit-content",
-        });
-    }
 
     const hideTheBar = (deleteItem) => {
-        if (deleteBarRef.current) {
-            gsap.to(deleteBarRef.current, {
-                opacity: 0,
-                duration: 0.7,
-                width: 0,
-                onComplete: function () {
-                    props.setShowTheDialog(false);
-                    if (deleteItem) {
-                        axiosWithAuth
-                        .delete(props.deleteRoute)
-                        .then((res) => {
-                            props.update();
-                        });
-                    }
-                },
+        toast.dismiss();
+        props.setShowTheDialog(false);
+        if (deleteItem) {
+            axiosWithAuth
+            .delete(props.deleteRoute)
+            .then((res) => {
+                props.update();
             });
         }
     };
 
     return (
         <div
-            className={`confirm-dialog${props.showTheDialog ? ' confirm-dialog--opened' : ''} fixed w-0 opacity-0 overflow-hidden`}
+            className="confirm-dialog"
             ref={deleteBarRef}>
             <div className="p-6 flex flex-col justify-center items-center">
                 <h2 className="confirm-dialog__title">
