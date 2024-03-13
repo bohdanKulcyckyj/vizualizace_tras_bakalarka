@@ -69,5 +69,12 @@
             stroke: $secondary-color;
         }
     }
-
+    .delete-button {
+        font-weight: 600;
+        font-size: 16px;
+        padding: 8px 26px;
+        @media only screen and (min-width: 768px) {
+          font-size: 18px;
+        }
+    }
 }

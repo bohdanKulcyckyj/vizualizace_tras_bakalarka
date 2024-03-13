@@ -8,12 +8,14 @@ import { IconContext } from "react-icons";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { IMapObjectOptions, PIN_TYPE } from "../../interfaces/dashboard/MapModel";
 import { PIN_COLORS } from "../../interfaces/dashboard/MapModel";
+import { toast } from "sonner";
 
 const PinPopup: React.FC<{
   formState: IMapObjectOptions;
   setFormState: Dispatch<SetStateAction<IMapObjectOptions>>;
   onSubmit: () => void;
-}> = ({ formState, setFormState, onSubmit }) => {
+  onDelete: () => void;
+}> = ({ formState, setFormState, onSubmit, onDelete }) => {
   const handleUploadImage = async (e) => {
     const options: IHandleFileUploadOptions = {
       allowedFormats: ["image/jpeg", "image/png", "image/gif", "image/jpg"],
@@ -33,6 +35,20 @@ const PinPopup: React.FC<{
         console.error(err);
       });
   };
+
+  const toggleConfirmDelete = () => {
+    toast(
+      <div className="confirm-dialog">
+        <div className="p-6 flex flex-col justify-center items-center">
+          <h2 className="confirm-dialog__title">Do you really want to remove this point?</h2>
+          <div className="flex justify-center gap-4 mt-5">
+            <button className="confirm-dialog__button confirm-dialog__button--primary" onClick={() => {onDelete(); toast.dismiss()}}>yes</button>
+            <button className="confirm-dialog__button confirm-dialog__button--secondary" onClick={() => toast.dismiss()}>no</button>
+          </div>
+        </div>
+      </div>, { position: 'bottom-center', unstyled: true, duration: 10000 }
+    )
+  }
 
   return (
     <div>
@@ -118,8 +134,9 @@ const PinPopup: React.FC<{
               )}
             </div>
           )}
-          <div className="flex justify-center mt-10">
+          <div className="flex justify-center gap-4 flex-wrap mt-10">
             <button className="primary-button" onClick={onSubmit}>Submit</button>
+            <button className="delete-button" onClick={toggleConfirmDelete}>Delete</button>
           </div>
         </div>
       </div>

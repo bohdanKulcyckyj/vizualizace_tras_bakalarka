@@ -16,15 +16,16 @@
 
 .confirm-dialog {
     .confirm-dialog__button {
+        text-transform: uppercase;
         &--primary {
-            background-color: $secondary-color;
-            border: 2px solid $secondary-color;
-            color: #fff;
+            color: $white;
+            background-color: $errors;
+            border: 2px solid $errors;;
             border-radius: 5px;
             transition: all 0.4s ease;
             padding: 4px 18px;
             &:hover {
-                background-color: $secondary-color;
+                background-color: lighten($errors, 15%);
             }
         }
         &--secondary {

@@ -80,6 +80,8 @@ import {
 } from '../interfaces/dashboard/MapModel';
 import { latLng } from 'leaflet';
 import { MapPointTypeDefaultValue } from '../utils/MapPointTypeDefaultValue';
+import { INearbyFeature } from '../interfaces/NearbyFeatures';
+import { getAllTrailStops, isStopPoint, ITrailStop } from '../utils/pointDistance';
 
 const subsetOfTHREE = {
   Vector2: Vector2,
@@ -210,8 +212,45 @@ export class Model {
     this.disposed = true;
   }
 
+  public async getNearbyFeatures(featuresOptions: INearbyFeature[]) {
+    const minLat = this.options.bbox.southWest.lat;
+		const minLon = this.options.bbox.southWest.lng;
+		const maxLat = this.options.bbox.northEast.lat;
+		const maxLon = this.options.bbox.northEast.lng;
+		const bboxStr = `${minLat},${minLon},${maxLat},${maxLon}`;
+
+    try {
+      const res = await fetch("https://overpass-api.de/api/interpreter",
+        {
+         method: 'POST',
+         body: "data=" + encodeURIComponent(`
+           [bbox: ${bboxStr}]
+           [out:json]
+           [timeout:90]
+           ;
+           (
+             ${featuresOptions.map(_option => {
+               return `node["${_option.node}"="${_option.value}"](${bboxStr});`
+             }).join('\n')}
+           );
+           out geom;
+         `)
+        })
+
+      if (!res.ok) {
+        throw new Error(`Error in fetching features: ${featuresOptions.map(_opt => _opt.label).join()} - ${res.status} ${res.statusText}`);
+      }
+
+      const resData = await res.json()
+      this.displayNearFeatures(resData.elements)
+    } catch(err) {
+      console.error(`Error in fetching features: ${featuresOptions.map(_opt => _opt.label).join()}`, err.message);
+		  return;
+    }
+  }
+
   public displayNearFeatures(features: MapPointDTO[]) {
-    const mapPoints = MapPointTypeDefaultValue(features?.elements ?? []);
+    const mapPoints = MapPointTypeDefaultValue(features);
     const heightScale = this.map.getTileWidthInMeters();
     let fallbackElevation = 0;
 
@@ -665,6 +704,8 @@ export class Model {
 
     const cameraElevation = 0;
 
+    let allTrailStops: ITrailStop[] = []
+
     let vectors: Vector3[];
     if (SIMPLIFY) {
       points = simplify3D(points, 0.001, false);
@@ -696,6 +737,8 @@ export class Model {
       vectors = path.getPoints(100) as Vector3[];
     } else {
       vectors = points.map((x) => new Vector3(x.x, x.y, x.z));
+      allTrailStops = getAllTrailStops(vectors, this.options.mapObjects)
+      console.log(allTrailStops)
 
       for (let i = 1; i < vectors.length; i++) {
         let p1 = vectors[i - 1].clone();
@@ -713,10 +756,10 @@ export class Model {
     const line = new Line(geometry, material);
     this.scene.add(line);
 
-    this.setTrailAnimation(path)
+    this.setTrailAnimation(path, allTrailStops)
   }
 
-  private setTrailAnimation(path: CurvePath<Vector>) {
+  private setTrailAnimation(path: CurvePath<Vector>, stops: ITrailStop[] = []) {
     const { x, y, z } = path.getPointAt(0) as Vector3;
     this.addSphere(x, y, z, 'TRAIL_SPHERE');
 
@@ -735,6 +778,17 @@ export class Model {
         onUpdateParams: [animationProgress],
         onUpdate: ({ value }) => {
           const pos = path.getPointAt(value) as Vector3;
+          const stopObj = isStopPoint(pos, stops)
+          if(stopObj !== null) {
+            stops = stops.filter((_stop: ITrailStop) => _stop.object.id !== stopObj.id)
+            this.pauseTrailAnimation()
+
+            this.onTrailPointReachedCallback(stopObj)
+
+            setTimeout(() => {
+              this.playTrailAnimation()
+            }, 5000)
+          }
 
           const mySphere = this.scene.children.find(
             (_item) => _item.pinId === 'TRAIL_SPHERE'

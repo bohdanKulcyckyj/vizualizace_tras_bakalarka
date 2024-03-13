@@ -25,8 +25,11 @@ import PinPreviewPopup from '../popup/PinPreviewPopup';
 import { Gallery } from '../Gallery';
 import { Group } from 'three';
 import MapTourControllers from './MapTourControllers';
+import MapPinsList from '../toolbar/MapPinsList';
 import { toast } from 'sonner';
 import { getPinTitle } from '../../utils/pins';
+import NearbyFeaturesConfigPopup from '../popup/NearbyFeaturesConfigPopup';
+import { INearbyFeature } from '../../interfaces/NearbyFeatures';
 
 const TerrainModelComponent = ({ mode, options }: any) => {
   const { modelid } = useParams();
@@ -42,6 +45,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
     useState<IMapObjectOptions>(null);
   const mainContext = useMainContext();
   const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false);
+  const [isFeaturePopupOpened, setIsFeaturePopupOpened] = useState<boolean>(false);
+  const [isDisplayingNearbyFeatures, setIsDisplayingNearbyFeatures] = useState<boolean>(false)
+  const [selectedNearbyFeatures, setSelectedNearbyFeatures] = useState<INearbyFeature[]>([])
   const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1);
 
   const fileChangeHangler = async (event): void => {
@@ -139,6 +145,13 @@ const TerrainModelComponent = ({ mode, options }: any) => {
     setIsPinPopupOpened(false);
   };
 
+  const handleDeletePin = () => {
+    model.removeObjectFromMap(newPointOptions.id)
+    model.options.mapObjects = model.options.mapObjects.filter(_option => _option.id !== newPointOptions.id)
+    setNewPointOptions(null)
+    setIsPinPopupOpened(false)
+  }
+
   const confirm = () => {
     const newMapConfiguration = {
       ...editingMapData,
@@ -157,6 +170,18 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const handleOnTrailPointReached = (point: IMapObjectOptions): void => {
     setNewPointOptions(point)
     setIsPinPopupOpened(true)
+  }
+
+  const handleSubmitNearbyFeaturesConfig = () => {
+    model?.getNearbyFeatures(selectedNearbyFeatures)
+  }
+
+  const toggleDisplayNearbyFeatures = () => {
+    const currState = isDisplayingNearbyFeatures
+    if(!currState) {
+      setIsFeaturePopupOpened(true)
+    }
+    setIsDisplayingNearbyFeatures(!currState)
   }
 
   const cancel = () => {
@@ -312,6 +337,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
 
   return (
     <>
+      {/* PIN POPUP IN PREVIEW MODE  */}
       {mode === ComponentMode.PREVEIW && (
         <>
           <Popup
@@ -335,6 +361,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
           )}
         </>
       )}
+      {/* PIN POPUP IN EDIT MODE  */}
       {mode === ComponentMode.EDIT && (
         <Popup
           isPopupOpened={isPinPopupOpened}
@@ -345,13 +372,28 @@ const TerrainModelComponent = ({ mode, options }: any) => {
             formState={newPointOptions}
             setFormState={setNewPointOptions}
             onSubmit={handleNewPin}
+            onDelete={handleDeletePin}
           />
         </Popup>
       )}
+      {/* FEATURE POPUP */}
+      {mode === ComponentMode.EDIT && (     
+        <Popup
+          isPopupOpened={isFeaturePopupOpened}
+          setIsPopupOpened={setIsFeaturePopupOpened}
+        >
+          <NearbyFeaturesConfigPopup 
+            selectedOptions={selectedNearbyFeatures} 
+            setSelectedOptions={setSelectedNearbyFeatures}
+            onSubmit={handleSubmitNearbyFeaturesConfig} />
+        </Popup>
+      )}
+      {/* TOOLBAR */}
       {mode === ComponentMode.EDIT && (
         <Toolbar>
           <div className='form flex flex-col justify-between h-full'>
             <div>
+              {/* GPX / FIT uploading */}
               <div className='mb-6'>
                 <div className='mb-2'>
                   <label htmlFor='pgx'>GPX or FIT trail</label>
@@ -386,8 +428,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   </label>
                 </div>
               </div>
+              {/* NEW PIN */}
               <div>
-                <p className='mb-2'>Add Pin to map</p>
+                <p className='mb-2'>New Pin</p>
                 <div className='pins-container mb-2'>
                   {Object.values(PIN_COLORS).map((_value, _index) => (
                     <div
@@ -420,13 +463,14 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   <div
                     title={getPinTitle(PIN_TYPE.PIN_LABEL)}
                     className='cursor-pointer'
-                    onClick={() =>
+                    onClick={() => {
                       setNewPointOptions({
                         ...newPointOptions,
                         id: uuidv4(),
                         pinType: PIN_TYPE.PIN_LABEL,
                       })
-                    }
+                      toast("Click on the map to place new pin", { position: 'bottom-center'})
+                    }}
                   >
                     <IconContext.Provider
                       value={{
@@ -465,6 +509,24 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                     </IconContext.Provider>
                   </div>
                 </div>
+              </div>
+              {/* PLACED PINS */}
+              <div className="mb-3">
+              <p className='my-2'>Placed Pins</p>
+                <MapPinsList data={model?.options?.mapObjects ?? []} onPinSelect={(pin: IMapObjectOptions) => {setNewPointOptions(pin); setIsPinPopupOpened(true)}} />
+              </div>
+              {/* TOGGLE NEARBY FEATURES */}
+              <div>
+                <label className="form__checkbox cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="with-label"
+                    id="with-label"
+                    onClick={toggleDisplayNearbyFeatures}
+                    value={isDisplayingNearbyFeatures}
+                  />
+                  <p className="checkbox-label">Display nearby features</p>
+                </label>
               </div>
             </div>
             <div className='flex justify-center items-center gap-6'>

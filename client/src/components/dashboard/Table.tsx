@@ -71,7 +71,7 @@ const Table : FC<ITableProps> = ({data, getData, config}) => {
 
   return (
     <div className="table-component">
-        {/* {(config.heading || config.newItemRoute) && <div className="table-component__title flex justify-end my-2">
+        {(config.heading || config.newItemRoute) && <div className="table-component__title flex justify-end my-2">
             {config.newItemRoute && (
                 <Link className="flex gap-3" to={config.newItemRoute}>
                     <AiFillPlusCircle className="text-[1.2em] hover:rotate-90 duration-300 ease-in-out"/>
@@ -79,7 +79,7 @@ const Table : FC<ITableProps> = ({data, getData, config}) => {
                 </Link>
             )}
             {config.heading && <h2>{config.heading}</h2>}
-        </div>} */}
+        </div>}
         <table className="table-component__table">
             <colgroup>
                 {config.colgroup.map((_colWidth, _index) => (

@@ -8,11 +8,18 @@ export enum MapTourController {
   TOUR_STOP,
 }
 
+export type TimingConfig = {
+  timestampStart: string;
+  timestampEnd: string;
+  animationDuration: number;
+}
+
 const MapTourControllers: FC<{
+  timingConfig: TimingConfig | null;
   onStart: () => void;
   onPause: () => void;
   onStop: () => void;
-}> = ({ onStart, onPause, onStop }) => {
+}> = ({ timingConfig, onStart, onPause, onStop }) => {
   const [isPanelOpened, setIsPanelOpened] = useState<boolean>(false)
   const [activeController, setActiveController] =
     useState<MapTourController | null>(null);
@@ -21,9 +28,7 @@ const MapTourControllers: FC<{
     controller: MapTourController,
     callback: () => void
   ) => {
-    if (activeController === controller) {
-      setActiveController(null);
-    } else {
+    if (activeController !== controller) {
       setActiveController(controller);
     }
 
@@ -35,9 +40,9 @@ const MapTourControllers: FC<{
       {isPanelOpened ? (
       <>
       <div className="map-tour__minimize" onClick={() => setIsPanelOpened(false)}></div>
-      <div className='map-tour__time mb-4'>
+      {timingConfig && <div className='map-tour__time mb-4'>
         <p>18:06:00 24. September 2022</p>
-      </div>
+      </div>}
       <div className='map-tour__controls'>
         <IconContext.Provider
           value={{
