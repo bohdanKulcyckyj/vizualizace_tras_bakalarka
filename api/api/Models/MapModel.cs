@@ -7,5 +7,6 @@
         public int zoom { get; set; }
         public string? trailGpxUrl { get; set; }
         public List<MapModelUserAddedObject>? mapObjects { get; set; } = new List<MapModelUserAddedObject>();
+        public double? heightCoefficient { get; set; } = null;
     }
 }

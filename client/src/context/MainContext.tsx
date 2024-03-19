@@ -15,7 +15,7 @@ export const MainProvider = ({ children } : Children) => {
     enableSun: true,
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [loggedUser, setLoggedUser] = useState<ILoggedUser>(null)
+  const [loggedUser, setLoggedUser] = useState<ILoggedUser>(sessionStorage.getItem("loggedUser") ? JSON.parse(sessionStorage.getItem("loggedUser")) : null)
  
   return (
     <MainContext.Provider value={{ config, setConfig, isLoading, setIsLoading, loggedUser, setLoggedUser }}>

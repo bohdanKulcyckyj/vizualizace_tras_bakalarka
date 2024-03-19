@@ -123,7 +123,8 @@ const LeafletMap = ({ projectId }) => {
         },
         trailGpxUrl: null,
         zoom: mapZoom,
-        mapObjects: []
+        mapObjects: [],
+        //heightCoeffitient: null
       },
       name: inputNameValue,
     };
@@ -193,28 +194,6 @@ const LeafletMap = ({ projectId }) => {
                 onChange={(e) => setInputNameValue(e.target.value)}
               />
             </div>
-            <div className="form__input searchbox__select flex flex-col mb-2">
-              <label htmlFor="location">Location:</label>
-              <input
-                className="text-black"
-                name="location"
-                value={inputAddress}
-                onChange={(e) => setInputAddress(e.target.value)}
-              />
-              <div className="searchbox__options">
-                {suggestions
-                  .filter((_data) => _data.full_address)
-                  .map((_data, _index) => (
-                    <div
-                      onClick={() => handleRetrieveLocation(_data)}
-                      key={_index}
-                      className="searchbox__option"
-                    >
-                      {_data.full_address}
-                    </div>
-                  ))}
-              </div>
-            </div>
           </div>
           <div className="flex justify-center items-center gap-6">
             <button onClick={confirm} className="primary-button">
@@ -226,6 +205,33 @@ const LeafletMap = ({ projectId }) => {
           </div>
         </div>
       </Toolbar>
+
+      {/* Search location */}
+      <div className="form absolute top-15 right-5 z-[1000]">
+        <div className="form__input searchbox__select flex flex-col mb-2">
+          <label htmlFor="location">Location:</label>
+          <input
+            className="text-black"
+            name="location"
+            value={inputAddress}
+            onChange={(e) => setInputAddress(e.target.value)}
+          />
+          <div className="searchbox__options">
+            {suggestions
+              .filter((_data) => _data.full_address)
+              .map((_data, _index) => (
+                <div
+                  onClick={() => handleRetrieveLocation(_data)}
+                  key={_index}
+                  className="searchbox__option"
+                >
+                  {_data.full_address}
+                </div>
+              ))}
+          </div>
+        </div>  
+      </div>
+
       <div id="map" className="leaflet-map__map"></div>
     </div>
   );

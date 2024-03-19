@@ -148,34 +148,6 @@ namespace api.Controllers
             return Ok(new { map });
         }
 
-        [HttpPost("upload/gpx")]
-        [DisableRequestSizeLimit]
-        public async Task<IActionResult> UploadGpx(IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest("Invalid file");
-            }
-
-            try
-            {
-                var uniqueFileName = Guid.NewGuid().ToString("N") + "_" + file.FileName;
-                var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "gpx", uniqueFileName);
-
-                // Save the file to the server
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(fileStream);
-                }
-
-                return Ok(new { fileName = uniqueFileName });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
         [HttpDelete("{mapId}")]
         [Authorize]
         public async Task<IActionResult> deleteMap(string mapId)

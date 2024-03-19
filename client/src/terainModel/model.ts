@@ -195,7 +195,6 @@ export class Model {
 
     //const center = this.coordToModelPoint(this.map.center);
     // MAPPING PREVIOUSLY ADDED OBJECTS BY USER
-    console.log(options?.mapObjects);
     options?.mapObjects?.forEach((_obj) =>
       this.addObjectToMap(_obj.x, _obj.y, _obj.z, _obj)
     );
@@ -963,7 +962,7 @@ export class Model {
     const tile = await this.loadTile(x, y, zoom);
     const geometry = new PlaneGeometry(1, 1, tile.size - 1, tile.size - 1);
 
-    const heightScale = this.map.getTileWidthInMeters();
+    const heightScale = this.map.getTileWidthInMeters() / 2;
 
     const positions = geometry.attributes['position'] as Float32BufferAttribute;
     for (let i = 0; i < tile.heights.length; i++) {

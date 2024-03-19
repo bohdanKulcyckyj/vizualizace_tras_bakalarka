@@ -32,10 +32,12 @@ export default function SignIn() {
       .then((res) => {
         const { token, role } = res.data;
         saveTokenToCookie(token);
-        setLoggedUser({
+        const userObj = {
           role: UserRoleMapper[role],
-        });
-        navigate(routes.dashboard.maps(UserRoleMapper[role]));
+        }
+        setLoggedUser(userObj);
+        sessionStorage.setItem('loggedUser', JSON.stringify(userObj))
+        navigate(routes.dashboard.profile(UserRoleMapper[role]));
       })
       .catch((err) => {
         toast.error('Logging in failed');

@@ -73,17 +73,17 @@ namespace api.Controllers
                         writer.Flush();
                         stream.Seek(0, SeekOrigin.Begin);
 
-                        var generatedFitName = $"{Guid.NewGuid()}_path_records.json";
-                        var blobPathFileUri = await _blobService.UploadMemoryStreamAsync(stream, generatedFitName);
+                        var generatedTrailName = $"{Guid.NewGuid()}_path_records.json";
+                        var blobPathFileUri = await _blobService.UploadMemoryStreamAsync(stream, generatedTrailName);
 
-                        return Ok(new { file = blobPathFileUri });
+                        return Ok(new { file = blobPathFileUri, generatedName = generatedTrailName });
                     }
                 } else
                 {
                     var generatedName = $"{Guid.NewGuid()}_{file.FileName}";
                     var blobUri = await _blobService.UploadFileAsync(file, generatedName);
 
-                    return Ok(new { file = blobUri });
+                    return Ok(new { file = blobUri, generatedName = generatedName });
                 }
             }
             catch (RequestFailedException ex)

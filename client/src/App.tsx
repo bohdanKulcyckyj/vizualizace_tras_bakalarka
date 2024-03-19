@@ -3,9 +3,10 @@ import { Toaster } from 'sonner';
 // routes
 import routes from './constants/routes';
 // components
-import PageLayout from './components/PageLayout';
 import RouteGuard from './components/dashboard/RouteGuard';
-import PageLayoutWithFooter from './components/PageLayoutWithFooter';
+import PageLayout from './components/layout/PageLayout';
+import ExtendedPageLayoutDefault from './components/layout/ExtendedPageLayoutDefault';
+import ExtendedPageLayoutDashboard from './components/layout/ExtendedPageLayoutDashboard';
 // pages
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -32,17 +33,20 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* 3D mapa se statickou konfiguraci pro DEBUG účely */}
-          <Route
-            path='/map-model'
-            element={<MapModel mode={ComponentMode.PREVEIW} />}
-          />
-
-          <Route
-            path={routes.mapPreview(':modelid')}
-            element={<MapModel mode={ComponentMode.PREVEIW} />}
-          />
           <Route element={<PageLayout />}>
-            <Route element={<PageLayoutWithFooter />}>
+
+            <Route
+              path='/map-model'
+              element={<MapModel mode={ComponentMode.PREVEIW} />}
+            />
+
+            <Route
+              path={routes.mapPreview(':modelid')}
+              element={<MapModel mode={ComponentMode.PREVEIW} />}
+            />
+
+            {/* LAYOUT WITH HEADER AND FOOTER */}
+            <Route element={<ExtendedPageLayoutDefault />}>
               <Route path={routes.home} element={<Home />} />
               {/* auth */}
               <Route path={routes.login} element={<Login />} />
@@ -54,62 +58,62 @@ function App() {
               <Route path={routes.restorePassword} element={<Home />} />
             </Route>
 
-            {/* Admin */}
-            <Route path='/admin' element={<RouteGuard />}>
-              <Route
-                path={routes.dashboard.editMapModel(UserRole.ADMIN, ':modelid')}
-                element={<MapModel mode={ComponentMode.EDIT} />}
-              />
-              <Route
-                path={routes.dashboard.newMap(UserRole.ADMIN)}
-                element={<MapDetail mode={ComponentMode.NEW} />}
-              />
-              <Route
-                path={routes.dashboard.editMap(UserRole.ADMIN, ':mapid')}
-                element={<MapDetail mode={ComponentMode.EDIT} />}
-              />
-              <Route element={<PageLayoutWithFooter />}>
+              {/* Admin */}
+              <Route path='/admin' element={<RouteGuard />}>
                 <Route
-                  path={routes.dashboard.maps(UserRole.ADMIN)}
-                  element={<Maps role={UserRole.ADMIN} />}
+                  path={routes.dashboard.editMapModel(UserRole.ADMIN, ':modelid')}
+                  element={<MapModel mode={ComponentMode.EDIT} />}
                 />
-                <Route path={routes.admin.users} element={<Users />} />
                 <Route
-                  path={routes.dashboard.profile(UserRole.ADMIN)}
-                  element={<Profile role={UserRole.ADMIN} />}
+                  path={routes.dashboard.newMap(UserRole.ADMIN)}
+                  element={<MapDetail mode={ComponentMode.NEW} />}
                 />
+                <Route
+                  path={routes.dashboard.editMap(UserRole.ADMIN, ':mapid')}
+                  element={<MapDetail mode={ComponentMode.EDIT} />}
+                />
+                <Route element={<ExtendedPageLayoutDashboard />}>
+                  <Route
+                    path={routes.dashboard.maps(UserRole.ADMIN)}
+                    element={<Maps role={UserRole.ADMIN} />}
+                  />
+                  <Route path={routes.admin.users} element={<Users />} />
+                  <Route
+                    path={routes.dashboard.profile(UserRole.ADMIN)}
+                    element={<Profile role={UserRole.ADMIN} />}
+                  />
+                </Route>
               </Route>
-            </Route>
 
-            {/* User */}
-            <Route path='/user' element={<RouteGuard />}>
-              <Route
-                path={routes.dashboard.editMapModel(UserRole.USER, ':modelid')}
-                element={<MapModel mode={ComponentMode.EDIT} />}
-              />
-              <Route
-                path={routes.dashboard.newMap(UserRole.USER)}
-                element={<MapDetail mode={ComponentMode.NEW} />}
-              />
-              <Route
-                path={routes.dashboard.editMap(UserRole.USER, ':mapid')}
-                element={<MapDetail mode={ComponentMode.EDIT} />}
-              />
-              <Route element={<PageLayoutWithFooter />}>
+              {/* User */}
+              <Route path='/user' element={<RouteGuard />}>
                 <Route
-                  path={routes.dashboard.maps(UserRole.USER)}
-                  element={<Maps role={UserRole.USER} />}
+                  path={routes.dashboard.editMapModel(UserRole.USER, ':modelid')}
+                  element={<MapModel mode={ComponentMode.EDIT} />}
                 />
                 <Route
-                  path={routes.dashboard.profile(UserRole.USER)}
-                  element={<Profile role={UserRole.USER} />}
+                  path={routes.dashboard.newMap(UserRole.USER)}
+                  element={<MapDetail mode={ComponentMode.NEW} />}
                 />
+                <Route
+                  path={routes.dashboard.editMap(UserRole.USER, ':mapid')}
+                  element={<MapDetail mode={ComponentMode.EDIT} />}
+                />
+                <Route element={<ExtendedPageLayoutDashboard />}>
+                  <Route
+                    path={routes.dashboard.maps(UserRole.USER)}
+                    element={<Maps role={UserRole.USER} />}
+                  />
+                  <Route
+                    path={routes.dashboard.profile(UserRole.USER)}
+                    element={<Profile role={UserRole.USER} />}
+                  />
+                </Route>
               </Route>
-            </Route>
-            <Route element={<PageLayoutWithFooter />}>
-              <Route path='/401' element={<Forbidden />} />
-              <Route path='/*' element={<PageNotFound />} />
-            </Route>
+              <Route element={<ExtendedPageLayoutDefault />}>
+                <Route path='/401' element={<Forbidden />} />
+                <Route path='/*' element={<PageNotFound />} />
+              </Route>
           </Route>
         </Routes>
       </BrowserRouter>

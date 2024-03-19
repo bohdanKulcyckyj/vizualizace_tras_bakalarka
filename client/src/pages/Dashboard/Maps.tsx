@@ -13,7 +13,7 @@ import axios from 'axios';
 
 const tableConfig = (userType: UserRole) => ({
   heading: "",
-  colgroup: [25, 15, 15, 15, 15, 15],
+  colgroup: [20, 15, 15, 15, 20, 15],
   getItemsRoute: userType === UserRole.ADMIN ? apiEndpoints.getAllUsersMaps : apiEndpoints.getUserMaps,
   newItemRoute: routes.dashboard.newMap(userType),
   newItemRouteLabel: "new map",
@@ -22,25 +22,26 @@ const tableConfig = (userType: UserRole) => ({
   buttons: [
     {
       type: ButtonType.REDIRECT,
-      label: "View",
+      label: "View model",
       actionUrlConstantPart: `/map-model/`,
       actionUrlDynamicPartKey: "id",
+      newWindow: true
     },
     {
       type: ButtonType.REDIRECT,
-      label: "Edit",
+      label: "Edit model",
       actionUrlConstantPart: `/${userType.toString()}/map-model/`,
       actionUrlDynamicPartKey: "id",
     },
     {
       type: ButtonType.REDIRECT,
-      label: "Edit",
+      label: "Select map area",
       actionUrlConstantPart: `/${userType.toString()}/map/`,
       actionUrlDynamicPartKey: "id",
     },
     {
       type: ButtonType.DELETE,
-      label: "Delete",
+      label: "Delete map",
       actionUrlConstantPart: apiEndpoints.deleteMap(),
       actionUrlDynamicPartKey: "id",
     }
@@ -75,7 +76,7 @@ const Maps = ({ role }) => {
   return (
     <section className="page-section mt-[8rem]">
         <div className="page-section__container">
-            <h1 className="text-center mb-[6rem]">Your maps</h1>
+            <h1 className="text-center mb-[6rem]">My maps</h1>
             <div className="flex flex-col xl:flex-row">
               <Aside role={role} />
               <Table data={data} getData={getData} config={tableConfig(role)} />

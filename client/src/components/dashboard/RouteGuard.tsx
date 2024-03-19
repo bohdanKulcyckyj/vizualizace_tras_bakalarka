@@ -13,6 +13,7 @@ const RouteGuard = () => {
     useEffect(() => {
         if(!getTokenFromCookie()) {
             setLoggedUser(null)
+            sessionStorage.removeItem('loggedUser')
             navigate(routes.login, {
                 replace: true
             })

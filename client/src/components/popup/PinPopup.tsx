@@ -135,7 +135,7 @@ const PinPopup: React.FC<{
             </div>
           )}
           <div className="flex justify-center gap-4 flex-wrap mt-10">
-            <button className="primary-button" onClick={onSubmit}>Submit</button>
+            <button className="primary-button" onClick={onSubmit}>Save</button>
             <button className="delete-button" onClick={toggleConfirmDelete}>Delete</button>
           </div>
         </div>

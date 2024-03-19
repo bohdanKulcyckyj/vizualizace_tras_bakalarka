@@ -66,4 +66,5 @@ export interface IMapModelConfig {
     zoom: number;
     trailGpxUrl: string | null;
     mapObjects: IMapObjectOptions[];
+    //heightCoeffitient: number | null;
   }

@@ -11,6 +11,7 @@ export interface IButton {
     label: string;
     actionUrlConstantPart?: string;
     actionUrlDynamicPartKey?: string | number;
+    newWindow?: boolean;
 };
 
 export interface IDeleteButton {

@@ -176,6 +176,12 @@ h2 {
   }
 }
 
+.secondary-button.secondary-button--small {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
 input:focus,
 input:-webkit-autofill,
 input:-webkit-autofill:hover,

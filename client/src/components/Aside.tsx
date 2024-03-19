@@ -23,6 +23,7 @@ const Aside : FC<ISidebar> = (props) => {
     .then(() => {
       saveTokenToCookie("")
       setLoggedUser(null)
+      sessionStorage.removeItem('loggedUser')
       navigate("/")
     })
     .catch(err => console.error(err))

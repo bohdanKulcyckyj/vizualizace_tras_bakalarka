@@ -39,7 +39,7 @@ const NearbyFeaturesConfigPopup: FC<{
               onChange={(e) => handleChange(e)}
               isMulti  />
             <div className="flex justify-center mt-10">
-              <button className="primary-button" onClick={onSubmit}>Submit</button>
+              <button className="primary-button" onClick={onSubmit}>Save</button>
             </div>
         </div>
       </div>

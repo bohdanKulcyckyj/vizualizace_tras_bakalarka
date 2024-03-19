@@ -49,6 +49,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const [isDisplayingNearbyFeatures, setIsDisplayingNearbyFeatures] = useState<boolean>(false)
   const [selectedNearbyFeatures, setSelectedNearbyFeatures] = useState<INearbyFeature[]>([])
   const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1);
+  const [isMapBeeingDragged, setIsMapBeeingDragged] = useState<boolean>(false)
 
   const fileChangeHangler = async (event): void => {
     const uploadedFile = event.target.files[0];
@@ -75,6 +76,8 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   };
 
   const handleMapClick = (e: MouseEvent): void => {
+    if(isMapBeeingDragged) return
+
     const clickedObjects = model.clickedObjects(e);
 
     if (!newPointOptions || !newPointOptions?.pinType) {
@@ -150,6 +153,18 @@ const TerrainModelComponent = ({ mode, options }: any) => {
     model.options.mapObjects = model.options.mapObjects.filter(_option => _option.id !== newPointOptions.id)
     setNewPointOptions(null)
     setIsPinPopupOpened(false)
+  }
+
+  const handleDeleteTrail = () => {
+    axiosWithAuth.delete(apiEndpoints.deleteUploadedMedia(gpxTrailName))
+    .then(res => {
+      let currentOptions = model.options
+      currentOptions.trailGpxUrl = null
+      setEditingMapData({...editingMapData, mapModel: currentOptions})
+      setGpxTrailName('')
+    }).catch(err => {
+      console.error(err)
+    })
   }
 
   const confirm = () => {
@@ -395,8 +410,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
             <div>
               {/* GPX / FIT uploading */}
               <div className='mb-6'>
-                <div className='mb-2'>
+                <div className='flex justify-between flex-wrap gap-2 mb-2'>
                   <label htmlFor='pgx'>GPX or FIT trail</label>
+                  {gpxTrailName && <button className='secondary-button secondary-button--small' onClick={handleDeleteTrail}>delete</button>}
                 </div>
                 <div className='form__input--file mb-2'>
                   <label>
@@ -511,10 +527,11 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                 </div>
               </div>
               {/* PLACED PINS */}
-              <div className="mb-3">
+              {model?.options?.mapObjects?.length > 0 && <div className="mb-3">
               <p className='my-2'>Placed Pins</p>
                 <MapPinsList data={model?.options?.mapObjects ?? []} onPinSelect={(pin: IMapObjectOptions) => {setNewPointOptions(pin); setIsPinPopupOpened(true)}} />
               </div>
+              }
               {/* TOGGLE NEARBY FEATURES */}
               <div>
                 <label className="form__checkbox cursor-pointer">
@@ -559,8 +576,8 @@ const TerrainModelComponent = ({ mode, options }: any) => {
             width='1900'
             height='700'
             onClick={(e) => handleMapClick(e)}
-            //onMouseMove={move}
-            //onMouseDown={down}
+            onMouseMove={() => setIsMapBeeingDragged(true)}
+            onMouseDown={() => setIsMapBeeingDragged(false)}
           ></canvas>
           <div
             ref={viewHelperCanvasWrapperRef}
