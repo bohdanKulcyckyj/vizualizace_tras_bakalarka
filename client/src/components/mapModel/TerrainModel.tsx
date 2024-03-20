@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { getPinTitle } from '../../utils/pins';
 import NearbyFeaturesConfigPopup from '../popup/NearbyFeaturesConfigPopup';
 import { INearbyFeature } from '../../interfaces/NearbyFeatures';
+import { Range } from 'react-range';
 
 const TerrainModelComponent = ({ mode, options }: any) => {
   const { modelid } = useParams();
@@ -50,6 +51,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const [selectedNearbyFeatures, setSelectedNearbyFeatures] = useState<INearbyFeature[]>([])
   const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1);
   const [isMapBeeingDragged, setIsMapBeeingDragged] = useState<boolean>(false)
+  const [heightCoefficientRangeValue, setHeightCoefficientRangeValue] = useState<number>(1)
 
   const fileChangeHangler = async (event): void => {
     const uploadedFile = event.target.files[0];
@@ -528,7 +530,6 @@ const TerrainModelComponent = ({ mode, options }: any) => {
               </div>
               {/* PLACED PINS */}
               {model?.options?.mapObjects?.length > 0 && <div className="mb-3">
-              <p className='my-2'>Placed Pins</p>
                 <MapPinsList data={model?.options?.mapObjects ?? []} onPinSelect={(pin: IMapObjectOptions) => {setNewPointOptions(pin); setIsPinPopupOpened(true)}} />
               </div>
               }
@@ -544,6 +545,52 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   />
                   <p className="checkbox-label">Display nearby features</p>
                 </label>
+              </div>
+              {/* HEIGHT SCALE RANGE */}
+              <div>
+                <div className="flex justify-between items-center my-2">
+                  <p>Heights scale</p>
+                  <p>{heightCoefficientRangeValue}</p>
+                </div>
+                <Range
+                  step={0.1}
+                  min={1}
+                  max={10}
+                  values={[heightCoefficientRangeValue]}
+                  onChange={(values) => {
+                    console.log(model.options)
+                    if(model?.options) {
+                      setHeightCoefficientRangeValue(values[0])
+                      model.options.heightCoefficient = values[0]
+                    }
+                  }}
+                  renderTrack={({ props, children }) => (
+                    <div
+                      {...props}
+                      style={{
+                        ...props.style,
+                        height: '6px',
+                        width: '100%',
+                        backgroundColor: '#2EEBC9'
+                      }}
+                    >
+                      {children}
+                    </div>
+                  )}
+                  renderThumb={({ props }) => (
+                    <div
+                      {...props}
+                      style={{
+                        ...props.style,
+                        height: '22px',
+                        width: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: '#fff',
+                        outline: 'none'
+                      }}
+                    />
+                  )}
+                />
               </div>
             </div>
             <div className='flex justify-center items-center gap-6'>

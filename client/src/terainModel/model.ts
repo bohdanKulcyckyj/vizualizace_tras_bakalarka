@@ -250,7 +250,7 @@ export class Model {
 
   public displayNearFeatures(features: MapPointDTO[]) {
     const mapPoints = MapPointTypeDefaultValue(features);
-    const heightScale = this.map.getTileWidthInMeters();
+    const heightScale = this.getHeightScale();
     let fallbackElevation = 0;
 
     mapPoints.forEach((_elem) => {
@@ -489,7 +489,7 @@ export class Model {
       await this.addTrail(trail);
     }
 
-    const heightScale = this.map.getTileWidthInMeters();
+    const heightScale = this.getHeightScale();
 
     const tmpPoint = this.map.project({
       lat: 45.85493,
@@ -600,7 +600,7 @@ export class Model {
       await this.addTrail(trail);
     }
 
-    const heightScale = this.map.getTileWidthInMeters();
+    const heightScale = this.getHeightScale();
 
     const tmpPoint = this.map.project({
       lat: 45.85493,
@@ -677,7 +677,7 @@ export class Model {
       color: 0x0000ff,
     });
 
-    const heightScale = this.map.getTileWidthInMeters();
+    const heightScale = this.getHeightScale();
 
     let points: IPoint3D[] = [];
     for (let x of gpxPoints) {
@@ -901,7 +901,7 @@ export class Model {
 
   private async loadTile(x: number, y: number, zoom: number) {
     const baseUrl = 'https://3dmap.janjanousek.cz/proxy/?url=';
-    //baseUrl = 'https://api.mapbox.com/';
+    //const baseUrl = 'https://api.mapbox.com/';
 
     const apiKey =
       'pk.eyJ1IjoiamFub3VzZWsiLCJhIjoiY2oyYWE4cXgyMDAwZTMzbjJ2YnZsN2owaiJ9.pYpMMOZZ4Kyaaw3sUZP0hg';
@@ -962,7 +962,7 @@ export class Model {
     const tile = await this.loadTile(x, y, zoom);
     const geometry = new PlaneGeometry(1, 1, tile.size - 1, tile.size - 1);
 
-    const heightScale = this.map.getTileWidthInMeters() / 2;
+    const heightScale = this.getHeightScale();
 
     const positions = geometry.attributes['position'] as Float32BufferAttribute;
     for (let i = 0; i < tile.heights.length; i++) {
@@ -1474,7 +1474,7 @@ export class Model {
       y: map.point.y,
       z: map.point.z,
     });
-    //const elevation = this.map.getTileWidthInMeters() * map.point.z
+    //const elevation = this.getHeightScale() * map.point.z
     //const clicLatLng = this.map.unproject({
     //	x: this.origin.x + (map.point.x + 0.5) * 256,
     //	y: this.origin.y - (map.point.y - 0.5) * 256
@@ -1504,6 +1504,8 @@ export class Model {
     options: IMapObjectOptions
   ) {
     console.log('ADDING OBJECT TO MAP');
+
+    z = this.options.heightCoefficient ? z * this.options.heightCoefficient : z 
 
     if (options.pinType === PIN_TYPE.PIN_SIGN) {
       this.addMarker(
@@ -1539,7 +1541,7 @@ export class Model {
   }
 
   private addNewLights() {
-    const centerZ = this.map.centerAltitude / this.map.getTileWidthInMeters();
+    const centerZ = this.map.centerAltitude / this.getHeightScale();
     //console.log(getTimes(new Date(),this.map.center.lat, this.map.center.lng))
 
     this.scene.add(new AmbientLight(0xffffff, 0.2));
@@ -1705,6 +1707,15 @@ export class Model {
 
   public resize(w: number, h: number) {
     this.setCanvasSize(w, h);
+  }
+
+  private getHeightScale():number {
+    const heightCoeffitient = this.options.heightCoefficient
+    let result = this.map.getTileWidthInMeters()
+    if(heightCoeffitient) {
+      result /= heightCoeffitient
+    }
+    return result
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
 import {
   IHandleFileUploadOptions,
   handleFileUpload,
@@ -50,6 +50,16 @@ const PinPopup: React.FC<{
     )
   }
 
+  useEffect(() => {
+    setTimeout(() => {
+      const inputWithAutoFocus = document.querySelector<HTMLInputElement>('input[name="point-label"]')
+      if (inputWithAutoFocus) {
+        console.log(inputWithAutoFocus)
+        inputWithAutoFocus.focus();
+      }
+    }, 100)
+  },[])
+
   return (
     <div>
       <div className="form">
@@ -64,6 +74,7 @@ const PinPopup: React.FC<{
               onChange={(e) => {
                 setFormState({ ...formState, label: e.target.value });
               }}
+              autoFocus
             />
           </div>
           {formState.pinType === PIN_TYPE.PIN_SIGN && (

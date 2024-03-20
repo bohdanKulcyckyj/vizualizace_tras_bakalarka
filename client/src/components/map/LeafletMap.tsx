@@ -9,6 +9,7 @@ import routes from "../../constants/routes";
 import { useMainContext } from "../../context/MainContext";
 import { IMapDTO } from "../../interfaces/dashboard/MapModel";
 import { axiosWithAuth } from "../../utils/axiosWithAuth";
+import { toast } from "sonner";
 
 const LeafletMap = ({ projectId }) => {
   const { loggedUser } = useMainContext()
@@ -20,11 +21,109 @@ const LeafletMap = ({ projectId }) => {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [mapCenter, setMapCenter] = useState<LatLngExpression>([51.505, -0.09]);
   const [mapZoom, setMapZoom] = useState<number>(13)
+  const [editingRecord, setEditingRecord] = useState<IMapDTO>(null)
   const searchBoxCore = useSearchBoxCore({
     accessToken: process.env.REACT_APP_MAP_BOX_TOKEN,
   });
-
   const currentSessionToken = "test-123";
+
+  const checkForProjectColision = () => {
+    console.log("is happening")
+    const bounds = areaSelect.getBounds()
+    const northEast = bounds.getNorthEast()
+    const southWest = bounds.getSouthWest()
+    const { mapModel } = editingRecord
+    const isColiding =
+    northEast.lat <= mapModel.bbox.southWest.lat ||
+    southWest.lat >= mapModel.bbox.northEast.lat ||
+    northEast.lng <= mapModel.bbox.southWest.lng ||
+    southWest.lng >= mapModel.bbox.northEast.lng;
+    
+    if(isColiding) {
+      const correctedEditingRecord = editingRecord
+      correctedEditingRecord.mapModel.mapObjects = []
+      setEditingRecord(correctedEditingRecord)
+
+      toast(
+        <div className="confirm-dialog">
+          <div className="p-6 flex flex-col justify-center items-center">
+            <h2 className="confirm-dialog__title">Your project has completly different borders now. You may lose yours points of interest. Proceed?</h2>
+            <div className="flex justify-center gap-4 mt-5">
+              <button className="confirm-dialog__button confirm-dialog__button--primary" onClick={() => {confirm(); toast.dismiss()}}>yes</button>
+              <button className="confirm-dialog__button confirm-dialog__button--secondary" onClick={() => toast.dismiss()}>no</button>
+            </div>
+          </div>
+        </div>, { position: 'bottom-center', unstyled: true, duration: 10000 }
+      )
+    } else {
+      confirm()
+    }
+  }
+
+  const confirm = () => {
+    const bounds = areaSelect.getBounds();
+    const dist = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
+
+    if (dist > 20000 * 2) {
+      return;
+    }
+    
+    const newMap: IMapDTO = {
+      mapModel: {
+        center: {
+          lat: (bounds.getNorthEast().lat + bounds.getSouthWest().lat) / 2,
+          lng: (bounds.getNorthEast().lng + bounds.getSouthWest().lng) / 2,
+          alt: 4791.7,
+        },
+        bbox: {
+          northEast: bounds.getNorthEast(),
+          southWest: bounds.getSouthWest(),
+        },
+        trailGpxUrl: editingRecord ? editingRecord.mapModel.trailGpxUrl : null,
+        zoom: mapZoom,
+        mapObjects: editingRecord ? editingRecord.mapModel.mapObjects : [],
+        heightCoefficient: editingRecord ? editingRecord.mapModel.heightCoefficient : null
+      },
+      name: inputNameValue,
+    };
+
+    if (projectId) {
+      axiosWithAuth
+        .post(apiEndpoints.editMap(projectId), newMap)
+        .then((res) =>  {
+          if(loggedUser?.role) {
+            navigate(routes.dashboard.editMapModel(loggedUser.role, projectId), { replace: true })
+          } else {
+            navigate(-1)
+          }
+        })
+        .catch((e) => console.error(e));
+    } else {
+      axiosWithAuth
+        .post(apiEndpoints.newMap, newMap)
+        .then((res) => {
+          if (res.data && loggedUser?.role) {
+            navigate(routes.dashboard.editMapModel(loggedUser.role, res.data.id), { replace: true });
+          } else {
+            navigate(-1)
+          }
+        })
+        .catch((e) => console.error(e));
+    }
+  };
+
+  const cancel = () => {
+    navigate(-1);
+  };
+
+  const handleRetrieveLocation = async (suggestion) => {
+    const response = await searchBoxCore.retrieve(suggestion, {
+      sessionToken: currentSessionToken,
+    });
+    //@ts-ignore
+    setMapCenter(response.features[0].geometry.coordinates.reverse());
+    setSuggestions([]);
+  };
 
   useEffect(() => {
     const leafletMap = L.map("map").setView(mapCenter, mapZoom);
@@ -56,6 +155,7 @@ const LeafletMap = ({ projectId }) => {
         .then((res) => {
           if (res.data.map) {
             const mapData = res.data.map
+            setEditingRecord(mapData)
             leafletMap.setView( 
               new LatLng(mapData.mapModel.center.lat, mapData.mapModel.center.lng),
               mapData.mapModel.zoom
@@ -100,73 +200,6 @@ const LeafletMap = ({ projectId }) => {
     }
   }, [mapCenter]);
 
-  const confirm = () => {
-    const bounds = areaSelect.getBounds();
-    console.log(bounds);
-
-    const dist = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
-
-    if (dist > 20000 * 2) {
-      return;
-    }
-    
-    const newMap: IMapDTO = {
-      mapModel: {
-        center: {
-          lat: (bounds.getNorthEast().lat + bounds.getSouthWest().lat) / 2,
-          lng: (bounds.getNorthEast().lng + bounds.getSouthWest().lng) / 2,
-          alt: 4791.7,
-        },
-        bbox: {
-          northEast: bounds.getNorthEast(),
-          southWest: bounds.getSouthWest(),
-        },
-        trailGpxUrl: null,
-        zoom: mapZoom,
-        mapObjects: [],
-        //heightCoeffitient: null
-      },
-      name: inputNameValue,
-    };
-
-    if (projectId) {
-      axiosWithAuth
-        .post(apiEndpoints.editMap(projectId), newMap)
-        .then((res) =>  {
-          if(loggedUser?.role) {
-            navigate(routes.dashboard.editMapModel(loggedUser.role, projectId), { replace: true })
-          } else {
-            navigate(-1)
-          }
-        })
-        .catch((e) => console.error(e));
-    } else {
-      axiosWithAuth
-        .post(apiEndpoints.newMap, newMap)
-        .then((res) => {
-          if (res.data && loggedUser?.role) {
-            navigate(routes.dashboard.editMapModel(loggedUser.role, res.data.id), { replace: true });
-          } else {
-            navigate(-1)
-          }
-        })
-        .catch((e) => console.error(e));
-    }
-  };
-
-  const cancel = () => {
-    navigate(-1);
-  };
-
-  const handleRetrieveLocation = async (suggestion) => {
-    const response = await searchBoxCore.retrieve(suggestion, {
-      sessionToken: currentSessionToken,
-    });
-    //@ts-ignore
-    setMapCenter(response.features[0].geometry.coordinates.reverse());
-    setSuggestions([]);
-  };
-
   useEffect(() => {
     const getSuggestions = async () => {
       const response = await searchBoxCore.suggest(inputAddress, {
@@ -196,7 +229,7 @@ const LeafletMap = ({ projectId }) => {
             </div>
           </div>
           <div className="flex justify-center items-center gap-6">
-            <button onClick={confirm} className="primary-button">
+            <button onClick={projectId ? checkForProjectColision : confirm} className="primary-button">
               Save
             </button>
             <button onClick={cancel} className="secondary-button">
