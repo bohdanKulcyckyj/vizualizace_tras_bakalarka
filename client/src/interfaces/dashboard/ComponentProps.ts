@@ -1,5 +1,5 @@
 export enum ComponentMode {
-    EDIT,
-    NEW,
-    PREVEIW,
+  EDIT,
+  NEW,
+  PREVEIW,
 }

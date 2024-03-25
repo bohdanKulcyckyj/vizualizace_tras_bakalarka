@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { getPosition as getSunPosition, getTimes } from 'suncalc';
+import { getPosition as getSunPosition, getTimes } from 'suncalc'
 import {
   Scene,
   WebGLRenderer,
@@ -46,42 +46,46 @@ import {
   Vector4,
   Matrix4,
   Vector,
-} from 'three';
-import axios from 'axios';
-import gsap from 'gsap';
+} from 'three'
+import axios from 'axios'
+import gsap from 'gsap'
 
-import { AxisControl } from './AxisControl';
-import { ElevationLoader } from './ElevationLoader';
-import { fitCurve } from './FitCurves3D';
-import { ILatLng, ILatLngAlt, IPoint, IPoint3D } from './interfaces';
-import { Map } from './Map';
-import { NorthArrowControl } from './NorthArrowControl';
+import { AxisControl } from './AxisControl'
+import { ElevationLoader } from './ElevationLoader'
+import { fitCurve } from './FitCurves3D'
+import { ILatLng, ILatLngAlt, IPoint, IPoint3D } from './interfaces'
+import { Map } from './Map'
+import { NorthArrowControl } from './NorthArrowControl'
 import {
   lat2tile,
   lon2tile,
   tile2lat,
   tile2LatLong,
   tile2long,
-} from './OsmUtils';
-import { simplify3D } from './simplify';
-import { Sky } from './Sky';
-import CameraControls from 'camera-controls';
+} from './OsmUtils'
+import { simplify3D } from './simplify'
+import { Sky } from './Sky'
+import CameraControls from 'camera-controls'
 
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import {
   ITileTextureDecorator,
   TileTextureDecorator,
-} from './TileTextureDecorator';
+} from './TileTextureDecorator'
 import {
   IMapModelConfig,
   IMapObjectOptions,
   MapPointDTO,
   PIN_TYPE,
-} from '../interfaces/dashboard/MapModel';
-import { latLng } from 'leaflet';
-import { MapPointTypeDefaultValue } from '../utils/MapPointTypeDefaultValue';
-import { INearbyFeature } from '../interfaces/NearbyFeatures';
-import { getAllTrailStops, isStopPoint, ITrailStop } from '../utils/pointDistance';
+} from '../interfaces/dashboard/MapModel'
+import { latLng } from 'leaflet'
+import { MapPointTypeDefaultValue } from '../utils/MapPointTypeDefaultValue'
+import { INearbyFeature } from '../interfaces/NearbyFeatures'
+import {
+  getAllTrailStops,
+  isStopPoint,
+  ITrailStop,
+} from '../utils/pointDistance'
 
 const subsetOfTHREE = {
   Vector2: Vector2,
@@ -93,9 +97,9 @@ const subsetOfTHREE = {
   Box3: Box3,
   Sphere: Sphere,
   Raycaster: Raycaster,
-};
+}
 
-CameraControls.install({ THREE: subsetOfTHREE });
+CameraControls.install({ THREE: subsetOfTHREE })
 
 // https://stadtentwicklung.github.io/map3/
 
@@ -106,10 +110,10 @@ CameraControls.install({ THREE: subsetOfTHREE });
 class ModelScene extends Scene {}
 
 interface IContourHeightMap {
-  left: number[];
-  right: number[];
-  top: number[];
-  bottom: number[];
+  left: number[]
+  right: number[]
+  top: number[]
+  bottom: number[]
 }
 
 enum TileBorderEnum {
@@ -121,62 +125,62 @@ enum TileBorderEnum {
 }
 
 export class Model {
-  private renderer: WebGLRenderer;
-  private scene: ModelScene;
-  private camera: PerspectiveCamera;
-  public readonly controls: CameraControls;
-  private width: number;
-  private height: number;
-  private axisControl: AxisControl;
-  private northArrowControl: NorthArrowControl;
-  private origin: IPoint;
-  private map: Map;
-  private enableSun: boolean = true;
-  private clock = new Clock();
-  private pathAnimation: gsap.core.Tween;
-  private markers: Group[] = [];
-  private disposed: boolean = false;
-  public options: IMapModelConfig;
+  private renderer: WebGLRenderer
+  private scene: ModelScene
+  private camera: PerspectiveCamera
+  public readonly controls: CameraControls
+  private width: number
+  private height: number
+  private axisControl: AxisControl
+  private northArrowControl: NorthArrowControl
+  private origin: IPoint
+  private map: Map
+  private enableSun: boolean = true
+  private clock = new Clock()
+  private pathAnimation: gsap.core.Tween
+  private markers: Group[] = []
+  private disposed: boolean = false
+  public options: IMapModelConfig
   // call TerainModel component method to set popup data about reached point
-  public onTrailPointReachedCallback: (point: IMapObjectOptions) => void;
+  public onTrailPointReachedCallback: (point: IMapObjectOptions) => void
 
   constructor(
     private canvas: HTMLCanvasElement,
     viewHelperCanvasWrapper: HTMLElement,
     northArrowCanvasWrapper: HTMLElement,
-    private options: IMapModelConfig
+    private options: IMapModelConfig,
   ) {
-    this.width = canvas.width;
-    this.height = canvas.height;
-    this.options = options;
+    this.width = canvas.width
+    this.height = canvas.height
+    this.options = options
     this.renderer = new WebGLRenderer({
       alpha: true,
       antialias: true,
       canvas: canvas,
-    });
-    this.renderer.setSize(this.width, this.height);
-    this.renderer.setClearColor(0, 0);
+    })
+    this.renderer.setSize(this.width, this.height)
+    this.renderer.setClearColor(0, 0)
 
     //if (ENABLE_SHADOW) {
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
-    this.renderer.shadowMap.enabled = false;
+    this.renderer.shadowMap.type = PCFSoftShadowMap
+    this.renderer.shadowMap.enabled = false
     //}
     // this.renderer.physicallyCorrectLights=true;
 
-    this.camera = this.buildCamera();
-    this.scene = new ModelScene();
+    this.camera = this.buildCamera()
+    this.scene = new ModelScene()
     this.controls = this.initOrbitControls(
       this.camera,
-      this.renderer.domElement
-    );
+      this.renderer.domElement,
+    )
     // this.controls.update(delta );
     // -
-    this.axisControl = this.buildAxisControl(viewHelperCanvasWrapper);
+    this.axisControl = this.buildAxisControl(viewHelperCanvasWrapper)
     this.northArrowControl = new NorthArrowControl(
       this.camera,
       northArrowCanvasWrapper,
-      0
-    );
+      0,
+    )
     // -
     this.map = new Map(
       {
@@ -184,20 +188,20 @@ export class Model {
         lng: options.center.lng,
       },
       options.center.alt,
-      options.zoom
-    );
+      options.zoom,
+    )
 
     //this.addLights();
-    this.addSky();
-    this.addNewLights();
+    this.addSky()
+    this.addNewLights()
 
-    this.init();
+    this.init()
 
     //const center = this.coordToModelPoint(this.map.center);
     // MAPPING PREVIOUSLY ADDED OBJECTS BY USER
     options?.mapObjects?.forEach((_obj) =>
-      this.addObjectToMap(_obj.x, _obj.y, _obj.z, _obj)
-    );
+      this.addObjectToMap(_obj.x, _obj.y, _obj.z, _obj),
+    )
 
     /*
 		this.scene.position.x = -center.x;
@@ -206,65 +210,73 @@ export class Model {
   }
 
   public destroy() {
-    this.scene.clear();
-    this.renderer.dispose();
-    this.disposed = true;
+    this.scene.clear()
+    this.renderer.dispose()
+    this.disposed = true
   }
 
   public async getNearbyFeatures(featuresOptions: INearbyFeature[]) {
-    const minLat = this.options.bbox.southWest.lat;
-		const minLon = this.options.bbox.southWest.lng;
-		const maxLat = this.options.bbox.northEast.lat;
-		const maxLon = this.options.bbox.northEast.lng;
-		const bboxStr = `${minLat},${minLon},${maxLat},${maxLon}`;
+    const minLat = this.options.bbox.southWest.lat
+    const minLon = this.options.bbox.southWest.lng
+    const maxLat = this.options.bbox.northEast.lat
+    const maxLon = this.options.bbox.northEast.lng
+    const bboxStr = `${minLat},${minLon},${maxLat},${maxLon}`
 
     try {
-      const res = await fetch("https://overpass-api.de/api/interpreter",
-        {
-         method: 'POST',
-         body: "data=" + encodeURIComponent(`
+      const res = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        body:
+          'data=' +
+          encodeURIComponent(`
            [bbox: ${bboxStr}]
            [out:json]
            [timeout:90]
            ;
            (
-             ${featuresOptions.map(_option => {
-               return `node["${_option.node}"="${_option.value}"](${bboxStr});`
-             }).join('\n')}
+             ${featuresOptions
+               .map((_option) => {
+                 return `node["${_option.node}"="${_option.value}"](${bboxStr});`
+               })
+               .join('\n')}
            );
            out geom;
-         `)
-        })
+         `),
+      })
 
       if (!res.ok) {
-        throw new Error(`Error in fetching features: ${featuresOptions.map(_opt => _opt.label).join()} - ${res.status} ${res.statusText}`);
+        throw new Error(
+          `Error in fetching features: ${featuresOptions.map((_opt) => _opt.label).join()} - ${res.status} ${res.statusText}`,
+        )
       }
 
       const resData = await res.json()
       this.displayNearFeatures(resData.elements)
-    } catch(err) {
-      console.error(`Error in fetching features: ${featuresOptions.map(_opt => _opt.label).join()}`, err.message);
-		  return;
+    } catch (err) {
+      console.error(
+        `Error in fetching features: ${featuresOptions.map((_opt) => _opt.label).join()}`,
+        err.message,
+      )
+      return
     }
   }
 
   public displayNearFeatures(features: MapPointDTO[]) {
-    const mapPoints = MapPointTypeDefaultValue(features);
-    const heightScale = this.getHeightScale();
-    let fallbackElevation = 0;
+    const mapPoints = MapPointTypeDefaultValue(features)
+    const heightScale = this.getHeightScale()
+    let fallbackElevation = 0
 
     mapPoints.forEach((_elem) => {
       if (_elem?.tags?.ele) {
-        fallbackElevation = _elem.tags.ele;
+        fallbackElevation = _elem.tags.ele
       }
-      const point = this.coordToModelPoint({ lat: _elem.lat, lng: _elem.lon });
-      let labelStr = '';
+      const point = this.coordToModelPoint({ lat: _elem.lat, lng: _elem.lon })
+      let labelStr = ''
       if (_elem.type === 'peak') {
         labelStr = `${_elem?.tags?.name ? _elem?.tags?.name + ' ' : ''}${
           _elem?.tags?.ele
-        }m`;
+        }m`
       } else {
-        labelStr = _elem?.tags?.name;
+        labelStr = _elem?.tags?.name
       }
       if (labelStr) {
         this.addLabel(
@@ -272,58 +284,58 @@ export class Model {
           point.y + 0.5,
           (_elem?.tags?.ele ?? fallbackElevation) / heightScale,
           _elem.id.toString(),
-          labelStr
-        );
+          labelStr,
+        )
       }
-    });
+    })
   }
 
   public pauseTrailAnimation() {
-    if(!this.animationTrail) return;
+    if (!this.animationTrail) return
     this.animationTrail = false
-    this.pathAnimation?.pause();
-    this.controls.enabled = true;
+    this.pathAnimation?.pause()
+    this.controls.enabled = true
   }
 
   public playTrailAnimation() {
-    if(this.animationTrail) return;
+    if (this.animationTrail) return
     this.animationTrail = true
-    const currentTime = this.pathAnimation ? this.pathAnimation.time() : 0;
-    this.pathAnimation?.play();
-    this.pathAnimation?.time(currentTime);
+    const currentTime = this.pathAnimation ? this.pathAnimation.time() : 0
+    this.pathAnimation?.play()
+    this.pathAnimation?.time(currentTime)
   }
 
   public stopTrailAnimation() {
     this.animationTrail = false
-    this.pathAnimation?.pause();
-    this.pathAnimation?.time(0);
-    this.controls.enabled = true;
+    this.pathAnimation?.pause()
+    this.pathAnimation?.time(0)
+    this.controls.enabled = true
   }
 
   public setEnableShadow(enable: boolean) {
     if (this.renderer.shadowMap.enabled != enable) {
-      this.renderer.shadowMap.enabled = enable;
-      this.renderer.shadowMap.needsUpdate = true;
+      this.renderer.shadowMap.enabled = enable
+      this.renderer.shadowMap.needsUpdate = true
 
       this.scene.traverse((child: any) => {
         if (child.material) {
-          child.material.needsUpdate = true;
+          child.material.needsUpdate = true
         }
-      });
+      })
     }
   }
 
   public setEnableSun(enable: boolean) {
-    this.enableSun = enable;
+    this.enableSun = enable
   }
 
   private addCube(x: number, y: number, z: number) {
-    const size = 0.02;
-    const geometry = new BoxGeometry(size, size, size);
-    const material = new MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new Mesh(geometry, material);
-    cube.position.set(x, y, z);
-    this.scene.add(cube);
+    const size = 0.02
+    const geometry = new BoxGeometry(size, size, size)
+    const material = new MeshBasicMaterial({ color: 0x00ff00 })
+    const cube = new Mesh(geometry, material)
+    cube.position.set(x, y, z)
+    this.scene.add(cube)
   }
 
   //@ts-ignore
@@ -332,109 +344,103 @@ export class Model {
     y: number,
     z: number,
     pinId: string,
-    color: Color = null
+    color: Color = null,
   ) {
-    const url = '/assets/pin.gltf';
-    const loader = new GLTFLoader();
-    const gltf = await loader.loadAsync(url);
+    const url = '/assets/pin.gltf'
+    const loader = new GLTFLoader()
+    const gltf = await loader.loadAsync(url)
 
-    const scale = 0.03;
+    const scale = 0.03
 
-    let pin = gltf.scene.clone(true);
-    pin.position.setZ(z); //setZ(3.195149291587768);
+    let pin = gltf.scene.clone(true)
+    pin.position.setZ(z) //setZ(3.195149291587768);
 
     if (color != null) {
-      const mesh = pin.getObjectByName('Curve') as Mesh;
-      const mat = mesh.material as MeshStandardMaterial;
-      mat.color = color;
+      const mesh = pin.getObjectByName('Curve') as Mesh
+      const mat = mesh.material as MeshStandardMaterial
+      mat.color = color
     }
     /*
 		var box = new Box3().setFromObject(pin);
 		let t = new Vector3();
 		console.log('box',  box.getCenter(t), t);
 		*/
-    let pinGroup = new Group();
-    pinGroup.name = 'PIN_COLORED';
-    pinGroup.add(pin);
+    let pinGroup = new Group()
+    pinGroup.name = 'PIN_COLORED'
+    pinGroup.add(pin)
 
-    pin.rotateX(Math.PI);
+    pin.rotateX(Math.PI)
 
-    pinGroup.scale.x = scale;
-    pinGroup.scale.y = scale;
-    pinGroup.scale.z = scale;
+    pinGroup.scale.x = scale
+    pinGroup.scale.y = scale
+    pinGroup.scale.z = scale
 
-    pinGroup.position.set(x, y, z);
-    pinGroup.pinId = pinId;
-    pinGroup.isClickable = true;
+    pinGroup.position.set(x, y, z)
+    pinGroup.pinId = pinId
+    pinGroup.isClickable = true
 
-    this.scene.add(pinGroup);
+    this.scene.add(pinGroup)
 
-    this.markers.push(pinGroup);
+    this.markers.push(pinGroup)
     //pinGroup.quaternion.copy( this.camera.quaternion );
   }
 
   private addSphere(x: number, y: number, z: number, id: string = null) {
-    const size = 0.01;
-    const geometry = new SphereGeometry(size, 32, 32);
-    const material = new MeshBasicMaterial({ color: 0x00ff00 });
-    const sphare = new Mesh(geometry, material);
-    sphare.position.set(x, y, z);
+    const size = 0.01
+    const geometry = new SphereGeometry(size, 32, 32)
+    const material = new MeshBasicMaterial({ color: 0x00ff00 })
+    const sphare = new Mesh(geometry, material)
+    sphare.position.set(x, y, z)
     if (id) {
-      sphare.pinId = id;
+      sphare.pinId = id
     }
-    this.scene.add(sphare);
+    this.scene.add(sphare)
   }
 
   private addLights() {
-    this.scene.add(new AmbientLight(0xffffff, 0.5));
+    this.scene.add(new AmbientLight(0xffffff, 0.5))
 
-    const dirLight = new DirectionalLight(0xffffff, 0.9);
+    const dirLight = new DirectionalLight(0xffffff, 0.9)
 
-    dirLight.position.set(-0.8, -0.8, 1.3);
+    dirLight.position.set(-0.8, -0.8, 1.3)
 
-    const dirLightHelper = new DirectionalLightHelper(dirLight, 10);
-    this.scene.add(dirLightHelper);
+    const dirLightHelper = new DirectionalLightHelper(dirLight, 10)
+    this.scene.add(dirLightHelper)
 
     //this.addCube(dir.position.getComponent(0), dir.position.getComponent(1), dir.position.getComponent(2));
     //this.scene.add(dir);
   }
 
   public async init() {
-    const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
+    const xyz = this.getTileXYZ(this.map.center, this.map.zoom)
     const trail =
       this.options.trailGpxUrl == null
         ? null
-        : await this.loadTrail(this.options.trailGpxUrl);
+        : await this.loadTrail(this.options.trailGpxUrl)
     //@ts-ignore
     const tileDecorator: TileTextureDecorator =
-      trail == null ? null : new TileTextureDecorator(trail, this.map);
+      trail == null ? null : new TileTextureDecorator(trail, this.map)
 
-    const tilesGroup = new Group();
-    tilesGroup.name = 'model';
+    const tilesGroup = new Group()
+    tilesGroup.name = 'model'
 
-    let tileMatrix: Promise<Group>[][] = [];
+    let tileMatrix: Promise<Group>[][] = []
 
     if (this.options.bbox != null) {
-      const t1 = this.getTileXYZ(
-        this.options.bbox.northEast,
-        this.options.zoom
-      );
+      const t1 = this.getTileXYZ(this.options.bbox.northEast, this.options.zoom)
 
-      const t2 = this.getTileXYZ(
-        this.options.bbox.southWest,
-        this.options.zoom
-      );
+      const t2 = this.getTileXYZ(this.options.bbox.southWest, this.options.zoom)
 
       if (t1[0] < t2[0]) {
-        throw new Error('0');
+        throw new Error('0')
       }
       if (t1[1] > t2[1]) {
-        throw new Error('1');
+        throw new Error('1')
       }
 
       for (let i = t2[0]; i <= t1[0]; i++) {
-        let tmp: Promise<Group>[] = [];
-        tileMatrix.push(tmp);
+        let tmp: Promise<Group>[] = []
+        tileMatrix.push(tmp)
         for (let j = t1[1]; j <= t2[1]; j++) {
           tmp.push(
             this.addTileMesh(
@@ -446,19 +452,19 @@ export class Model {
                 (i == t1[0] ? TileBorderEnum.RIGHT : TileBorderEnum.NONE) |
                 (j == t1[1] ? TileBorderEnum.TOP : TileBorderEnum.NONE) |
                 (j == t2[1] ? TileBorderEnum.BOTTOM : TileBorderEnum.NONE),
-              tileDecorator
-            )
-          );
+              tileDecorator,
+            ),
+          )
         }
       }
     } else {
-      let modelTileSize = 4;
-      const low = Math.floor(modelTileSize / 2);
-      const up = low + modelTileSize;
+      let modelTileSize = 4
+      const low = Math.floor(modelTileSize / 2)
+      const up = low + modelTileSize
 
       for (let i = -low; i < up; i++) {
-        let tmp: Promise<Group>[] = [];
-        tileMatrix.push(tmp);
+        let tmp: Promise<Group>[] = []
+        tileMatrix.push(tmp)
         for (let j = -low; j < up; j++) {
           // const x = xyz[0] + i;
           // const y = xyz[1] - j;
@@ -473,79 +479,70 @@ export class Model {
                 (i == up - 1 ? TileBorderEnum.RIGHT : TileBorderEnum.NONE) |
                 (j == -low ? TileBorderEnum.TOP : TileBorderEnum.NONE) |
                 (j == up - 1 ? TileBorderEnum.BOTTOM : TileBorderEnum.NONE),
-              tileDecorator
-            )
-          );
+              tileDecorator,
+            ),
+          )
         }
       }
     }
 
-    this.scene.add(tilesGroup);
+    this.scene.add(tilesGroup)
 
-    const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]));
-    this.origin = origin;
+    const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]))
+    this.origin = origin
 
     if (trail != null) {
-      await this.addTrail(trail);
+      await this.addTrail(trail)
     }
 
-    const heightScale = this.getHeightScale();
+    const heightScale = this.getHeightScale()
 
     const tmpPoint = this.map.project({
       lat: 45.85493,
       lng: 6.8175289,
-    });
+    })
 
     this.addSphere(
       (tmpPoint.x - origin.x) / 256 - 0.5,
       (origin.y - tmpPoint.y) / 256 + 0.5,
-      3167 / heightScale + 0.006
-    );
+      3167 / heightScale + 0.006,
+    )
 
-    this.fixTileEdges(tileMatrix);
+    this.fixTileEdges(tileMatrix)
 
     setTimeout(() => {
-      this.fitCameraTo(
-        new Box3().setFromObject(tilesGroup),
-        this.camera as any
-      );
-    }, 1000);
+      this.fitCameraTo(new Box3().setFromObject(tilesGroup), this.camera as any)
+    }, 1000)
   }
 
   public async drawTrail(source: string) {
-    const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
-    let trail: ILatLngAlt[] = await this.loadTrail(source);
-    this.options.trailGpxUrl = source;
+    const xyz = this.getTileXYZ(this.map.center, this.map.zoom)
+    let trail: ILatLngAlt[] = await this.loadTrail(source)
+    this.options.trailGpxUrl = source
     //@ts-ignore
     const tileDecorator: TileTextureDecorator =
-      trail == null ? null : new TileTextureDecorator(trail, this.map);
+      trail == null ? null : new TileTextureDecorator(trail, this.map)
 
-    const tilesGroup = new Group();
-    tilesGroup.name = 'model';
+    const tilesGroup = new Group()
+    tilesGroup.name = 'model'
 
-    let tileMatrix: Promise<Group>[][] = [];
+    let tileMatrix: Promise<Group>[][] = []
 
     if (this.options.bbox != null) {
-      const t1 = this.getTileXYZ(
-        this.options.bbox.northEast,
-        this.options.zoom
-      );
+      const t1 = this.getTileXYZ(this.options.bbox.northEast, this.options.zoom)
 
-      const t2 = this.getTileXYZ(
-        this.options.bbox.southWest,
-        this.options.zoom
-      );
+      const t2 = this.getTileXYZ(this.options.bbox.southWest, this.options.zoom)
 
       if (t1[0] < t2[0]) {
-        throw new Error('0');
+        throw new Error('0')
       }
       if (t1[1] > t2[1]) {
-        throw new Error('1');
+        throw new Error('1')
       }
 
       for (let i = t2[0]; i <= t1[0]; i++) {
-        let tmp: Promise<Group>[] = [];
-        tileMatrix.push(tmp);
+        let tmp: Promise<Group>[] = []
+        tileMatrix.push(tmp)
         for (let j = t1[1]; j <= t2[1]; j++) {
           tmp.push(
             this.addTileMesh(
@@ -557,19 +554,19 @@ export class Model {
                 (i == t1[0] ? TileBorderEnum.RIGHT : TileBorderEnum.NONE) |
                 (j == t1[1] ? TileBorderEnum.TOP : TileBorderEnum.NONE) |
                 (j == t2[1] ? TileBorderEnum.BOTTOM : TileBorderEnum.NONE),
-              tileDecorator
-            )
-          );
+              tileDecorator,
+            ),
+          )
         }
       }
     } else {
-      let modelTileSize = 4;
-      const low = Math.floor(modelTileSize / 2);
-      const up = low + modelTileSize;
+      let modelTileSize = 4
+      const low = Math.floor(modelTileSize / 2)
+      const up = low + modelTileSize
 
       for (let i = -low; i < up; i++) {
-        let tmp: Promise<Group>[] = [];
-        tileMatrix.push(tmp);
+        let tmp: Promise<Group>[] = []
+        tileMatrix.push(tmp)
         for (let j = -low; j < up; j++) {
           // const x = xyz[0] + i;
           // const y = xyz[1] - j;
@@ -584,74 +581,71 @@ export class Model {
                 (i == up - 1 ? TileBorderEnum.RIGHT : TileBorderEnum.NONE) |
                 (j == -low ? TileBorderEnum.TOP : TileBorderEnum.NONE) |
                 (j == up - 1 ? TileBorderEnum.BOTTOM : TileBorderEnum.NONE),
-              tileDecorator
-            )
-          );
+              tileDecorator,
+            ),
+          )
         }
       }
     }
 
-    this.scene.add(tilesGroup);
+    this.scene.add(tilesGroup)
 
-    const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]));
-    this.origin = origin;
+    const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]))
+    this.origin = origin
 
     if (trail != null) {
-      await this.addTrail(trail);
+      await this.addTrail(trail)
     }
 
-    const heightScale = this.getHeightScale();
+    const heightScale = this.getHeightScale()
 
     const tmpPoint = this.map.project({
       lat: 45.85493,
       lng: 6.8175289,
-    });
+    })
 
     this.addSphere(
       (tmpPoint.x - origin.x) / 256 - 0.5,
       (origin.y - tmpPoint.y) / 256 + 0.5,
-      3167 / heightScale + 0.006
-    );
+      3167 / heightScale + 0.006,
+    )
 
-    this.fixTileEdges(tileMatrix);
+    this.fixTileEdges(tileMatrix)
 
     setTimeout(() => {
-      this.fitCameraTo(
-        new Box3().setFromObject(tilesGroup),
-        this.camera as any
-      );
-    }, 1000);
+      this.fitCameraTo(new Box3().setFromObject(tilesGroup), this.camera as any)
+    }, 1000)
   }
 
   public resetCamera() {
-    const bbox = new Box3();
+    const bbox = new Box3()
     //@ts-ignore
-    bbox.setFromObject(this.scene.getObjectByName('model'));
-    this.fitCameraTo(bbox, this.camera as any);
+    bbox.setFromObject(this.scene.getObjectByName('model'))
+    this.fitCameraTo(bbox, this.camera as any)
   }
 
   private fitCameraTo(boundingBox: Box3, camera: PerspectiveCamera) {
-    const size = boundingBox.getSize(new Vector3());
+    const size = boundingBox.getSize(new Vector3())
 
-    const padding = 0.2;
+    const padding = 0.2
 
     const distance = this.controls.getDistanceToFitBox(
       size.x + padding,
       size.y + padding,
-      size.z + padding
-    );
-    this.controls.moveTo(0, 0, 0, true);
-    this.controls.dollyTo(distance, true);
-    this.controls.rotateTo(0, Math.PI / 4, true);
-    this.controls.setFocalOffset(0, 0, 0, true);
+      size.z + padding,
+    )
+    this.controls.moveTo(0, 0, 0, true)
+    this.controls.dollyTo(distance, true)
+    this.controls.rotateTo(0, Math.PI / 4, true)
+    this.controls.setFocalOffset(0, 0, 0, true)
   }
 
   private async loadTrail(sourceUrl: string) {
     try {
-      const response = await axios.get(sourceUrl);
-      const fileContent = response.data;
-      const pathPoints: ILatLngAlt[] = [];
-      fileContent.forEach(_point => {
+      const response = await axios.get(sourceUrl)
+      const fileContent = response.data
+      const pathPoints: ILatLngAlt[] = []
+      fileContent.forEach((_point) => {
         const { latitude, longitude, elevation } = _point
         const newPoint: ILatLngAlt = {
           //@ts-ignore
@@ -659,15 +653,15 @@ export class Model {
           //@ts-ignore
           lng: longitude,
           //@ts-ignore
-          alt: (elevation || 0),
-        };
-        
+          alt: elevation || 0,
+        }
+
         pathPoints.push(newPoint)
       })
       return pathPoints
-    } catch(e) {
+    } catch (e) {
       console.error(e)
-    }  
+    }
   }
 
   private async addTrail(gpxPoints: ILatLngAlt[]) {
@@ -675,41 +669,41 @@ export class Model {
 
     const material = new LineBasicMaterial({
       color: 0x0000ff,
-    });
+    })
 
-    const heightScale = this.getHeightScale();
+    const heightScale = this.getHeightScale()
 
-    let points: IPoint3D[] = [];
+    let points: IPoint3D[] = []
     for (let x of gpxPoints) {
       const tmpPoint = this.map.project({
         lat: x.lat,
         lng: x.lng,
-      });
+      })
 
       const coord = [
         (tmpPoint.x - this.origin.x) / 256,
         (this.origin.y - tmpPoint.y) / 256,
-      ];
+      ]
 
       points.push({
         x: coord[0] - 0.5,
         y: coord[1] + 0.5,
         z: x.alt / heightScale + 0.006,
-      });
+      })
     }
 
-    const SIMPLIFY = false;
-    let path = new CurvePath();
+    const SIMPLIFY = false
+    let path = new CurvePath()
 
-    const cameraElevation = 0;
+    const cameraElevation = 0
 
     let allTrailStops: ITrailStop[] = []
 
-    let vectors: Vector3[];
+    let vectors: Vector3[]
     if (SIMPLIFY) {
-      points = simplify3D(points, 0.001, false);
+      points = simplify3D(points, 0.001, false)
 
-      let beziers = fitCurve(points, 0.01);
+      let beziers = fitCurve(points, 0.01)
 
       for (let bezier of beziers) {
         path.add(
@@ -717,52 +711,56 @@ export class Model {
             new Vector3(
               bezier[0].x,
               bezier[0].y,
-              bezier[0].z + cameraElevation
+              bezier[0].z + cameraElevation,
             ),
             new Vector3(
               bezier[1].x,
               bezier[1].y,
-              bezier[1].z + cameraElevation
+              bezier[1].z + cameraElevation,
             ),
             new Vector3(
               bezier[2].x,
               bezier[2].y,
-              bezier[2].z + cameraElevation
+              bezier[2].z + cameraElevation,
             ),
-            new Vector3(bezier[3].x, bezier[3].y, bezier[3].z + cameraElevation)
-          )
-        );
+            new Vector3(
+              bezier[3].x,
+              bezier[3].y,
+              bezier[3].z + cameraElevation,
+            ),
+          ),
+        )
       }
-      vectors = path.getPoints(100) as Vector3[];
+      vectors = path.getPoints(100) as Vector3[]
     } else {
-      vectors = points.map((x) => new Vector3(x.x, x.y, x.z));
+      vectors = points.map((x) => new Vector3(x.x, x.y, x.z))
       allTrailStops = getAllTrailStops(vectors, this.options.mapObjects)
       console.log(allTrailStops)
 
       for (let i = 1; i < vectors.length; i++) {
-        let p1 = vectors[i - 1].clone();
-        let p2 = vectors[i].clone();
-        p1.z += cameraElevation;
-        p2.z += cameraElevation;
-        path.add(new LineCurve3(p1, p2));
+        let p1 = vectors[i - 1].clone()
+        let p2 = vectors[i].clone()
+        p1.z += cameraElevation
+        p2.z += cameraElevation
+        path.add(new LineCurve3(p1, p2))
       }
     }
 
     //const vectors: Vector3[] = points.map(x => new Vector3(x.x, x.y, x.z));
 
-    const geometry = new BufferGeometry().setFromPoints(vectors);
+    const geometry = new BufferGeometry().setFromPoints(vectors)
 
-    const line = new Line(geometry, material);
-    this.scene.add(line);
+    const line = new Line(geometry, material)
+    this.scene.add(line)
 
     this.setTrailAnimation(path, allTrailStops)
   }
 
   private setTrailAnimation(path: CurvePath<Vector>, stops: ITrailStop[] = []) {
-    const { x, y, z } = path.getPointAt(0) as Vector3;
-    this.addSphere(x, y, z, 'TRAIL_SPHERE');
+    const { x, y, z } = path.getPointAt(0) as Vector3
+    this.addSphere(x, y, z, 'TRAIL_SPHERE')
 
-    const animationProgress = { value: 0 };
+    const animationProgress = { value: 0 }
     const pathAnimation = gsap.fromTo(
       animationProgress,
       {
@@ -776,10 +774,12 @@ export class Model {
         repeat: 0,
         onUpdateParams: [animationProgress],
         onUpdate: ({ value }) => {
-          const pos = path.getPointAt(value) as Vector3;
+          const pos = path.getPointAt(value) as Vector3
           const stopObj = isStopPoint(pos, stops)
-          if(stopObj !== null) {
-            stops = stops.filter((_stop: ITrailStop) => _stop.object.id !== stopObj.id)
+          if (stopObj !== null) {
+            stops = stops.filter(
+              (_stop: ITrailStop) => _stop.object.id !== stopObj.id,
+            )
             this.pauseTrailAnimation()
 
             this.onTrailPointReachedCallback(stopObj)
@@ -790,48 +790,48 @@ export class Model {
           }
 
           const mySphere = this.scene.children.find(
-            (_item) => _item.pinId === 'TRAIL_SPHERE'
-          );
-          mySphere.position.set(pos.x, pos.y, pos.z);
+            (_item) => _item.pinId === 'TRAIL_SPHERE',
+          )
+          mySphere.position.set(pos.x, pos.y, pos.z)
         },
         onStart: () => {
-          this.controls.enabled = false;
+          this.controls.enabled = false
         },
         onComplete: () => {
-          this.controls.enabled = true;
-          this.animateTrail = false;
-          this.stopTrailAnimation();
+          this.controls.enabled = true
+          this.animateTrail = false
+          this.stopTrailAnimation()
         },
-      }
-    );
+      },
+    )
 
-    this.pathAnimation = pathAnimation;
+    this.pathAnimation = pathAnimation
   }
 
   private fixTileEdges(tileMatrix: Promise<Group>[][]) {
     async function getPositionBuffer(tile: Promise<Group>) {
-      let map = (await tile).getObjectByName('map') as Mesh;
-      return map.geometry.getAttribute('position') as Float32BufferAttribute;
+      let map = (await tile).getObjectByName('map') as Mesh
+      return map.geometry.getAttribute('position') as Float32BufferAttribute
     }
 
     async function fixTiles(
       tile1: Promise<Group>,
       tile2: Promise<Group>,
       fn1: (i: number) => number,
-      fn2: (i: number) => number
+      fn2: (i: number) => number,
     ) {
-      let pos1 = await getPositionBuffer(tile1);
-      let pos2 = await getPositionBuffer(tile2);
+      let pos1 = await getPositionBuffer(tile1)
+      let pos2 = await getPositionBuffer(tile2)
 
       for (let i = 0; i < 256; i++) {
-        const idx1 = fn1(i);
-        const idx2 = fn2(i);
-        const avg = (pos2.getZ(idx2) + pos1.getZ(idx1)) / 2;
-        pos1.setZ(idx1, avg);
-        pos2.setZ(idx2, avg);
+        const idx1 = fn1(i)
+        const idx2 = fn2(i)
+        const avg = (pos2.getZ(idx2) + pos1.getZ(idx1)) / 2
+        pos1.setZ(idx1, avg)
+        pos2.setZ(idx2, avg)
       }
-      pos1.needsUpdate = true;
-      pos2.needsUpdate = true;
+      pos1.needsUpdate = true
+      pos2.needsUpdate = true
     }
 
     for (let i = 0; i < tileMatrix.length; i++) {
@@ -840,8 +840,8 @@ export class Model {
           tileMatrix[i][j],
           tileMatrix[i][j + 1],
           (x) => 256 * 256 - 256 + x,
-          (x) => x
-        );
+          (x) => x,
+        )
       }
     }
 
@@ -851,22 +851,22 @@ export class Model {
           tileMatrix[i][j],
           tileMatrix[i + 1][j],
           (x) => 256 + x * 256 - 1,
-          (x) => x * 256
-        );
+          (x) => x * 256,
+        )
       }
     }
   }
 
   private coordToModelPoint(coord: ILatLng): IPoint {
-    const xyz = this.getTileXYZ(this.map.center, this.map.zoom);
+    const xyz = this.getTileXYZ(this.map.center, this.map.zoom)
 
-    const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]));
-    const tmpPoint = this.map.project(coord);
+    const origin = this.map.project(tile2LatLong(xyz[0], xyz[1], xyz[2]))
+    const tmpPoint = this.map.project(coord)
 
     return {
       x: (tmpPoint.x - origin.x) / 256,
       y: (origin.y - tmpPoint.y) / 256,
-    };
+    }
   }
 
   private async addTileMesh(
@@ -875,67 +875,67 @@ export class Model {
     y: number,
     tilesGroup: Group,
     borders: TileBorderEnum,
-    tileDecorator: ITileTextureDecorator
+    tileDecorator: ITileTextureDecorator,
   ) {
     let mesh = await this.getMesh(
       xyz[0] + x,
       xyz[1] - y,
       xyz[2],
       borders,
-      tileDecorator
-    );
-    mesh.name = `tile-${xyz[0] + x}-${xyz[1] - y}`;
+      tileDecorator,
+    )
+    mesh.name = `tile-${xyz[0] + x}-${xyz[1] - y}`
 
-    tilesGroup.add(mesh);
-    mesh.position.setX(x);
-    mesh.position.setY(y);
-    return mesh;
+    tilesGroup.add(mesh)
+    mesh.position.setX(x)
+    mesh.position.setY(y)
+    return mesh
   }
 
   private getTileXYZ(pos: ILatLng, zoom: number) {
-    let x = lon2tile(pos.lng, zoom);
-    let y = lat2tile(pos.lat, zoom);
+    let x = lon2tile(pos.lng, zoom)
+    let y = lat2tile(pos.lat, zoom)
 
-    return [x, y, zoom];
+    return [x, y, zoom]
   }
 
   private async loadTile(x: number, y: number, zoom: number) {
-    const baseUrl = 'https://3dmap.janjanousek.cz/proxy/?url=';
+    const baseUrl = 'https://3dmap.janjanousek.cz/proxy/?url='
     //const baseUrl = 'https://api.mapbox.com/';
 
     const apiKey =
-      'pk.eyJ1IjoiamFub3VzZWsiLCJhIjoiY2oyYWE4cXgyMDAwZTMzbjJ2YnZsN2owaiJ9.pYpMMOZZ4Kyaaw3sUZP0hg';
-    const url = `${baseUrl}v4/mapbox.terrain-rgb/${zoom}/${x}/${y}.pngraw?access_token=${apiKey}`;
-    const textureUrl = `${baseUrl}v4/mapbox.satellite/${zoom}/${x}/${y}@2x.png?access_token=${apiKey}`;
+      'pk.eyJ1IjoiamFub3VzZWsiLCJhIjoiY2oyYWE4cXgyMDAwZTMzbjJ2YnZsN2owaiJ9.pYpMMOZZ4Kyaaw3sUZP0hg'
+    const url = `${baseUrl}v4/mapbox.terrain-rgb/${zoom}/${x}/${y}.pngraw?access_token=${apiKey}`
+    const textureUrl = `${baseUrl}v4/mapbox.satellite/${zoom}/${x}/${y}@2x.png?access_token=${apiKey}`
 
     const [{ size: planeSize, heights }, texture] = await Promise.all([
       ElevationLoader.load(url),
       new TextureLoader().loadAsync(textureUrl),
-    ]);
+    ])
 
     //nejvetsi alt na mape
-    this.options.center.alt = Math.max(this.options.center.alt, ...heights);
+    this.options.center.alt = Math.max(this.options.center.alt, ...heights)
 
     let sidesHeightMap: IContourHeightMap = {
       left: [],
       right: [],
       top: [],
       bottom: [],
-    };
+    }
     for (let idx = 0; idx < heights.length; idx++) {
-      const height = heights[idx];
+      const height = heights[idx]
 
       if (idx < planeSize) {
-        sidesHeightMap.top.push(height);
+        sidesHeightMap.top.push(height)
       }
       if (idx > heights.length - planeSize - 1) {
-        sidesHeightMap.bottom.push(height);
+        sidesHeightMap.bottom.push(height)
       }
       if (idx % planeSize == 0) {
-        sidesHeightMap.left.push(height);
+        sidesHeightMap.left.push(height)
       }
       if ((idx + 1) % planeSize == 0) {
-        sidesHeightMap.right.push(height);
+        sidesHeightMap.right.push(height)
       }
     }
 
@@ -944,7 +944,7 @@ export class Model {
       size: planeSize,
       texture: texture,
       sidesHeightMap: sidesHeightMap,
-    };
+    }
   }
 
   private async getMesh(
@@ -952,89 +952,89 @@ export class Model {
     y: number,
     zoom: number,
     borders: TileBorderEnum,
-    tileDecorator: ITileTextureDecorator
+    tileDecorator: ITileTextureDecorator,
   ): Promise<Group> {
-    const tileLat = tile2lat(y, zoom);
-    const tileLng = tile2long(x, zoom);
+    const tileLat = tile2lat(y, zoom)
+    const tileLng = tile2long(x, zoom)
 
-    const group = new Group();
+    const group = new Group()
 
-    const tile = await this.loadTile(x, y, zoom);
-    const geometry = new PlaneGeometry(1, 1, tile.size - 1, tile.size - 1);
+    const tile = await this.loadTile(x, y, zoom)
+    const geometry = new PlaneGeometry(1, 1, tile.size - 1, tile.size - 1)
 
-    const heightScale = this.getHeightScale();
+    const heightScale = this.getHeightScale()
 
-    const positions = geometry.attributes['position'] as Float32BufferAttribute;
+    const positions = geometry.attributes['position'] as Float32BufferAttribute
     for (let i = 0; i < tile.heights.length; i++) {
-      const height = tile.heights[i];
-      positions.setZ(i, height / heightScale);
+      const height = tile.heights[i]
+      positions.setZ(i, height / heightScale)
     }
 
-    geometry.computeVertexNormals();
+    geometry.computeVertexNormals()
 
-    geometry.attributes['position'].needsUpdate = true;
-    geometry.attributes['normal'].needsUpdate = true;
-    geometry.attributes['uv'].needsUpdate = true;
+    geometry.attributes['position'].needsUpdate = true
+    geometry.attributes['normal'].needsUpdate = true
+    geometry.attributes['uv'].needsUpdate = true
 
-    tileDecorator?.decorate(tile.texture, tileLat, tileLng);
+    tileDecorator?.decorate(tile.texture, tileLat, tileLng)
 
     const material = new MeshLambertMaterial({
       map: tile.texture,
       side: DoubleSide,
       // wireframe: true
-    });
-    const mesh = new Mesh(geometry, material);
-    mesh.name = 'map';
+    })
+    const mesh = new Mesh(geometry, material)
+    mesh.name = 'map'
     mesh.userData = {
       x: x,
       y: y,
       zoom: zoom,
       lat: tile2lat(y, zoom),
       lng: tile2long(x, zoom),
-    };
+    }
 
     //if (ENABLE_SHADOW) {
-    mesh.receiveShadow = true;
-    mesh.castShadow = true;
+    mesh.receiveShadow = true
+    mesh.castShadow = true
     //}
 
-    this.createBox(tile.sidesHeightMap, heightScale, group, borders);
+    this.createBox(tile.sidesHeightMap, heightScale, group, borders)
 
-    group.add(mesh);
+    group.add(mesh)
 
     // console.log('max height', tile.heights.reduce((a, b) => Math.max(a, b), 0) / heightScale);
 
-    return group;
+    return group
   }
 
   private static groundMaterial = new Promise(async (resolve) => {
-    const loader = new TextureLoader();
-    const groundTexture = await loader.loadAsync('/assets/ground.jpg');
+    const loader = new TextureLoader()
+    const groundTexture = await loader.loadAsync('/assets/ground.jpg')
     resolve(
       new MeshLambertMaterial({
         map: groundTexture,
         side: DoubleSide,
         // wireframe: true
-      })
-    );
-  });
+      }),
+    )
+  })
 
   private async createBox(
     sidesHeightMap: IContourHeightMap,
     heightScale: number,
     group: Group,
-    borders: TileBorderEnum
+    borders: TileBorderEnum,
   ) {
     if (borders == TileBorderEnum.NONE) {
-      return;
+      return
     }
 
-    const sideMaterial = await Model.groundMaterial;
+    const sideMaterial = await Model.groundMaterial
 
-    const DEPTH = -0.1;
+    const DEPTH = -0.1
 
     let createSide = (data: number[]) => {
-      const len = data.length - 1;
+      const len = data.length - 1
 
       /*
 						let pts: Vector2[] = [];
@@ -1049,97 +1049,97 @@ export class Model {
 						let side = new Mesh(bg, sideMaterial);
 						*/
 
-      let pts: number[] = [];
+      let pts: number[] = []
       for (let i = 0; i < data.length; i++) {
-        pts.push(i / len);
-        pts.push(data[i] / heightScale);
-        pts.push(0);
+        pts.push(i / len)
+        pts.push(data[i] / heightScale)
+        pts.push(0)
       }
       for (let i = 0; i < data.length; i++) {
-        pts.push(i / len);
-        pts.push(DEPTH);
-        pts.push(0);
+        pts.push(i / len)
+        pts.push(DEPTH)
+        pts.push(0)
       }
 
-      let idxs: number[] = [];
+      let idxs: number[] = []
       for (let i = 0; i < data.length - 1; i++) {
-        idxs.push(0 + i);
-        idxs.push(1 + i);
-        idxs.push(data.length + i);
+        idxs.push(0 + i)
+        idxs.push(1 + i)
+        idxs.push(data.length + i)
 
-        idxs.push(1 + i);
-        idxs.push(data.length + 1 + i);
-        idxs.push(data.length + i);
+        idxs.push(1 + i)
+        idxs.push(data.length + 1 + i)
+        idxs.push(data.length + i)
       }
 
-      let uvs: number[] = [];
+      let uvs: number[] = []
       for (let i = 0; i < data.length; i++) {
-        uvs.push(i / len);
-        uvs.push(0);
+        uvs.push(i / len)
+        uvs.push(0)
       }
       for (let i = 0; i < data.length; i++) {
-        uvs.push(i / len);
-        uvs.push(1);
+        uvs.push(i / len)
+        uvs.push(1)
       }
 
-      let normals: number[] = [];
+      let normals: number[] = []
       for (let i = 0; i < pts.length; i++) {
-        normals.push(0, 0, -1);
+        normals.push(0, 0, -1)
       }
 
-      let bg = new BufferGeometry();
+      let bg = new BufferGeometry()
 
-      bg.setAttribute('position', new Float32BufferAttribute(pts, 3));
-      bg.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
-      bg.setAttribute('normal', new Float32BufferAttribute(normals, 3));
-      bg.setIndex(idxs);
+      bg.setAttribute('position', new Float32BufferAttribute(pts, 3))
+      bg.setAttribute('uv', new Float32BufferAttribute(uvs, 2))
+      bg.setAttribute('normal', new Float32BufferAttribute(normals, 3))
+      bg.setIndex(idxs)
 
-      let side = new Mesh(bg, sideMaterial);
+      let side = new Mesh(bg, sideMaterial)
 
-      return side;
-    };
+      return side
+    }
 
     let createHorizontalSide = (data: number[], mult: number) => {
-      let side = createSide(data);
-      side.rotation.x = Math.PI / 2;
-      side.rotation.y = (-Math.PI / 2) * mult;
+      let side = createSide(data)
+      side.rotation.x = Math.PI / 2
+      side.rotation.y = (-Math.PI / 2) * mult
 
-      side.position.y = 0.5 * mult;
-      return side;
-    };
+      side.position.y = 0.5 * mult
+      return side
+    }
 
     let createVerticalSide = (data: number[], mult: number) => {
-      let side = createSide(data);
-      side.rotation.x = Math.PI / 2;
-      side.rotation.y = mult == -1 ? Math.PI : 0;
+      let side = createSide(data)
+      side.rotation.x = Math.PI / 2
+      side.rotation.y = mult == -1 ? Math.PI : 0
 
-      side.position.x = -0.5 * mult;
-      return side;
-    };
+      side.position.x = -0.5 * mult
+      return side
+    }
 
     if ((borders & TileBorderEnum.LEFT) == TileBorderEnum.LEFT) {
-      let leftSide = createHorizontalSide(sidesHeightMap.left, 1);
-      leftSide.position.x = -0.5;
-      group.add(leftSide);
+      let leftSide = createHorizontalSide(sidesHeightMap.left, 1)
+      leftSide.position.x = -0.5
+      group.add(leftSide)
     }
     // -
 
     if ((borders & TileBorderEnum.RIGHT) == TileBorderEnum.RIGHT) {
-      let rightSide = createHorizontalSide(sidesHeightMap.right.reverse(), -1);
-      rightSide.position.x = 0.5;
-      group.add(rightSide);
+      let rightSide = createHorizontalSide(sidesHeightMap.right.reverse(), -1)
+      rightSide.position.x = 0.5
+      group.add(rightSide)
     }
     // -
     if ((borders & TileBorderEnum.TOP) == TileBorderEnum.TOP) {
-      let topSide = createVerticalSide(sidesHeightMap.top.reverse(), -1);
-      topSide.position.y = 0.5;
-      group.add(topSide);
+      let topSide = createVerticalSide(sidesHeightMap.top.reverse(), -1)
+      topSide.position.y = 0.5
+      group.add(topSide)
     }
     // -
     if ((borders & TileBorderEnum.BOTTOM) == TileBorderEnum.BOTTOM) {
-      let bottomSide = createVerticalSide(sidesHeightMap.bottom, 1);
-      bottomSide.position.y = -0.5;
-      group.add(bottomSide);
+      let bottomSide = createVerticalSide(sidesHeightMap.bottom, 1)
+      bottomSide.position.y = -0.5
+      group.add(bottomSide)
     }
 
     /*
@@ -1148,45 +1148,45 @@ export class Model {
 		*/
     // bottom
 
-    let pts: Vector2[] = [];
+    let pts: Vector2[] = []
 
-    pts.push(new Vector2(0, 0));
-    pts.push(new Vector2(0, 1));
-    pts.push(new Vector2(1, 1));
-    pts.push(new Vector2(1, 0));
+    pts.push(new Vector2(0, 0))
+    pts.push(new Vector2(0, 1))
+    pts.push(new Vector2(1, 1))
+    pts.push(new Vector2(1, 0))
 
-    let bottomShape = new ShapeGeometry(new Shape(pts));
-    const bottomNormals = bottomShape.attributes['normal'];
+    let bottomShape = new ShapeGeometry(new Shape(pts))
+    const bottomNormals = bottomShape.attributes['normal']
     for (let i = 0; i < bottomNormals.count; i++) {
-      (bottomNormals as any).setZ(i, -1);
+      ;(bottomNormals as any).setZ(i, -1)
     }
 
     let bottom = new Mesh(
       bottomShape,
-      new MeshBasicMaterial({ color: 0x642b1f, side: DoubleSide })
-    );
-    bottom.position.x = -0.5;
-    bottom.position.y = -0.5;
-    bottom.position.z = DEPTH;
-    group.add(bottom);
+      new MeshBasicMaterial({ color: 0x642b1f, side: DoubleSide }),
+    )
+    bottom.position.x = -0.5
+    bottom.position.y = -0.5
+    bottom.position.z = DEPTH
+    group.add(bottom)
   }
 
   private buildAxisControl(viewHelperCanvasWrapper: HTMLElement) {
     const axisControl = new AxisControl(
       this,
       this.camera,
-      viewHelperCanvasWrapper
-    );
-    return axisControl;
+      viewHelperCanvasWrapper,
+    )
+    return axisControl
   }
 
   public setCanvasSize(width: number, height: number) {
-    this.width = width;
-    this.height = height;
+    this.width = width
+    this.height = height
 
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(width, height);
+    this.camera.aspect = width / height
+    this.camera.updateProjectionMatrix()
+    this.renderer.setSize(width, height)
   }
 
   private buildCamera() {
@@ -1194,14 +1194,14 @@ export class Model {
       45,
       this.width / this.height,
       0.1,
-      10000
-    );
+      10000,
+    )
     // magic to change y-up world to z-up
-    camera.up.set(0, 0, 1);
+    camera.up.set(0, 0, 1)
 
-    camera.position.z = 2;
+    camera.position.z = 2
 
-    return camera;
+    return camera
   }
 
   private render() {
@@ -1224,33 +1224,33 @@ export class Model {
 
     // -
 
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scene, this.camera)
 
-    this.axisControl.render();
+    this.axisControl.render()
 
-    this.northArrowControl.render();
+    this.northArrowControl.render()
   }
 
   public animate() {
-    if (this.disposed) return;
+    if (this.disposed) return
 
-    requestAnimationFrame(() => this.animate());
+    requestAnimationFrame(() => this.animate())
 
-    this.axisControl.update();
+    this.axisControl.update()
 
-    this.northArrowControl.update();
+    this.northArrowControl.update()
 
-    const hasControlsUpdated = this.controls.update(this.clock.getDelta());
+    const hasControlsUpdated = this.controls.update(this.clock.getDelta())
 
-    this.render();
+    this.render()
   }
 
   private initOrbitControls(
     camera: PerspectiveCamera | OrthographicCamera,
-    domElement: HTMLCanvasElement
+    domElement: HTMLCanvasElement,
   ) {
-    const controls = new CameraControls(camera, domElement);
-    controls.verticalDragToForward = true;
+    const controls = new CameraControls(camera, domElement)
+    controls.verticalDragToForward = true
     // controls.screenSpacePanning = false;
 
     // controls.enableKeys = false;    // key events are handled in app.eventListener.keydown
@@ -1269,59 +1269,59 @@ export class Model {
       spherical = new Spherical(),
       quat = new Quaternion().setFromUnitVectors(
         camera.up,
-        new Vector3(0, 1, 0)
+        new Vector3(0, 1, 0),
       ),
-      quatInverse = quat.clone().invert();
+      quatInverse = quat.clone().invert()
 
     this.cameraRotate = (thetaDelta: number, phiDelta: number) => {
-      let target = new Vector3();
-      target = this.controls.getTarget(target);
+      let target = new Vector3()
+      target = this.controls.getTarget(target)
 
-      offset.copy(target).sub(this.controls.camera.position);
-      offset.applyQuaternion(quat);
+      offset.copy(target).sub(this.controls.camera.position)
+      offset.applyQuaternion(quat)
 
-      spherical.setFromVector3(offset);
+      spherical.setFromVector3(offset)
 
-      spherical.theta += thetaDelta;
-      spherical.phi -= phiDelta;
+      spherical.theta += thetaDelta
+      spherical.phi -= phiDelta
 
       // restrict theta/phi to be between desired limits
       spherical.theta = Math.max(
         this.controls.minAzimuthAngle,
-        Math.min(this.controls.maxAzimuthAngle, spherical.theta)
-      );
+        Math.min(this.controls.maxAzimuthAngle, spherical.theta),
+      )
       spherical.phi = Math.max(
         this.controls.minPolarAngle,
-        Math.min(this.controls.maxPolarAngle, spherical.phi)
-      );
-      spherical.makeSafe();
+        Math.min(this.controls.maxPolarAngle, spherical.phi),
+      )
+      spherical.makeSafe()
 
-      offset.setFromSpherical(spherical);
-      offset.applyQuaternion(quatInverse);
+      offset.setFromSpherical(spherical)
+      offset.applyQuaternion(quatInverse)
 
-      target.copy(this.controls.camera.position).add(offset);
+      target.copy(this.controls.camera.position).add(offset)
 
-      this.controls.setTarget(target.x, target.y, target.z);
-      this.controls.camera.lookAt(target);
-    };
+      this.controls.setTarget(target.x, target.y, target.z)
+      this.controls.camera.lookAt(target)
+    }
 
-    return controls;
+    return controls
   }
 
   public cameraRotate(thetaDelta: number, phiDelta: number) {
-    throw new Error('not implemented');
+    throw new Error('not implemented')
   }
 
   public intersectObjects(offsetX: number, offsetY: number) {
     var vec2 = new Vector2(
       (offsetX / this.width) * 2 - 1,
-      -(offsetY / this.height) * 2 + 1
-    );
-    var ray = new Raycaster();
+      -(offsetY / this.height) * 2 + 1,
+    )
+    var ray = new Raycaster()
     // ray.linePrecision = 0.2;
 
-    ray.setFromCamera(vec2, this.camera);
-    return ray.intersectObjects([this.scene], true);
+    ray.setFromCamera(vec2, this.camera)
+    return ray.intersectObjects([this.scene], true)
   }
 
   private addLabel(
@@ -1329,59 +1329,59 @@ export class Model {
     y: number,
     z: number,
     pinId: string = '',
-    txt: string = 'TEST'
+    txt: string = 'TEST',
   ) {
-    const size = 0.01;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const size = 0.01
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
 
-    const fontSize = 16;
+    const fontSize = 16
 
-    ctx.font = `${fontSize}px Arial`;
-    ctx.textBaseline = 'middle'; // pro vycentrování textu ve výšce
-    const textWidth = ctx.measureText(txt).width;
+    ctx.font = `${fontSize}px Arial`
+    ctx.textBaseline = 'middle' // pro vycentrování textu ve výšce
+    const textWidth = ctx.measureText(txt).width
 
-    const width = textWidth + 10;
-    const height = fontSize + 4;
+    const width = textWidth + 10
+    const height = fontSize + 4
 
-    ctx.fillStyle = '#fff';
-    ctx.strokeStyle = '#000';
-    ctx.fillRect(0, 0, width, height);
-    ctx.strokeRect(0, 0, width, height);
+    ctx.fillStyle = '#fff'
+    ctx.strokeStyle = '#000'
+    ctx.fillRect(0, 0, width, height)
+    ctx.strokeRect(0, 0, width, height)
 
-    ctx.fillStyle = '#000';
-    ctx.fillText(txt, (width - textWidth) / 2, height / 2);
+    ctx.fillStyle = '#000'
+    ctx.fillText(txt, (width - textWidth) / 2, height / 2)
 
-    const texture = new CanvasTexture(ctx.getImageData(0, 0, width, height));
-    texture.minFilter = LinearFilter;
-    texture.wrapS = ClampToEdgeWrapping;
-    texture.wrapT = ClampToEdgeWrapping;
+    const texture = new CanvasTexture(ctx.getImageData(0, 0, width, height))
+    texture.minFilter = LinearFilter
+    texture.wrapS = ClampToEdgeWrapping
+    texture.wrapT = ClampToEdgeWrapping
 
     const material = new SpriteMaterial({
       map: texture,
       transparent: true,
-    });
-    const sprite = new Sprite(material);
-    sprite.position.set(x, y, z + 0.1);
-    sprite.scale.x = canvas.width * 0.0003;
-    sprite.scale.y = canvas.height * 0.0003;
+    })
+    const sprite = new Sprite(material)
+    sprite.position.set(x, y, z + 0.1)
+    sprite.scale.x = canvas.width * 0.0003
+    sprite.scale.y = canvas.height * 0.0003
 
-    sprite.name = 'label';
-    sprite.pinId = pinId;
-    sprite.isClickable = !!pinId;
-    this.scene.add(sprite);
+    sprite.name = 'label'
+    sprite.pinId = pinId
+    sprite.isClickable = !!pinId
+    this.scene.add(sprite)
 
     const lineMaterial = new LineBasicMaterial({
       color: 0x0000ff,
-    });
+    })
 
     const lineGeometry = new BufferGeometry().setFromPoints([
       new Vector3(x, y, z),
       new Vector3(x, y, z + 0.1),
-    ]);
-    const line = new Line(lineGeometry, lineMaterial);
+    ])
+    const line = new Line(lineGeometry, lineMaterial)
 
-    this.scene.add(line);
+    this.scene.add(line)
   }
 
   private addImageSprite(
@@ -1389,91 +1389,91 @@ export class Model {
     y: number,
     z: number,
     pinId: string,
-    imageUrl: string = ''
+    imageUrl: string = '',
   ) {
-    const canvasWidth = 300;
-    const canvasHeight = 160;
+    const canvasWidth = 300
+    const canvasHeight = 160
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
 
-    const image = new Image();
-    image.crossOrigin = 'Anonymous';
-    image.src = imageUrl;
+    const image = new Image()
+    image.crossOrigin = 'Anonymous'
+    image.src = imageUrl
 
     image.onload = () => {
-      const aspectRatio = image.width / image.height;
-      let drawWidth = canvasWidth;
-      let drawHeight = canvasHeight;
+      const aspectRatio = image.width / image.height
+      let drawWidth = canvasWidth
+      let drawHeight = canvasHeight
 
       if (aspectRatio > 1) {
-        drawHeight = canvasWidth / aspectRatio;
+        drawHeight = canvasWidth / aspectRatio
       } else {
-        drawWidth = canvasHeight * aspectRatio;
+        drawWidth = canvasHeight * aspectRatio
       }
 
-      const xOffset = (canvasWidth - drawWidth) / 2;
-      const yOffset = (canvasHeight - drawHeight) / 2;
+      const xOffset = (canvasWidth - drawWidth) / 2
+      const yOffset = (canvasHeight - drawHeight) / 2
 
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
 
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
-      ctx.drawImage(image, xOffset, yOffset, drawWidth, drawHeight);
+      ctx.drawImage(image, xOffset, yOffset, drawWidth, drawHeight)
 
-      const texture = new CanvasTexture(canvas);
-      texture.minFilter = LinearFilter;
-      texture.wrapS = ClampToEdgeWrapping;
-      texture.wrapT = ClampToEdgeWrapping;
+      const texture = new CanvasTexture(canvas)
+      texture.minFilter = LinearFilter
+      texture.wrapS = ClampToEdgeWrapping
+      texture.wrapT = ClampToEdgeWrapping
 
       const material = new SpriteMaterial({
         map: texture,
         transparent: true,
-      });
+      })
 
-      const sprite = new Sprite(material);
-      sprite.position.set(x, y, z + 0.1);
-      sprite.scale.x = canvas.width * 0.0003;
-      sprite.scale.y = canvas.height * 0.0003;
+      const sprite = new Sprite(material)
+      sprite.position.set(x, y, z + 0.1)
+      sprite.scale.x = canvas.width * 0.0003
+      sprite.scale.y = canvas.height * 0.0003
 
-      sprite.name = 'PIN_IMAGE';
-      sprite.pinId = pinId;
-      sprite.isClickable = true;
-      this.scene.add(sprite);
+      sprite.name = 'PIN_IMAGE'
+      sprite.pinId = pinId
+      sprite.isClickable = true
+      this.scene.add(sprite)
       //   let tmp_obj = this.scene.getObjectByName('imageSprite');
       //   tmp_obj.name = 'changedImageSprite';
       const lineMaterial = new LineBasicMaterial({
         color: 0x0000ff,
-      });
+      })
 
       const lineGeometry = new BufferGeometry().setFromPoints([
         new Vector3(x, y, z),
         new Vector3(x, y, z + 0.1),
-      ]);
+      ])
 
-      const line = new Line(lineGeometry, lineMaterial);
-      this.scene.add(line);
-    };
+      const line = new Line(lineGeometry, lineMaterial)
+      this.scene.add(line)
+    }
   }
 
   public click(e: MouseEvent, options: IMapObjectOptions): void {
-    console.log('EVENT TRIGGERED WITH OPTIONS:');
-    console.log(options);
-    if (!options || !options?.pinType) return;
+    console.log('EVENT TRIGGERED WITH OPTIONS:')
+    console.log(options)
+    if (!options || !options?.pinType) return
 
-    const intersectedObjects = this.clickedObjects(e);
-    console.log(intersectedObjects);
-    if (intersectedObjects.length === 0) return;
-    const map = intersectedObjects.find((x) => x.object.name === 'map');
-    this.addObjectToMap(map.point.x, map.point.y, map.point.z, options);
+    const intersectedObjects = this.clickedObjects(e)
+    console.log(intersectedObjects)
+    if (intersectedObjects.length === 0) return
+    const map = intersectedObjects.find((x) => x.object.name === 'map')
+    this.addObjectToMap(map.point.x, map.point.y, map.point.z, options)
     this.options.mapObjects.push({
       ...options,
       x: map.point.x,
       y: map.point.y,
       z: map.point.z,
-    });
+    })
     //const elevation = this.getHeightScale() * map.point.z
     //const clicLatLng = this.map.unproject({
     //	x: this.origin.x + (map.point.x + 0.5) * 256,
@@ -1483,29 +1483,29 @@ export class Model {
   }
 
   public clickedObjects(
-    e: MouseEvent
+    e: MouseEvent,
   ): Intersection<Object3D<Object3DEventMap>>[] {
-    const parent = this.canvas.getBoundingClientRect();
+    const parent = this.canvas.getBoundingClientRect()
     const objs = this.intersectObjects(
       e.clientX - parent.left,
-      e.clientY - parent.top
-    );
-    const map = objs.find((x) => x.object.name === 'map');
+      e.clientY - parent.top,
+    )
+    const map = objs.find((x) => x.object.name === 'map')
     if (map == null) {
-      return [];
+      return []
     }
-    return objs;
+    return objs
   }
 
   public addObjectToMap(
     x: number,
     y: number,
     z: number,
-    options: IMapObjectOptions
+    options: IMapObjectOptions,
   ) {
-    console.log('ADDING OBJECT TO MAP');
+    console.log('ADDING OBJECT TO MAP')
 
-    z = this.options.heightCoefficient ? z * this.options.heightCoefficient : z 
+    z = this.options.heightCoefficient ? z * this.options.heightCoefficient : z
 
     if (options.pinType === PIN_TYPE.PIN_SIGN) {
       this.addMarker(
@@ -1513,8 +1513,8 @@ export class Model {
         y,
         z + 0.09,
         options.id,
-        options.color ? new Color(options.color) : 0x000000
-      );
+        options.color ? new Color(options.color) : 0x000000,
+      )
     }
     if (options.pinType == PIN_TYPE.PIN_IMAGE) {
       this.addImageSprite(
@@ -1522,29 +1522,29 @@ export class Model {
         y,
         z,
         options.id,
-        options.images?.length > 0 ? options.images[0] : null
-      );
+        options.images?.length > 0 ? options.images[0] : null,
+      )
     }
     if (options.pinType == PIN_TYPE.PIN_LABEL && options.label) {
-      this.addLabel(x, y, z, options.id, options.label);
+      this.addLabel(x, y, z, options.id, options.label)
     }
   }
 
   public removeObjectFromMap(pinId: string) {
-    console.log(this.scene);
+    console.log(this.scene)
     const itemToDelete = this.scene.children.find(
-      (_item) => _item.pinId === pinId
-    );
-    console.log(itemToDelete);
-    this.scene.remove(itemToDelete);
-    console.log(this.scene);
+      (_item) => _item.pinId === pinId,
+    )
+    console.log(itemToDelete)
+    this.scene.remove(itemToDelete)
+    console.log(this.scene)
   }
 
   private addNewLights() {
-    const centerZ = this.map.centerAltitude / this.getHeightScale();
+    const centerZ = this.map.centerAltitude / this.getHeightScale()
     //console.log(getTimes(new Date(),this.map.center.lat, this.map.center.lng))
 
-    this.scene.add(new AmbientLight(0xffffff, 0.2));
+    this.scene.add(new AmbientLight(0xffffff, 0.2))
 
     /*
 				var hemiLight = new HemisphereLight(0xffffff, 0xffffff, 0.6);
@@ -1563,71 +1563,71 @@ export class Model {
 				const hemiLightHelper = new HemisphereLightHelper(hemiLight, 5);
 				this.scene.add(hemiLightHelper);
 		*/
-    var dirLight = new DirectionalLight(0xffffff, 1);
-    dirLight.target.position.z = centerZ;
+    var dirLight = new DirectionalLight(0xffffff, 1)
+    dirLight.target.position.z = centerZ
     // dirLight.position.set(-1, 0.75, 1);
 
-    dirLight.name = 'dirlight';
+    dirLight.name = 'dirlight'
     // dirLight.shadowCameraVisible = true;
 
-    this.scene.add(dirLight);
+    this.scene.add(dirLight)
 
     //if (ENABLE_SHADOW) {
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = Math.pow(2, 21); // 1024 === 2 ^ 10;
-    dirLight.shadow.mapSize.height = Math.pow(2, 21); // 1024 === 2 ^ 10;
+    dirLight.castShadow = true
+    dirLight.shadow.mapSize.width = Math.pow(2, 21) // 1024 === 2 ^ 10;
+    dirLight.shadow.mapSize.height = Math.pow(2, 21) // 1024 === 2 ^ 10;
 
-    let d = 50;
+    let d = 50
 
-    dirLight.shadow.camera.left = -d;
-    dirLight.shadow.camera.right = d;
-    dirLight.shadow.camera.top = d;
-    dirLight.shadow.camera.bottom = -d;
+    dirLight.shadow.camera.left = -d
+    dirLight.shadow.camera.right = d
+    dirLight.shadow.camera.top = d
+    dirLight.shadow.camera.bottom = -d
 
-    dirLight.shadow.camera.far = 3500;
-    dirLight.shadow.bias = -0.0001; //-0.0001;
+    dirLight.shadow.camera.far = 3500
+    dirLight.shadow.bias = -0.0001 //-0.0001;
     // dirLight.shadowDarkness = 0.35;
     //}
 
-    const dirLightHelper = new DirectionalLightHelper(dirLight, 10);
-    this.scene.add(dirLightHelper);
+    const dirLightHelper = new DirectionalLightHelper(dirLight, 10)
+    this.scene.add(dirLightHelper)
 
     const setPos = (date: Date) => {
       const sunPos = getSunPosition(
         date,
         this.map.center.lat,
-        this.map.center.lng
-      );
+        this.map.center.lng,
+      )
 
-      let azimuth = MathUtils.radToDeg(sunPos.azimuth) + 180;
-      let altitude = MathUtils.radToDeg(sunPos.altitude + Math.PI) - 180;
+      let azimuth = MathUtils.radToDeg(sunPos.azimuth) + 180
+      let altitude = MathUtils.radToDeg(sunPos.altitude + Math.PI) - 180
 
       if (!this.enableSun) {
-        azimuth = 180;
-        altitude = 90;
+        azimuth = 180
+        altitude = 90
       }
 
-      let t = MathUtils.degToRad(360 - azimuth + 90);
-      let x = Math.cos(t);
-      let y = Math.sin(t);
-      let z = Math.sin(MathUtils.degToRad(altitude));
+      let t = MathUtils.degToRad(360 - azimuth + 90)
+      let x = Math.cos(t)
+      let y = Math.sin(t)
+      let z = Math.sin(MathUtils.degToRad(altitude))
 
       const getSunIntensity = (sunrise: Date, sunset: Date) => {
-        let xScale = sunset.getTime() - sunrise.getTime();
+        let xScale = sunset.getTime() - sunrise.getTime()
 
-        let currentX = date.getTime() - sunrise.getTime();
-        let xt = currentX / xScale;
+        let currentX = date.getTime() - sunrise.getTime()
+        let xt = currentX / xScale
         if (xt < 0 || xt > 1) {
           // před východem slunce, nebo po západu slunce
-          return 0;
+          return 0
         } else {
-          return Math.sin(xt * Math.PI);
+          return Math.sin(xt * Math.PI)
         }
-      };
+      }
 
-      const times = getTimes(date, this.map.center.lat, this.map.center.lng);
+      const times = getTimes(date, this.map.center.lat, this.map.center.lng)
 
-      dirLight.position.set(x, y, z);
+      dirLight.position.set(x, y, z)
 
       /*
 			this.addSphere(
@@ -1638,38 +1638,38 @@ export class Model {
 			*/
 
       if (this.enableSun) {
-        dirLight.intensity = getSunIntensity(times.sunrise, times.sunset);
+        dirLight.intensity = getSunIntensity(times.sunrise, times.sunset)
       } else {
-        dirLight.intensity = 1;
+        dirLight.intensity = 1
       }
-      dirLight.position.multiplyScalar(50);
+      dirLight.position.multiplyScalar(50)
 
-      dirLightHelper.update();
-    };
+      dirLightHelper.update()
+    }
 
-    iterateDate(this.map.center, (x) => setPos(x));
+    iterateDate(this.map.center, (x) => setPos(x))
   }
 
   private addSky() {
-    const sky = new Sky();
-    sky.scale.setScalar(200);
-    this.scene.add(sky);
+    const sky = new Sky()
+    sky.scale.setScalar(200)
+    this.scene.add(sky)
 
-    const sun = new Vector3(0, 0, 0);
+    const sun = new Vector3(0, 0, 0)
 
     let setPos = (date: Date) => {
       const sunPos = getSunPosition(
         date,
         this.map.center.lat,
-        this.map.center.lng
-      );
+        this.map.center.lng,
+      )
 
-      let azimuth = MathUtils.radToDeg(sunPos.azimuth) + 180;
-      let altitude = MathUtils.radToDeg(sunPos.altitude + Math.PI) - 180;
+      let azimuth = MathUtils.radToDeg(sunPos.azimuth) + 180
+      let altitude = MathUtils.radToDeg(sunPos.altitude + Math.PI) - 180
 
       if (!this.enableSun) {
-        azimuth = 180;
-        altitude = 90;
+        azimuth = 180
+        altitude = 90
       }
 
       const effectController = {
@@ -1680,39 +1680,39 @@ export class Model {
         elevation: 2,
         azimuth: 180,
         luminance: 0.9,
-      };
+      }
 
-      const uniforms = sky.material.uniforms;
-      uniforms['turbidity'].value = effectController.turbidity;
-      uniforms['rayleigh'].value = effectController.rayleigh;
-      uniforms['mieCoefficient'].value = effectController.mieCoefficient;
-      uniforms['mieDirectionalG'].value = effectController.mieDirectionalG;
+      const uniforms = sky.material.uniforms
+      uniforms['turbidity'].value = effectController.turbidity
+      uniforms['rayleigh'].value = effectController.rayleigh
+      uniforms['mieCoefficient'].value = effectController.mieCoefficient
+      uniforms['mieDirectionalG'].value = effectController.mieDirectionalG
 
       // const phi = MathUtils.degToRad(90 - effectController.elevation);
       // const theta = MathUtils.degToRad(effectController.azimuth);
 
-      let t = MathUtils.degToRad(360 - azimuth + 90);
-      let x = Math.cos(t);
-      let y = Math.sin(t);
-      let z = Math.sin(MathUtils.degToRad(altitude));
+      let t = MathUtils.degToRad(360 - azimuth + 90)
+      let x = Math.cos(t)
+      let y = Math.sin(t)
+      let z = Math.sin(MathUtils.degToRad(altitude))
 
-      sun.set(x, y, z);
+      sun.set(x, y, z)
 
-      uniforms['sunPosition'].value.copy(sun);
-      uniforms['up'].value = new Vector3(0, 0, 1);
-    };
+      uniforms['sunPosition'].value.copy(sun)
+      uniforms['up'].value = new Vector3(0, 0, 1)
+    }
 
-    iterateDate(this.map.center, (x) => setPos(x));
+    iterateDate(this.map.center, (x) => setPos(x))
   }
 
   public resize(w: number, h: number) {
-    this.setCanvasSize(w, h);
+    this.setCanvasSize(w, h)
   }
 
-  private getHeightScale():number {
+  private getHeightScale(): number {
     const heightCoeffitient = this.options.heightCoefficient
     let result = this.map.getTileWidthInMeters()
-    if(heightCoeffitient) {
+    if (heightCoeffitient) {
       result /= heightCoeffitient
     }
     return result
@@ -1720,20 +1720,20 @@ export class Model {
 }
 
 function iterateDate(center: ILatLng, execute: (date: Date) => void) {
-  let date = new Date();
+  let date = new Date()
   setInterval(() => {
-    date = new Date(date.getTime() + 1000 * 60 * 1);
+    date = new Date(date.getTime() + 1000 * 60 * 1)
 
-    const times = getTimes(date, center.lat, center.lng);
+    const times = getTimes(date, center.lat, center.lng)
     if (date.getTime() > times.sunset.getTime() + 1000 * 60 * 30) {
-      date.setDate(date.getDate() + 1);
-      date = getTimes(date, center.lat, center.lng).sunrise;
+      date.setDate(date.getDate() + 1)
+      date = getTimes(date, center.lat, center.lng).sunrise
     }
 
     // date = new Date(date.getTime() + 1000 * 60 * 60 * 9);
 
-    execute(date);
-  }, 50);
+    execute(date)
+  }, 50)
 
-  execute(date);
+  execute(date)
 }

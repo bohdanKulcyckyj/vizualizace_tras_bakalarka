@@ -1,54 +1,54 @@
-import { useState } from 'react';
-import apiEndpoints from '../constants/apiEndpoints';
-import routes from '../constants/routes';
-import axios from 'axios';
-import { saveTokenToCookie } from '../utils/jwt';
-import { IRegistrationForm } from '../interfaces/Form';
-import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
-import { UserRoleMapper } from '../interfaces/User';
-import { useMainContext } from '../context/MainContext';
-import SubmitButton from '../components/dashboard/SubmitButton';
-import { toast } from 'sonner';
+import { useState } from 'react'
+import apiEndpoints from '../constants/apiEndpoints'
+import routes from '../constants/routes'
+import axios from 'axios'
+import { saveTokenToCookie } from '../utils/jwt'
+import { IRegistrationForm } from '../interfaces/Form'
+import { useForm } from 'react-hook-form'
+import { Link, useNavigate } from 'react-router-dom'
+import { UserRoleMapper } from '../interfaces/User'
+import { useMainContext } from '../context/MainContext'
+import SubmitButton from '../components/dashboard/SubmitButton'
+import { toast } from 'sonner'
 
 export default function SignUp() {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [disable, setDisable] = useState<boolean>(false);
-  const { setLoggedUser } = useMainContext();
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(false)
+  const [disable, setDisable] = useState<boolean>(false)
+  const { setLoggedUser } = useMainContext()
+  const navigate = useNavigate()
 
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<IRegistrationForm>();
-  const currentPassword = watch('password', '');
+  } = useForm<IRegistrationForm>()
+  const currentPassword = watch('password', '')
 
   const signUp = (data: IRegistrationForm) => {
-    setDisable(true);
-    setLoading(true);
+    setDisable(true)
+    setLoading(true)
 
     axios
       .post(apiEndpoints.registration, data)
       .then((res) => {
-        const { token, role } = res.data;
-        saveTokenToCookie(token);
+        const { token, role } = res.data
+        saveTokenToCookie(token)
         setLoggedUser(() => ({
           role: UserRoleMapper[role],
-        }));
-        navigate(routes.dashboard.maps(UserRoleMapper[role]));
-        toast.success('Registration was successful');
+        }))
+        navigate(routes.dashboard.maps(UserRoleMapper[role]))
+        toast.success('Registration was successful')
       })
       .catch((err) => {
-        console.error(err);
-        toast.error('Registration failed');
+        console.error(err)
+        toast.error('Registration failed')
       })
       .finally(() => {
-        setDisable(false);
-        setLoading(false);
-      });
-  };
+        setDisable(false)
+        setLoading(false)
+      })
+  }
 
   return (
     <section className='page-section welcome-section'>
@@ -156,5 +156,5 @@ export default function SignUp() {
         </form>
       </div>
     </section>
-  );
+  )
 }

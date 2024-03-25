@@ -1,81 +1,81 @@
 .profile-aside {
-    transition: all 0.5s cubic-bezier(0, 1, 0, 1);
-    width: 100%;
-    height: fit-content;
-    border-radius: 10px;
-    background: rgba(51, 60, 68, 0.5411764705882353);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.511);
-    backdrop-filter: blur(6.1px);
-    -webkit-backdrop-filter: blur(6.1px);
-    border: 1px solid rgba(51, 60, 68, 0.4);
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
+  transition: all 0.5s cubic-bezier(0, 1, 0, 1);
+  width: 100%;
+  height: fit-content;
+  border-radius: 10px;
+  background: rgba(51, 60, 68, 0.5411764705882353);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.511);
+  backdrop-filter: blur(6.1px);
+  -webkit-backdrop-filter: blur(6.1px);
+  border: 1px solid rgba(51, 60, 68, 0.4);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
 
-    @media only screen and (min-width: 1250px) {
-      flex: 0 20%;
-      margin-right: 2rem;
-    }
+  @media only screen and (min-width: 1250px) {
+    flex: 0 20%;
+    margin-right: 2rem;
   }
-  
-  .profile-aside--active {
-    max-height: 800px;
-    transition: max-height 1s ease-in-out;
-    opacity: 1;
-  }
-  
-  .profile-aside__link {
-    font-size: clamp(0.9rem, 0.9vw, 1.35rem);
-    transition: all 500ms;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+}
 
-    @media only screen and (min-width: 1600px) {
-        font-size: 16px;
+.profile-aside--active {
+  max-height: 800px;
+  transition: max-height 1s ease-in-out;
+  opacity: 1;
+}
+
+.profile-aside__link {
+  font-size: clamp(0.9rem, 0.9vw, 1.35rem);
+  transition: all 500ms;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+
+  @media only screen and (min-width: 1600px) {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background-color: darken($secondary-color, 15%);
+  }
+}
+
+.profile-aside__link--active {
+  color: $white;
+  background: darken($secondary-color, 10%);
+}
+
+.profile-aside__button {
+  margin-bottom: 3rem;
+
+  span {
+    background-color: $white;
+  }
+
+  @media (max-width: 750px) {
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 500px) {
+    margin-bottom: 1rem;
+  }
+
+  @media (min-width: 1251px) {
+    display: none;
+  }
+}
+
+.profile-aside__button--active {
+  .profile-aside__button-span {
+    &:nth-of-type(1) {
+      transform: rotate(45deg) translateY(0.6rem) translateX(0.6rem);
     }
 
-    &:hover {
-      background-color: darken($secondary-color, 15%);
+    &:nth-of-type(2) {
+      opacity: 0;
+    }
+
+    &:nth-of-type(3) {
+      transform: rotate(-45deg);
     }
   }
-  
-  .profile-aside__link--active {
-    color: $white;
-    background: darken($secondary-color, 10%);
-  }
-  
-  .profile-aside__button {
-    margin-bottom: 3rem;
-  
-    span {
-      background-color: $white;
-    }
-  
-    @media (max-width: 750px) {
-      margin-bottom: 1.5rem;
-    }
-  
-    @media (max-width: 500px) {
-      margin-bottom: 1rem;
-    }
-  
-    @media (min-width: 1251px) {
-      display: none;
-    }
-  }
-  
-  .profile-aside__button--active {
-    .profile-aside__button-span {
-      &:nth-of-type(1) {
-        transform: rotate(45deg) translateY(0.6rem) translateX(0.6rem);
-      }
-  
-      &:nth-of-type(2) {
-        opacity: 0;
-      }
-  
-      &:nth-of-type(3) {
-        transform: rotate(-45deg);
-      }
-    }
-  }
+}

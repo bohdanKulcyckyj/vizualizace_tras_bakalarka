@@ -1,8 +1,8 @@
 import React from 'react'
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom'
 
 // components
-import Header from '../Header';
+import Header from '../Header'
 
 const ExtendedPageLayoutDashboard: React.FC = () => {
   return (

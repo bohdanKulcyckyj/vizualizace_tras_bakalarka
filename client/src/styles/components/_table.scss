@@ -1,56 +1,56 @@
 .table-component {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 10px;
-    background: rgba(51, 60, 68, 0.5411764705882353);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.511);
-    backdrop-filter: blur(6.1px);
-    -webkit-backdrop-filter: blur(6.1px);
-    border: 1px solid rgba(51, 60, 68, 0.4);
-    min-height: 400px;
-    overflow-x: auto;
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 10px;
+  background: rgba(51, 60, 68, 0.5411764705882353);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.511);
+  backdrop-filter: blur(6.1px);
+  -webkit-backdrop-filter: blur(6.1px);
+  border: 1px solid rgba(51, 60, 68, 0.4);
+  min-height: 400px;
+  overflow-x: auto;
 
-    @media only screen and (min-width: 1250px) {
-        flex: 0 80%;
-    }
+  @media only screen and (min-width: 1250px) {
+    flex: 0 80%;
+  }
 }
 
 .table-component__title {
-    font-size: 20px;
-    text-transform: uppercase;
-    font-weight: 700;
-    @media only screen and (min-width: 768px) {
-        font-size: 22px;
-    }
+  font-size: 20px;
+  text-transform: uppercase;
+  font-weight: 700;
+  @media only screen and (min-width: 768px) {
+    font-size: 22px;
+  }
 }
 
 .table-component__table {
-    width: 100%;
-    min-width: 1000px;
-    thead {
-        th {
-            padding: 0.75rem;
-            text-transform: uppercase;
-        }
+  width: 100%;
+  min-width: 1000px;
+  thead {
+    th {
+      padding: 0.75rem;
+      text-transform: uppercase;
     }
-    tbody {
-        tr {
-            //border-top: 1px solid $white;
-            transition: all 0.4s ease;
-            &:hover {
-                background-color: lighten(rgb(51, 60, 68), 5%);
-            }
-            &:nth-of-type(1) {
-                border-top: 2px solid $secondary-color;
-            }            
-            &:nth-of-type(2n+1) {
-                background-color: lighten(rgb(51, 60, 68), 3%);
-            }
-        }
-    
-        td {
-            padding: 0.75rem;
-            text-align: center;
-        }
+  }
+  tbody {
+    tr {
+      //border-top: 1px solid $white;
+      transition: all 0.4s ease;
+      &:hover {
+        background-color: lighten(rgb(51, 60, 68), 5%);
+      }
+      &:nth-of-type(1) {
+        border-top: 2px solid $secondary-color;
+      }
+      &:nth-of-type(2n + 1) {
+        background-color: lighten(rgb(51, 60, 68), 3%);
+      }
     }
+
+    td {
+      padding: 0.75rem;
+      text-align: center;
+    }
+  }
 }

@@ -1,40 +1,40 @@
-import { useState } from 'react';
-import apiEndpoints from '../constants/apiEndpoints';
-import axios from 'axios';
-import { IForgottenPasswordForm } from '../interfaces/Form';
-import { useForm } from 'react-hook-form';
-import SubmitButton from '../components/dashboard/SubmitButton';
-import { toast } from 'sonner';
+import { useState } from 'react'
+import apiEndpoints from '../constants/apiEndpoints'
+import axios from 'axios'
+import { IForgottenPasswordForm } from '../interfaces/Form'
+import { useForm } from 'react-hook-form'
+import SubmitButton from '../components/dashboard/SubmitButton'
+import { toast } from 'sonner'
 
 export default function ResetPassword() {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [disable, setDisable] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false)
+  const [disable, setDisable] = useState<boolean>(false)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<IForgottenPasswordForm>();
+  } = useForm<IForgottenPasswordForm>()
 
   const sendData = (data: IForgottenPasswordForm) => {
-    setDisable(true);
-    setLoading(true);
+    setDisable(true)
+    setLoading(true)
 
     axios
       .post(apiEndpoints.resetPassword, data)
       .then((res) => {
-        console.log(res);
-        toast.success('Successfully logged in');
+        console.log(res)
+        toast.success('Successfully logged in')
       })
       .catch((err) => {
-        console.error(err);
-        toast.error('Logging in failed');
+        console.error(err)
+        toast.error('Logging in failed')
       })
       .finally(() => {
-        setDisable(false);
-        setLoading(false);
-      });
-  };
+        setDisable(false)
+        setLoading(false)
+      })
+  }
 
   return (
     <section className='page-section welcome-section'>
@@ -80,5 +80,5 @@ export default function ResetPassword() {
         </form>
       </div>
     </section>
-  );
+  )
 }

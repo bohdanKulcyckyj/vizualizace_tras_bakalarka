@@ -3,9 +3,7 @@ import React from 'react'
 const LocationToolbar = () => {
   return (
     <>
-    <div className="toolbar__section">
-    
-    </div>
+      <div className='toolbar__section'></div>
     </>
   )
 }

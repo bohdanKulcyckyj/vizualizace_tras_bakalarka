@@ -1,188 +1,197 @@
 //@ts-nocheck
-import { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
-import { axiosWithAuth, setHeadersConfig } from '../../utils/axiosWithAuth';
-import { Model } from '../../terainModel/model';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useMainContext } from '../../context/MainContext';
-import apiEndpoints from '../../constants/apiEndpoints';
-import Toolbar from '../toolbar/Toolbar';
+import { useEffect, useRef, useState } from 'react'
+import axios from 'axios'
+import { axiosWithAuth, setHeadersConfig } from '../../utils/axiosWithAuth'
+import { Model } from '../../terainModel/model'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useMainContext } from '../../context/MainContext'
+import apiEndpoints from '../../constants/apiEndpoints'
+import Toolbar from '../toolbar/Toolbar'
 import {
   IMapObjectOptions,
   PIN_TYPE,
   PIN_COLORS,
   IMapDTO,
-} from '../../interfaces/dashboard/MapModel';
-import { MdOutlineFileUpload } from 'react-icons/md';
-import { FaMapMarkerAlt, FaImage } from 'react-icons/fa';
-import { SlDirection } from 'react-icons/sl';
-import { IconContext } from 'react-icons';
-import { ComponentMode } from '../../interfaces/dashboard/ComponentProps';
-import Popup from '../popup/Popup';
-import { v4 as uuidv4 } from 'uuid';
-import PinPopup from '../popup/PinPopup';
-import PinPreviewPopup from '../popup/PinPreviewPopup';
-import { Gallery } from '../Gallery';
-import { Group } from 'three';
-import MapTourControllers from './MapTourControllers';
-import MapPinsList from '../toolbar/MapPinsList';
-import { toast } from 'sonner';
-import { getPinTitle } from '../../utils/pins';
-import NearbyFeaturesConfigPopup from '../popup/NearbyFeaturesConfigPopup';
-import { INearbyFeature } from '../../interfaces/NearbyFeatures';
-import { Range } from 'react-range';
+} from '../../interfaces/dashboard/MapModel'
+import { MdOutlineFileUpload } from 'react-icons/md'
+import { FaMapMarkerAlt, FaImage } from 'react-icons/fa'
+import { SlDirection } from 'react-icons/sl'
+import { IconContext } from 'react-icons'
+import { ComponentMode } from '../../interfaces/dashboard/ComponentProps'
+import Popup from '../popup/Popup'
+import { v4 as uuidv4 } from 'uuid'
+import PinPopup from '../popup/PinPopup'
+import PinPreviewPopup from '../popup/PinPreviewPopup'
+import { Gallery } from '../Gallery'
+import { Group } from 'three'
+import MapTourControllers from './MapTourControllers'
+import MapPinsList from '../toolbar/MapPinsList'
+import { toast } from 'sonner'
+import { getPinTitle } from '../../utils/pins'
+import NearbyFeaturesConfigPopup from '../popup/NearbyFeaturesConfigPopup'
+import { INearbyFeature } from '../../interfaces/NearbyFeatures'
+import { Range } from 'react-range'
 
 const TerrainModelComponent = ({ mode, options }: any) => {
-  const { modelid } = useParams();
-  const navigate = useNavigate();
-  const wrapperRef = useRef(null);
-  const canvasRef = useRef(null);
-  const viewHelperCanvasWrapperRef = useRef(null);
-  const northArrowCanvasWrapperRef = useRef(null);
-  const [model, setModel] = useState(null);
-  const [editingMapData, setEditingMapData] = useState<IMapDTO>(null);
-  const [gpxTrailName, setGpxTrailName] = useState('');
+  const { modelid } = useParams()
+  const navigate = useNavigate()
+  const wrapperRef = useRef(null)
+  const canvasRef = useRef(null)
+  const viewHelperCanvasWrapperRef = useRef(null)
+  const northArrowCanvasWrapperRef = useRef(null)
+  const [model, setModel] = useState(null)
+  const [editingMapData, setEditingMapData] = useState<IMapDTO>(null)
+  const [gpxTrailName, setGpxTrailName] = useState('')
   const [newPointOptions, setNewPointOptions] =
-    useState<IMapObjectOptions>(null);
-  const mainContext = useMainContext();
-  const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false);
-  const [isFeaturePopupOpened, setIsFeaturePopupOpened] = useState<boolean>(false);
-  const [isDisplayingNearbyFeatures, setIsDisplayingNearbyFeatures] = useState<boolean>(false)
-  const [selectedNearbyFeatures, setSelectedNearbyFeatures] = useState<INearbyFeature[]>([])
-  const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1);
+    useState<IMapObjectOptions>(null)
+  const mainContext = useMainContext()
+  const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false)
+  const [isFeaturePopupOpened, setIsFeaturePopupOpened] =
+    useState<boolean>(false)
+  const [isDisplayingNearbyFeatures, setIsDisplayingNearbyFeatures] =
+    useState<boolean>(false)
+  const [selectedNearbyFeatures, setSelectedNearbyFeatures] = useState<
+    INearbyFeature[]
+  >([])
+  const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1)
   const [isMapBeeingDragged, setIsMapBeeingDragged] = useState<boolean>(false)
-  const [heightCoefficientRangeValue, setHeightCoefficientRangeValue] = useState<number>(1)
+  const [heightCoefficientRangeValue, setHeightCoefficientRangeValue] =
+    useState<number>(1)
 
   const fileChangeHangler = async (event): void => {
-    const uploadedFile = event.target.files[0];
+    const uploadedFile = event.target.files[0]
     if (uploadedFile) {
       const requestConfig = setHeadersConfig({
         'Content-Type': 'multipart/form-data',
-      });
-      const formData = new FormData();
-      formData.append('file', uploadedFile);
+      })
+      const formData = new FormData()
+      formData.append('file', uploadedFile)
 
       try {
         const res = await axios.post(
           apiEndpoints.uploadMedia,
           formData,
-          requestConfig
-        );
+          requestConfig,
+        )
 
-        setGpxTrailName(uploadedFile.name);
-        model.drawTrail(res.data.file);
+        setGpxTrailName(uploadedFile.name)
+        model.drawTrail(res.data.file)
       } catch (e) {
-        console.error(e);
+        console.error(e)
       }
     }
-  };
+  }
 
   const handleMapClick = (e: MouseEvent): void => {
-    if(isMapBeeingDragged) return
+    if (isMapBeeingDragged) return
 
-    const clickedObjects = model.clickedObjects(e);
+    const clickedObjects = model.clickedObjects(e)
 
     if (!newPointOptions || !newPointOptions?.pinType) {
-      let currObject = null;
+      let currObject = null
       for (let i = 0; i < clickedObjects.length; i++) {
-        let tmp = clickedObjects[i];
-        let parent = tmp.object?.parent;
+        let tmp = clickedObjects[i]
+        let parent = tmp.object?.parent
 
         while (parent instanceof Group) {
           if (
             Object.hasOwn(parent, 'isClickable') &&
             Object.hasOwn(parent, 'pinId')
           ) {
-            currObject = parent;
-            break;
+            currObject = parent
+            break
           }
-          parent = parent.parent;
+          parent = parent.parent
         }
 
         if (
           Object.hasOwn(tmp.object, 'isClickable') &&
           Object.hasOwn(tmp.object, 'pinId')
         ) {
-          currObject = tmp.object;
-          break;
+          currObject = tmp.object
+          break
         }
       }
-      console.log(currObject);
+      console.log(currObject)
       if (currObject) {
         const selectedObjectData = model?.options?.mapObjects?.find(
-          (_item) => _item.id === currObject.pinId
-        );
+          (_item) => _item.id === currObject.pinId,
+        )
         if (selectedObjectData) {
-          setNewPointOptions({ ...selectedObjectData, event: e });
-          setIsPinPopupOpened(true);
+          setNewPointOptions({ ...selectedObjectData, event: e })
+          setIsPinPopupOpened(true)
         }
       }
     } else {
       if (clickedObjects.length > 0) {
-        if (!newPointOptions || !newPointOptions?.pinType) return;
+        if (!newPointOptions || !newPointOptions?.pinType) return
         setNewPointOptions((newPointOptions) => ({
           ...newPointOptions,
           event: e,
-        }));
-        setIsPinPopupOpened(true);
-        console.log(newPointOptions);
+        }))
+        setIsPinPopupOpened(true)
+        console.log(newPointOptions)
       }
     }
-  };
+  }
 
   const handleNewPin = (): void => {
     if (!Object.hasOwn(newPointOptions, 'event') || !newPointOptions?.event)
-      return;
+      return
 
     if (
       model.options.mapObjects.find((_item) => _item.id === newPointOptions.id)
     ) {
-      const { x, y, z, ...rest } = newPointOptions;
+      const { x, y, z, ...rest } = newPointOptions
 
-      model.removeObjectFromMap(newPointOptions.id);
-      model.addObjectToMap(x, y, z, rest);
+      model.removeObjectFromMap(newPointOptions.id)
+      model.addObjectToMap(x, y, z, rest)
     } else {
-      const { event, ...restOptions } = newPointOptions;
-      model.click(event, restOptions);
+      const { event, ...restOptions } = newPointOptions
+      model.click(event, restOptions)
     }
 
-    setNewPointOptions(null);
-    setIsPinPopupOpened(false);
-  };
+    setNewPointOptions(null)
+    setIsPinPopupOpened(false)
+  }
 
   const handleDeletePin = () => {
     model.removeObjectFromMap(newPointOptions.id)
-    model.options.mapObjects = model.options.mapObjects.filter(_option => _option.id !== newPointOptions.id)
+    model.options.mapObjects = model.options.mapObjects.filter(
+      (_option) => _option.id !== newPointOptions.id,
+    )
     setNewPointOptions(null)
     setIsPinPopupOpened(false)
   }
 
   const handleDeleteTrail = () => {
-    axiosWithAuth.delete(apiEndpoints.deleteUploadedMedia(gpxTrailName))
-    .then(res => {
-      let currentOptions = model.options
-      currentOptions.trailGpxUrl = null
-      setEditingMapData({...editingMapData, mapModel: currentOptions})
-      setGpxTrailName('')
-    }).catch(err => {
-      console.error(err)
-    })
+    axiosWithAuth
+      .delete(apiEndpoints.deleteUploadedMedia(gpxTrailName))
+      .then((res) => {
+        let currentOptions = model.options
+        currentOptions.trailGpxUrl = null
+        setEditingMapData({ ...editingMapData, mapModel: currentOptions })
+        setGpxTrailName('')
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   }
 
   const confirm = () => {
     const newMapConfiguration = {
       ...editingMapData,
       mapModel: model.options,
-    };
+    }
 
     axiosWithAuth
       .post(apiEndpoints.editMap(modelid), newMapConfiguration)
       .then((res) => {
         if (res.data.map) {
-          navigate(-1);
+          navigate(-1)
         }
-      });
-  };
+      })
+  }
 
   const handleOnTrailPointReached = (point: IMapObjectOptions): void => {
     setNewPointOptions(point)
@@ -195,162 +204,162 @@ const TerrainModelComponent = ({ mode, options }: any) => {
 
   const toggleDisplayNearbyFeatures = () => {
     const currState = isDisplayingNearbyFeatures
-    if(!currState) {
+    if (!currState) {
       setIsFeaturePopupOpened(true)
     }
     setIsDisplayingNearbyFeatures(!currState)
   }
 
   const cancel = () => {
-    navigate(-1);
-  };
+    navigate(-1)
+  }
 
   useEffect(() => {
     if (mainContext) {
-      mainContext.setIsLoading(true);
+      mainContext.setIsLoading(true)
       setTimeout(() => {
-        mainContext.setIsLoading(false);
-      }, 5000);
+        mainContext.setIsLoading(false)
+      }, 5000)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    let newModel = null;
+    let newModel = null
 
     const setup = async () => {
-      let res, resData;
+      let res, resData
       if (modelid) {
         try {
-          res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid));
-          resData = res.data;
-          console.log(resData.map);
-          console.log(resData.mapPoints);
-          setEditingMapData(resData.map);
+          res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid))
+          resData = res.data
+          console.log(resData.map)
+          console.log(resData.mapPoints)
+          setEditingMapData(resData.map)
           resData.map.mapModel.trailGpxUrl =
-            resData.map.mapModel.trailGpxUrl ?? null;
+            resData.map.mapModel.trailGpxUrl ?? null
         } catch (e) {
-          navigate('/404');
-          console.error(e);
+          navigate('/404')
+          console.error(e)
         }
       }
-      console.log('OPTIONS: ', options ?? resData.map.mapModel);
+      console.log('OPTIONS: ', options ?? resData.map.mapModel)
       newModel = new Model(
         canvasRef.current,
         viewHelperCanvasWrapperRef.current,
         northArrowCanvasWrapperRef.current,
-        options ?? resData.map.mapModel
-      );
+        options ?? resData.map.mapModel,
+      )
       if (resData.mapPoints) {
-        newModel.displayNearFeatures(JSON.parse(resData.mapPoints));
+        newModel.displayNearFeatures(JSON.parse(resData.mapPoints))
       }
-      newModel.animate();
+      newModel.animate()
       newModel.onTrailPointReachedCallback = handleOnTrailPointReached
-      setModel(newModel);
+      setModel(newModel)
       //const controls = new CameraControls(newModel.camera, canvasRef.current);
-      const controls = newModel.controls;
+      const controls = newModel.controls
       //newModel.setControls(controls);
 
       const keyEventHandler = (e) => {
-        const keyRotateSpeed = 0.5;
-        const keyRotateAngle = (keyRotateSpeed * Math.PI) / 180;
+        const keyRotateSpeed = 0.5
+        const keyRotateAngle = (keyRotateSpeed * Math.PI) / 180
 
         if (e.shiftKey) {
           switch (e.keyCode) {
             case 37: // LEFT
-              controls.rotate(-keyRotateAngle, 0);
-              break;
+              controls.rotate(-keyRotateAngle, 0)
+              break
             case 38: // UP
-              controls.rotate(0, keyRotateAngle);
-              break;
+              controls.rotate(0, keyRotateAngle)
+              break
             case 39: // RIGHT
-              controls.rotate(keyRotateAngle, 0);
-              break;
+              controls.rotate(keyRotateAngle, 0)
+              break
             case 40: // DOWN
-              controls.rotate(0, -keyRotateAngle);
-              break;
+              controls.rotate(0, -keyRotateAngle)
+              break
             case 82: // Shift + R
-              controls.reset();
-              break;
+              controls.reset()
+              break
             default:
-              return;
+              return
           }
         } else if (e.ctrlKey) {
           switch (e.keyCode) {
             case 37: // Ctrl + LEFT
-              newModel.cameraRotate(keyRotateAngle, 0);
-              break;
+              newModel.cameraRotate(keyRotateAngle, 0)
+              break
             case 38: // Ctrl + UP
-              newModel.cameraRotate(0, keyRotateAngle);
-              break;
+              newModel.cameraRotate(0, keyRotateAngle)
+              break
             case 39: // Ctrl + RIGHT
-              newModel.cameraRotate(-keyRotateAngle, 0);
-              break;
+              newModel.cameraRotate(-keyRotateAngle, 0)
+              break
             case 40: // Ctrl + DOWN
-              newModel.cameraRotate(0, -keyRotateAngle);
-              break;
+              newModel.cameraRotate(0, -keyRotateAngle)
+              break
             default:
-              return;
+              return
           }
         } else {
-          const keyPanSpeed = 0.2;
+          const keyPanSpeed = 0.2
 
           switch (e.keyCode) {
             case 37: // LEFT
-              controls.truck(-keyPanSpeed, 0, true); // horizontally left
-              break;
+              controls.truck(-keyPanSpeed, 0, true) // horizontally left
+              break
             case 38: // UP
-              controls.forward(keyPanSpeed, true); // horizontally forward
-              break;
+              controls.forward(keyPanSpeed, true) // horizontally forward
+              break
             case 39: // RIGHT
-              controls.truck(keyPanSpeed, 0, true);
-              break;
+              controls.truck(keyPanSpeed, 0, true)
+              break
             case 40: // DOWN
-              controls.forward(-keyPanSpeed, true);
-              break;
+              controls.forward(-keyPanSpeed, true)
+              break
             default:
-              return;
+              return
           }
         }
-      };
+      }
 
-      window.addEventListener('keydown', (e) => keyEventHandler(e));
+      window.addEventListener('keydown', (e) => keyEventHandler(e))
 
       const resize = () => {
         newModel.resize(
           wrapperRef.current.offsetWidth,
-          wrapperRef.current.offsetHeight
-        );
-      };
+          wrapperRef.current.offsetHeight,
+        )
+      }
 
       const resizeObserver = new ResizeObserver((entries) => {
-        resize();
-      });
-      resizeObserver.observe(wrapperRef.current);
+        resize()
+      })
+      resizeObserver.observe(wrapperRef.current)
 
-      const animateTrail = mainContext.animateTrail;
-      const enableShadow = mainContext.enableShadow;
-      const enableSun = mainContext.enableSun;
+      const animateTrail = mainContext.animateTrail
+      const enableShadow = mainContext.enableShadow
+      const enableSun = mainContext.enableSun
 
-      if(animateTrail) {
-        newModel.playTrailAnimation();
+      if (animateTrail) {
+        newModel.playTrailAnimation()
       }
-      newModel.setEnableShadow(enableShadow);
-      newModel.setEnableSun(enableSun);
-      setModel(newModel);
-    };
+      newModel.setEnableShadow(enableShadow)
+      newModel.setEnableSun(enableSun)
+      setModel(newModel)
+    }
 
     if (!model) {
-      setup();
+      setup()
     }
 
     return () => {
-      console.log('COMPONENT UNMOUNTED');
-      window.removeEventListener('keydown', (e) => keyEventHandler(e));
+      console.log('COMPONENT UNMOUNTED')
+      window.removeEventListener('keydown', (e) => keyEventHandler(e))
       if (newModel) {
-        newModel.destroy();
+        newModel.destroy()
       }
-    };
-  }, [modelid]);
+    }
+  }, [modelid])
 
   return (
     <>
@@ -394,15 +403,16 @@ const TerrainModelComponent = ({ mode, options }: any) => {
         </Popup>
       )}
       {/* FEATURE POPUP */}
-      {mode === ComponentMode.EDIT && (     
+      {mode === ComponentMode.EDIT && (
         <Popup
           isPopupOpened={isFeaturePopupOpened}
           setIsPopupOpened={setIsFeaturePopupOpened}
         >
-          <NearbyFeaturesConfigPopup 
-            selectedOptions={selectedNearbyFeatures} 
+          <NearbyFeaturesConfigPopup
+            selectedOptions={selectedNearbyFeatures}
             setSelectedOptions={setSelectedNearbyFeatures}
-            onSubmit={handleSubmitNearbyFeaturesConfig} />
+            onSubmit={handleSubmitNearbyFeaturesConfig}
+          />
         </Popup>
       )}
       {/* TOOLBAR */}
@@ -414,7 +424,14 @@ const TerrainModelComponent = ({ mode, options }: any) => {
               <div className='mb-6'>
                 <div className='flex justify-between flex-wrap gap-2 mb-2'>
                   <label htmlFor='pgx'>GPX or FIT trail</label>
-                  {gpxTrailName && <button className='secondary-button secondary-button--small' onClick={handleDeleteTrail}>delete</button>}
+                  {gpxTrailName && (
+                    <button
+                      className='secondary-button secondary-button--small'
+                      onClick={handleDeleteTrail}
+                    >
+                      delete
+                    </button>
+                  )}
                 </div>
                 <div className='form__input--file mb-2'>
                   <label>
@@ -462,7 +479,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                           pinType: PIN_TYPE.PIN_SIGN,
                           color: _value.toString(),
                         })
-                        toast("Click on the map to place new pin", { position: 'bottom-center'})
+                        toast('Click on the map to place new pin', {
+                          position: 'bottom-center',
+                        })
                       }}
                     >
                       <IconContext.Provider
@@ -487,7 +506,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                         id: uuidv4(),
                         pinType: PIN_TYPE.PIN_LABEL,
                       })
-                      toast("Click on the map to place new pin", { position: 'bottom-center'})
+                      toast('Click on the map to place new pin', {
+                        position: 'bottom-center',
+                      })
                     }}
                   >
                     <IconContext.Provider
@@ -511,7 +532,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                         id: uuidv4(),
                         pinType: PIN_TYPE.PIN_IMAGE,
                       })
-                      toast("Click on the map to place new pin", { position: 'bottom-center'})
+                      toast('Click on the map to place new pin', {
+                        position: 'bottom-center',
+                      })
                     }}
                   >
                     <IconContext.Provider
@@ -529,26 +552,33 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                 </div>
               </div>
               {/* PLACED PINS */}
-              {model?.options?.mapObjects?.length > 0 && <div className="mb-3">
-                <MapPinsList data={model?.options?.mapObjects ?? []} onPinSelect={(pin: IMapObjectOptions) => {setNewPointOptions(pin); setIsPinPopupOpened(true)}} />
-              </div>
-              }
+              {model?.options?.mapObjects?.length > 0 && (
+                <div className='mb-3'>
+                  <MapPinsList
+                    data={model?.options?.mapObjects ?? []}
+                    onPinSelect={(pin: IMapObjectOptions) => {
+                      setNewPointOptions(pin)
+                      setIsPinPopupOpened(true)
+                    }}
+                  />
+                </div>
+              )}
               {/* TOGGLE NEARBY FEATURES */}
               <div>
-                <label className="form__checkbox cursor-pointer">
+                <label className='form__checkbox cursor-pointer'>
                   <input
-                    type="checkbox"
-                    name="with-label"
-                    id="with-label"
+                    type='checkbox'
+                    name='with-label'
+                    id='with-label'
                     onClick={toggleDisplayNearbyFeatures}
                     value={isDisplayingNearbyFeatures}
                   />
-                  <p className="checkbox-label">Display nearby features</p>
+                  <p className='checkbox-label'>Display nearby features</p>
                 </label>
               </div>
               {/* HEIGHT SCALE RANGE */}
               <div>
-                <div className="flex justify-between items-center my-2">
+                <div className='flex justify-between items-center my-2'>
                   <p>Heights scale</p>
                   <p>{heightCoefficientRangeValue}</p>
                 </div>
@@ -559,7 +589,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                   values={[heightCoefficientRangeValue]}
                   onChange={(values) => {
                     console.log(model.options)
-                    if(model?.options) {
+                    if (model?.options) {
                       setHeightCoefficientRangeValue(values[0])
                       model.options.heightCoefficient = values[0]
                     }
@@ -571,7 +601,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                         ...props.style,
                         height: '6px',
                         width: '100%',
-                        backgroundColor: '#2EEBC9'
+                        backgroundColor: '#2EEBC9',
                       }}
                     >
                       {children}
@@ -586,7 +616,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                         width: '22px',
                         borderRadius: '50%',
                         backgroundColor: '#fff',
-                        outline: 'none'
+                        outline: 'none',
                       }}
                     />
                   )}
@@ -639,7 +669,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default TerrainModelComponent;
+export default TerrainModelComponent

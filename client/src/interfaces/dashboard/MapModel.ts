@@ -1,4 +1,4 @@
-import { Color } from 'three';
+import { Color } from 'three'
 
 export enum PIN_TYPE {
   PIN_IMAGE = 'PIN_IMAGE',
@@ -13,65 +13,65 @@ export enum PIN_COLORS {
 }
 
 export interface IMapObjectOptions {
-  pinType: PIN_TYPE;
-  id: string;
-  color?: Color | string;
-  label?: string;
-  images?: string[];
-  x?: number;
-  y?: number;
-  z?: number;
-  event?: MouseEvent;
+  pinType: PIN_TYPE
+  id: string
+  color?: Color | string
+  label?: string
+  images?: string[]
+  x?: number
+  y?: number
+  z?: number
+  event?: MouseEvent
 }
 
 export const pinTypeMapper: { [key: string]: PIN_TYPE } = {
   PIN_IMAGE: PIN_TYPE.PIN_IMAGE,
   PIN_SIGN: PIN_TYPE.PIN_SIGN,
   PIN_LABEL: PIN_TYPE.PIN_LABEL,
-};
+}
 
 export interface IMapDTO {
-  id?: string;
-  name: string;
-  createdAt?: string | Date;
-  mapModel: IMapModelConfig;
+  id?: string
+  name: string
+  createdAt?: string | Date
+  mapModel: IMapModelConfig
 }
 
 export interface MapPointDTO {
-  type: string;
-  id: number;
-  lat: number;
-  lon: number;
-  name?: string;
+  type: string
+  id: number
+  lat: number
+  lon: number
+  name?: string
   tags: {
-    [key: string]: string;
-  };
+    [key: string]: string
+  }
 }
 
 export interface IModelCoord {
-    lat: number;
-    lng: number;
-  }
+  lat: number
+  lng: number
+}
 
 export interface IMapModelConfig {
-    center: {
-      lat: number;
-      lng: number;
-      alt: number;
-    };
-    bbox: {
-      northEast: IModelCoord;
-      southWest: IModelCoord;
-    };
-    zoom: number;
-    trailGpxUrl: string | null;
-    mapObjects: IMapObjectOptions[];
-    heightCoefficient: number | null;
-    //tilesetStyleIdentifier: string | null;
+  center: {
+    lat: number
+    lng: number
+    alt: number
+  }
+  bbox: {
+    northEast: IModelCoord
+    southWest: IModelCoord
+  }
+  zoom: number
+  trailGpxUrl: string | null
+  mapObjects: IMapObjectOptions[]
+  heightCoefficient: number | null
+  //tilesetStyleIdentifier: string | null;
 }
 
 export interface ITilesetStyle {
-  identifier: string;
-  label: string;
-  image: string;
+  identifier: string
+  label: string
+  image: string
 }

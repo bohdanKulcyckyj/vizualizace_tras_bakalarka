@@ -53,9 +53,9 @@
   }
 }
 
-.form input[type="text"],
-.form input[type="email"],
-.form input[type="password"],
+.form input[type='text'],
+.form input[type='email'],
+.form input[type='password'],
 .form textarea,
 .option {
   padding-left: 5px !important;
@@ -92,7 +92,7 @@
 }
 
 .form__select .select::after {
-  content: "";
+  content: '';
   width: 0.6em;
   height: 0.4em;
   background-color: $textColor;
@@ -147,7 +147,7 @@
   transition: all 0.3s ease;
 }
 
-.form__checkbox input[type="checkbox"] {
+.form__checkbox input[type='checkbox'] {
   position: absolute;
   width: 18px;
   height: 18px;
@@ -167,7 +167,7 @@
   }
 }
 
-.form__checkbox input[type="checkbox"] {
+.form__checkbox input[type='checkbox'] {
   -webkit-appearance: none;
   appearance: none;
   background-color: $paper;
@@ -183,15 +183,15 @@
   transition: 120ms transform ease-in-out;
 }
 
-.form__checkbox input[type="checkbox"]::before {
-  content: "";
+.form__checkbox input[type='checkbox']::before {
+  content: '';
   width: 10px;
   height: 10px;
   transform: scale(0);
   box-shadow: inset 1em 1em $secondary-color;
 }
 
-.form__checkbox input[type="checkbox"]:checked::before {
+.form__checkbox input[type='checkbox']:checked::before {
   transform: scale(1);
 }
 
@@ -232,7 +232,7 @@
   &:before {
     display: flex;
     flex-shrink: 0;
-    content: "";
+    content: '';
     background-color: #fff;
     width: 1.5em;
     width: 18px;
@@ -311,11 +311,11 @@
   }
 }
 
-.form input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+.form input[type='datetime-local']::-webkit-calendar-picker-indicator {
   filter: invert(1) grayscale(1) brightness(2.5) sepia(1) hue-rotate(175deg);
 }
 
-.form input[type="datetime-local"] {
+.form input[type='datetime-local'] {
   line-height: 1.375;
 }
 
@@ -327,7 +327,7 @@ input::-webkit-inner-spin-button {
 }
 
 /* Firefox */
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
@@ -352,7 +352,7 @@ input[type="number"] {
     cursor: pointer;
     padding: 0 1rem;
   }
-  input[type="file"] {
+  input[type='file'] {
     position: absolute;
     top: 0;
     left: 0;

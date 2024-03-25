@@ -1,31 +1,31 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction } from 'react'
 
 export enum ButtonType {
-    REDIRECT,
-    DELETE,
-    UNPACK
-};
+  REDIRECT,
+  DELETE,
+  UNPACK,
+}
 
 export interface IButton {
-    type: ButtonType;
-    label: string;
-    actionUrlConstantPart?: string;
-    actionUrlDynamicPartKey?: string | number;
-    newWindow?: boolean;
-};
+  type: ButtonType
+  label: string
+  actionUrlConstantPart?: string
+  actionUrlDynamicPartKey?: string | number
+  newWindow?: boolean
+}
 
 export interface IDeleteButton {
-    data: IButton;
-    rowData: any;
-    setDeleteRoute: Dispatch<SetStateAction<string>>;
-    setShowTheDialog: Dispatch<SetStateAction<boolean>>;
+  data: IButton
+  rowData: any
+  setDeleteRoute: Dispatch<SetStateAction<string>>
+  setShowTheDialog: Dispatch<SetStateAction<boolean>>
 }
 
 export interface IRedirectButton {
-    data: IButton;
-    rowData: any;
+  data: IButton
+  rowData: any
 }
 
 export interface IUnpackButton {
-    data: IButton;
+  data: IButton
 }

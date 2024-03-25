@@ -1,15 +1,15 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React from 'react'
+import { Outlet } from 'react-router-dom'
 
 // components
-import Loading from '../Loading';
+import Loading from '../Loading'
 
 const PageLayout: React.FC = () => {
   return (
     <>
-      <main className="main-content">
-          <Loading />
-          <Outlet />
+      <main className='main-content'>
+        <Loading />
+        <Outlet />
       </main>
     </>
   )

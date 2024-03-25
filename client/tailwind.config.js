@@ -1,8 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './src/**/*.{js,jsx,ts,tsx}',
-  ],
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     fontSize: {
       '10px': '0.625rem',
@@ -100,7 +98,7 @@ module.exports = {
       '112px': '7rem',
       '128px': '8rem',
       '136px': '8.5rem',
-      '144px': '9rem'
+      '144px': '9rem',
     },
     extend: {
       colors: {
@@ -112,4 +110,3 @@ module.exports = {
   },
   plugins: [],
 }
-

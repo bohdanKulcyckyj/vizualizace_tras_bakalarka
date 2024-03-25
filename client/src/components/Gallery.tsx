@@ -6,27 +6,27 @@ import Slideshow from 'yet-another-react-lightbox/plugins/slideshow'
 import 'yet-another-react-lightbox/styles.css'
 
 export const Gallery: FC<{
-    images: string[];
-    index: number;
-    setIndex: Dispatch<SetStateAction<number>>;
+  images: string[]
+  index: number
+  setIndex: Dispatch<SetStateAction<number>>
 }> = ({ images, index, setIndex }) => {
   const [slides, setSlides] = useState([])
 
   useEffect(() => {
     setSlides(
-      images.map((src ) => ({
-        src
-      }))
+      images.map((src) => ({
+        src,
+      })),
     )
   }, [images])
 
   return (
     <Lightbox
-        slides={slides}
-        open={index >= 0}
-        index={index}
-        close={() => setIndex(-1)}
-        plugins={[Fullscreen, Slideshow]}
+      slides={slides}
+      open={index >= 0}
+      index={index}
+      close={() => setIndex(-1)}
+      plugins={[Fullscreen, Slideshow]}
     />
   )
 }

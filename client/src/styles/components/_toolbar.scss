@@ -20,7 +20,8 @@
       outline: none !important;
       -webkit-box-shadow: 0 0 0 30px rgba(51, 60, 68, 0.646) inset !important;
     }
-    .form input[type="number"], .form input[type="text"] {
+    .form input[type='number'],
+    .form input[type='text'] {
       height: 36px;
       font-size: 15px;
       font-weight: 300;

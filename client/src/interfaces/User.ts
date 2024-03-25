@@ -1,13 +1,13 @@
 export enum UserRole {
-    ADMIN = 'admin',
-    USER = 'user',
+  ADMIN = 'admin',
+  USER = 'user',
 }
 
-export const UserRoleMapper: { [key: string] : UserRole } = {
-    'Admin': UserRole.ADMIN,
-    'User': UserRole.USER,
+export const UserRoleMapper: { [key: string]: UserRole } = {
+  Admin: UserRole.ADMIN,
+  User: UserRole.USER,
 }
 
 export interface ILoggedUser {
-    role: UserRole;
+  role: UserRole
 }
