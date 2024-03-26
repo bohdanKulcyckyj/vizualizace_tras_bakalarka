@@ -39,9 +39,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const canvasRef = useRef(null)
   const viewHelperCanvasWrapperRef = useRef(null)
   const northArrowCanvasWrapperRef = useRef(null)
-  const [model, setModel] = useState(null)
+  const [model, setModel] = useState<unknown>(null)
   const [editingMapData, setEditingMapData] = useState<IMapDTO>(null)
-  const [gpxTrailName, setGpxTrailName] = useState('')
+  const [gpxTrailName, setGpxTrailName] = useState<string>('')
   const [newPointOptions, setNewPointOptions] =
     useState<IMapObjectOptions>(null)
   const mainContext = useMainContext()
@@ -642,12 +642,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
       />
 
       <div className={`${mode === ComponentMode.EDIT ? 'ml-[20px]' : ''}`}>
-        <div
-          className={`model-wrapper ${
-            mode !== ComponentMode.PREVEIW ? 'fullscreen-with-nav' : 'h-screen'
-          }`}
-          ref={wrapperRef}
-        >
+        <div className='model-wrapper h-screen' ref={wrapperRef}>
           <canvas
             ref={canvasRef}
             width='1900'

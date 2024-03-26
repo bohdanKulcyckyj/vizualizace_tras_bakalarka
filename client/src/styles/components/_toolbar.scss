@@ -1,14 +1,10 @@
 .toolbar {
   position: fixed;
   left: 0;
-  top: 64px;
+  top: 0;
   bottom: 0;
   z-index: 9998;
   display: flex;
-
-  @media only screen and (min-width: 1450px) {
-    top: 80px;
-  }
 
   &__content {
     display: none;

@@ -8,8 +8,6 @@ import { IMapDTO } from '../../interfaces/dashboard/MapModel'
 import { axiosWithAuth } from '../../utils/axiosWithAuth'
 import apiEndpoints from '../../constants/apiEndpoints'
 import { toast } from 'sonner'
-import { getTokenFromCookie } from '../../utils/jwt'
-import axios from 'axios'
 
 const tableConfig = (userType: UserRole) => ({
   heading: '',
