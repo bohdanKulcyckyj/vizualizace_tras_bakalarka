@@ -75,12 +75,12 @@ import {
 import {
   IMapModelConfig,
   IMapObjectOptions,
-  MapPointDTO,
+  IMapPointDTO,
   PIN_TYPE,
 } from '../interfaces/dashboard/MapModel'
 import { latLng } from 'leaflet'
-import { MapPointTypeDefaultValue } from '../utils/MapPointTypeDefaultValue'
-import { INearbyFeature } from '../interfaces/NearbyFeatures'
+import { MapPointTypeDefaultValue } from '../utils/mappingPOIs'
+import { INearbyFeature } from '../interfaces/NearbyPoint'
 import {
   getAllTrailStops,
   isStopPoint,
@@ -215,53 +215,7 @@ export class Model {
     this.disposed = true
   }
 
-  public async getNearbyFeatures(featuresOptions: INearbyFeature[]) {
-    const minLat = this.options.bbox.southWest.lat
-    const minLon = this.options.bbox.southWest.lng
-    const maxLat = this.options.bbox.northEast.lat
-    const maxLon = this.options.bbox.northEast.lng
-    const bboxStr = `${minLat},${minLon},${maxLat},${maxLon}`
-
-    try {
-      const res = await fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        body:
-          'data=' +
-          encodeURIComponent(`
-           [bbox: ${bboxStr}]
-           [out:json]
-           [timeout:90]
-           ;
-           (
-             ${featuresOptions
-               .map((_option) => {
-                 return `node["${_option.node}"="${_option.value}"](${bboxStr});`
-               })
-               .join('\n')}
-           );
-           out geom;
-         `),
-      })
-
-      if (!res.ok) {
-        throw new Error(
-          `Error in fetching features: ${featuresOptions.map((_opt) => _opt.label).join()} - ${res.status} ${res.statusText}`,
-        )
-      }
-
-      const resData = await res.json()
-      this.displayNearFeatures(resData.elements)
-    } catch (err) {
-      console.error(
-        `Error in fetching features: ${featuresOptions.map((_opt) => _opt.label).join()}`,
-        err.message,
-      )
-      return
-    }
-  }
-
-  public displayNearFeatures(features: MapPointDTO[]) {
-    const mapPoints = MapPointTypeDefaultValue(features)
+  public addNearbyPOIs(mapPoints: IMapPointDTO[]) {
     const heightScale = this.getHeightScale()
     let fallbackElevation = 0
 
@@ -286,6 +240,14 @@ export class Model {
           _elem.id.toString(),
           labelStr,
         )
+        this.options.mapObjects.push({
+          label: labelStr,
+          id: _elem.id.toString(),
+          x: point.x - 0.5,
+          y: point.y + 0.5,
+          z: (_elem?.tags?.ele ?? fallbackElevation) / heightScale,
+          pinType: PIN_TYPE.PIN_LABEL
+        })
       }
     })
   }

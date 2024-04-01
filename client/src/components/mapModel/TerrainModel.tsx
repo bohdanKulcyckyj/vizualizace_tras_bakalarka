@@ -12,6 +12,7 @@ import {
   PIN_TYPE,
   PIN_COLORS,
   IMapDTO,
+  IMapPointDTO,
 } from '../../interfaces/dashboard/MapModel'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { FaMapMarkerAlt, FaImage } from 'react-icons/fa'
@@ -28,8 +29,7 @@ import MapTourControllers from './MapTourControllers'
 import MapPinsList from '../toolbar/MapPinsList'
 import { toast } from 'sonner'
 import { getPinTitle } from '../../utils/pins'
-import NearbyFeaturesConfigPopup from '../popup/NearbyFeaturesConfigPopup'
-import { INearbyFeature } from '../../interfaces/NearbyFeatures'
+import NearbyPointsConfigPopup from '../popup/nearbyPOIsConfig/NearbyPointsConfigPopup'
 import { Range } from 'react-range'
 
 const TerrainModelComponent = ({ mode, options }: any) => {
@@ -46,13 +46,8 @@ const TerrainModelComponent = ({ mode, options }: any) => {
     useState<IMapObjectOptions>(null)
   const mainContext = useMainContext()
   const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false)
-  const [isFeaturePopupOpened, setIsFeaturePopupOpened] =
+  const [isImportPOIsPopupOpened, setIsImportPOIsPopupOpened] =
     useState<boolean>(false)
-  const [isDisplayingNearbyFeatures, setIsDisplayingNearbyFeatures] =
-    useState<boolean>(false)
-  const [selectedNearbyFeatures, setSelectedNearbyFeatures] = useState<
-    INearbyFeature[]
-  >([])
   const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1)
   const [isMapBeeingDragged, setIsMapBeeingDragged] = useState<boolean>(false)
   const [heightCoefficientRangeValue, setHeightCoefficientRangeValue] =
@@ -196,18 +191,22 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const handleOnTrailPointReached = (point: IMapObjectOptions): void => {
     setNewPointOptions(point)
     setIsPinPopupOpened(true)
+    model.pauseTrailAnimation()
+
+    setTimeout(() => {
+      setIsPinPopupOpened(false)
+      setNewPointOptions(null)
+      model.playTrailAnimation()
+    }, 3000)
   }
 
-  const handleSubmitNearbyFeaturesConfig = () => {
-    model?.getNearbyFeatures(selectedNearbyFeatures)
+  const handleSubmitImportPOIS = (points: IMapPointDTO[]) => {
+    model?.addNearbyPOIs(points)
   }
 
-  const toggleDisplayNearbyFeatures = () => {
-    const currState = isDisplayingNearbyFeatures
-    if (!currState) {
-      setIsFeaturePopupOpened(true)
-    }
-    setIsDisplayingNearbyFeatures(!currState)
+  const toggleImportPOIsPopup = () => {
+    const currState = isImportPOIsPopupOpened
+    setIsImportPOIsPopupOpened(!currState)
   }
 
   const cancel = () => {
@@ -232,8 +231,6 @@ const TerrainModelComponent = ({ mode, options }: any) => {
         try {
           res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid))
           resData = res.data
-          console.log(resData.map)
-          console.log(resData.mapPoints)
           setEditingMapData(resData.map)
           resData.map.mapModel.trailGpxUrl =
             resData.map.mapModel.trailGpxUrl ?? null
@@ -242,7 +239,6 @@ const TerrainModelComponent = ({ mode, options }: any) => {
           console.error(e)
         }
       }
-      console.log('OPTIONS: ', options ?? resData.map.mapModel)
       newModel = new Model(
         canvasRef.current,
         viewHelperCanvasWrapperRef.current,
@@ -402,16 +398,15 @@ const TerrainModelComponent = ({ mode, options }: any) => {
           />
         </Popup>
       )}
-      {/* FEATURE POPUP */}
-      {mode === ComponentMode.EDIT && (
+      {/* IMPORT POIs POPUP */}
+      {mode === ComponentMode.EDIT && editingMapData && (
         <Popup
-          isPopupOpened={isFeaturePopupOpened}
-          setIsPopupOpened={setIsFeaturePopupOpened}
+          isPopupOpened={isImportPOIsPopupOpened}
+          setIsPopupOpened={setIsImportPOIsPopupOpened}
         >
-          <NearbyFeaturesConfigPopup
-            selectedOptions={selectedNearbyFeatures}
-            setSelectedOptions={setSelectedNearbyFeatures}
-            onSubmit={handleSubmitNearbyFeaturesConfig}
+          <NearbyPointsConfigPopup
+            modelConfig={editingMapData.mapModel}
+            onSubmit={handleSubmitImportPOIS}
           />
         </Popup>
       )}
@@ -564,17 +559,13 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                 </div>
               )}
               {/* TOGGLE NEARBY FEATURES */}
-              <div>
-                <label className='form__checkbox cursor-pointer'>
-                  <input
-                    type='checkbox'
-                    name='with-label'
-                    id='with-label'
-                    onClick={toggleDisplayNearbyFeatures}
-                    value={isDisplayingNearbyFeatures}
-                  />
-                  <p className='checkbox-label'>Display nearby features</p>
-                </label>
+              <div className='flex justify-end my-4'>
+                <button
+                  className='secondary-button secondary-button--small'
+                  onClick={toggleImportPOIsPopup}
+                >
+                  Import POIs
+                </button>
               </div>
               {/* HEIGHT SCALE RANGE */}
               <div>
@@ -634,13 +625,13 @@ const TerrainModelComponent = ({ mode, options }: any) => {
           </div>
         </Toolbar>
       )}
-
+      {/* TRAIL ANIMATION CONTROLLERS */}
       <MapTourControllers
         onStart={() => model.playTrailAnimation()}
         onPause={() => model.pauseTrailAnimation()}
         onStop={() => model.stopTrailAnimation()}
       />
-
+      {/* MODEL */}
       <div className={`${mode === ComponentMode.EDIT ? 'ml-[20px]' : ''}`}>
         <div className='model-wrapper h-screen' ref={wrapperRef}>
           <canvas

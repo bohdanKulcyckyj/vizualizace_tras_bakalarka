@@ -1,0 +1,63 @@
+.custom-react-select {
+  &__container {
+    //background-color: blue;
+  }
+
+  &__control {
+    background-color: transparent !important;
+    color: $textColor;
+    letter-spacing: 0.05em;
+    font-size: 16px;
+    border-bottom: 1px solid $textColor;
+
+    @media only screen and (min-width: 768px) {
+      font-size: 18px;
+    }
+
+    &--is-focused {
+      border-color: $white !important;
+      box-shadow: none !important;
+    }
+  }
+
+  .css-qbdosj-Input:after {
+    background-color: transparent !important;
+  }
+
+  &__menu {
+    position: static !important;
+    background-color: rgba(51, 60, 68, 0.9) !important;
+    ::-webkit-scrollbar-track {
+      background-color: rgb(40, 46, 52) !important;
+    }
+  }
+
+  &__option {
+    &--is-focused {
+      background-color: rgba(69, 82, 93, 0.9) !important;
+      cursor: pointer;
+    }
+  }
+
+  &__multi-value__remove {
+    //&:hover {
+    //  background-color: ;
+    //}
+    svg {
+      fill: lighten($errors, 10%) !important;
+    }
+  }
+
+  &__input-container {
+    &::after {
+      content: none !important;
+    }
+    input {
+      box-shadow: none !important;
+    }
+  }
+
+  &__placeholder {
+    color: $white !important;
+  }
+}

@@ -37,7 +37,7 @@ export interface IMapDTO {
   mapModel: IMapModelConfig
 }
 
-export interface MapPointDTO {
+export interface IMapPointDTO {
   type: string
   id: number
   lat: number
@@ -53,16 +53,18 @@ export interface IModelCoord {
   lng: number
 }
 
+export interface IBbox {
+  northEast: IModelCoord
+  southWest: IModelCoord
+}
+
 export interface IMapModelConfig {
   center: {
     lat: number
     lng: number
     alt: number
   }
-  bbox: {
-    northEast: IModelCoord
-    southWest: IModelCoord
-  }
+  bbox: IBbox
   zoom: number
   trailGpxUrl: string | null
   mapObjects: IMapObjectOptions[]

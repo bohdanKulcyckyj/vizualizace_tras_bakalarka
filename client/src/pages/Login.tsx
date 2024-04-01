@@ -50,7 +50,7 @@ export default function SignIn() {
 
   return (
     <section className='welcome-section'>
-      <div className='page-section__container flex justify-center items-center'>
+      <div className='page-section__container flex justify-center items-center h-screen'>
         <form
           className='relative z-10 p-6 sm:p-10 form form--standalone'
           onSubmit={handleSubmit(signIn)}

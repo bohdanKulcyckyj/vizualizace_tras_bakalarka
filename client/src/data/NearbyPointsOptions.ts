@@ -1,6 +1,6 @@
-import { INearbyFeature } from '../interfaces/NearbyFeatures'
+import { INearbyPointType } from '../interfaces/NearbyPoint'
 
-export const featureOptions: INearbyFeature[] = [
+export const pointsOptions: INearbyPointType[] = [
   {
     label: 'Peaks',
     node: 'natural',
