@@ -143,13 +143,16 @@ export class Model {
   public options: IMapModelConfig
   // call TerainModel component method to set popup data about reached point
   public onTrailPointReachedCallback: (point: IMapObjectOptions) => void
+  public onLoad: () => void
 
   constructor(
     private canvas: HTMLCanvasElement,
     viewHelperCanvasWrapper: HTMLElement,
     northArrowCanvasWrapper: HTMLElement,
     private options: IMapModelConfig,
+    onLoad: () => void = null,
   ) {
+    this.onLoad = onLoad
     this.width = canvas.width
     this.height = canvas.height
     this.options = options
@@ -246,7 +249,7 @@ export class Model {
           x: point.x - 0.5,
           y: point.y + 0.5,
           z: (_elem?.tags?.ele ?? fallbackElevation) / heightScale,
-          pinType: PIN_TYPE.PIN_LABEL
+          pinType: PIN_TYPE.PIN_LABEL,
         })
       }
     })
@@ -474,6 +477,9 @@ export class Model {
 
     setTimeout(() => {
       this.fitCameraTo(new Box3().setFromObject(tilesGroup), this.camera as any)
+      if (this.onLoad) {
+        this.onLoad()
+      }
     }, 1000)
   }
 

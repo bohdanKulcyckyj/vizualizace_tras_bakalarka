@@ -13,6 +13,7 @@ import {
   PIN_COLORS,
   IMapDTO,
   IMapPointDTO,
+  IMapModelConfig,
 } from '../../interfaces/dashboard/MapModel'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { FaMapMarkerAlt, FaImage } from 'react-icons/fa'
@@ -31,8 +32,9 @@ import { toast } from 'sonner'
 import { getPinTitle } from '../../utils/pins'
 import NearbyPointsConfigPopup from '../popup/nearbyPOIsConfig/NearbyPointsConfigPopup'
 import { Range } from 'react-range'
+import routes from '../../constants/routes'
 
-const TerrainModelComponent = ({ mode, options }: any) => {
+const TerrainModelComponent = ({ mode }) => {
   const { modelid } = useParams()
   const navigate = useNavigate()
   const wrapperRef = useRef(null)
@@ -52,6 +54,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   const [isMapBeeingDragged, setIsMapBeeingDragged] = useState<boolean>(false)
   const [heightCoefficientRangeValue, setHeightCoefficientRangeValue] =
     useState<number>(1)
+  const [isModelLoaded, setIsModelLoaded] = useState<boolean>(false)
+
+  let keyEventHandler
 
   const fileChangeHangler = async (event): void => {
     const uploadedFile = event.target.files[0]
@@ -131,21 +136,29 @@ const TerrainModelComponent = ({ mode, options }: any) => {
   }
 
   const handleNewPin = (): void => {
-    if (!Object.hasOwn(newPointOptions, 'event') || !newPointOptions?.event)
+    if (!Object.hasOwn(newPointOptions, 'event') || !newPointOptions?.event) {
       return
+    }
 
-    if (
-      model.options.mapObjects.find((_item) => _item.id === newPointOptions.id)
-    ) {
-      const { x, y, z, ...rest } = newPointOptions
+    const indexOfObject = model.options.mapObjects.findIndex(
+      (_item) => _item.id === newPointOptions.id,
+    )
+    if (indexOfObject !== -1) {
+      const currentObject = model.options.mapObjects[indexOfObject]
+      const { x, y, z, event, ...rest } = newPointOptions
 
       model.removeObjectFromMap(newPointOptions.id)
-      model.addObjectToMap(x, y, z, rest)
+      model.addObjectToMap(x, y, z, { event, ...rest })
+      model.options.mapObjects[indexOfObject] = { ...currentObject, ...rest }
     } else {
       const { event, ...restOptions } = newPointOptions
       model.click(event, restOptions)
     }
 
+    setEditingMapData((_currData) => ({
+      ..._currData,
+      mapModel: model.options,
+    }))
     setNewPointOptions(null)
     setIsPinPopupOpened(false)
   }
@@ -167,6 +180,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
         currentOptions.trailGpxUrl = null
         setEditingMapData({ ...editingMapData, mapModel: currentOptions })
         setGpxTrailName('')
+        recreatedModel()
       })
       .catch((err) => {
         console.error(err)
@@ -202,6 +216,7 @@ const TerrainModelComponent = ({ mode, options }: any) => {
 
   const handleSubmitImportPOIS = (points: IMapPointDTO[]) => {
     model?.addNearbyPOIs(points)
+    recreatedModel()
   }
 
   const toggleImportPOIsPopup = () => {
@@ -213,147 +228,174 @@ const TerrainModelComponent = ({ mode, options }: any) => {
     navigate(-1)
   }
 
+  const handleModelOnload = (): void => {
+    if (mainContext) {
+      mainContext.setIsLoading(false)
+    }
+  }
+
+  const setupModel = async () => {
+    // modelid should always exist
+    if (!modelid) {
+      return navigate(routes.notFound)
+    }
+    // model options
+    let currentModelOptions: IMapModelConfig = null
+    // get existing model options or call api
+    if (editingMapData) {
+      currentModelOptions = editingMapData.mapModel
+    } else {
+      try {
+        const res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid))
+        const resData = res.data
+        setEditingMapData(resData.map)
+        resData.map.mapModel.trailGpxUrl =
+          resData.map.mapModel.trailGpxUrl ?? null
+        currentModelOptions = resData.map.mapModel
+      } catch (e) {
+        navigate('/404')
+      }
+    }
+
+    const newModel = new Model(
+      canvasRef.current,
+      viewHelperCanvasWrapperRef.current,
+      northArrowCanvasWrapperRef.current,
+      currentModelOptions,
+      handleModelOnload,
+    )
+    newModel.animate()
+    newModel.onTrailPointReachedCallback = handleOnTrailPointReached
+    setModel(newModel)
+    //const controls = new CameraControls(newModel.camera, canvasRef.current);
+    const controls = newModel.controls
+    //newModel.setControls(controls);
+
+    keyEventHandler = (e) => {
+      const keyRotateSpeed = 0.5
+      const keyRotateAngle = (keyRotateSpeed * Math.PI) / 180
+
+      if (e.shiftKey) {
+        switch (e.keyCode) {
+          case 37: // LEFT
+            controls.rotate(-keyRotateAngle, 0)
+            break
+          case 38: // UP
+            controls.rotate(0, keyRotateAngle)
+            break
+          case 39: // RIGHT
+            controls.rotate(keyRotateAngle, 0)
+            break
+          case 40: // DOWN
+            controls.rotate(0, -keyRotateAngle)
+            break
+          case 82: // Shift + R
+            controls.reset()
+            break
+          default:
+            return
+        }
+      } else if (e.ctrlKey) {
+        switch (e.keyCode) {
+          case 37: // Ctrl + LEFT
+            newModel.cameraRotate(keyRotateAngle, 0)
+            break
+          case 38: // Ctrl + UP
+            newModel.cameraRotate(0, keyRotateAngle)
+            break
+          case 39: // Ctrl + RIGHT
+            newModel.cameraRotate(-keyRotateAngle, 0)
+            break
+          case 40: // Ctrl + DOWN
+            newModel.cameraRotate(0, -keyRotateAngle)
+            break
+          default:
+            return
+        }
+      } else {
+        const keyPanSpeed = 0.2
+
+        switch (e.keyCode) {
+          case 37: // LEFT
+            controls.truck(-keyPanSpeed, 0, true) // horizontally left
+            break
+          case 38: // UP
+            controls.forward(keyPanSpeed, true) // horizontally forward
+            break
+          case 39: // RIGHT
+            controls.truck(keyPanSpeed, 0, true)
+            break
+          case 40: // DOWN
+            controls.forward(-keyPanSpeed, true)
+            break
+          default:
+            return
+        }
+      }
+    }
+
+    window.addEventListener('keydown', keyEventHandler)
+
+    const resize = () => {
+      newModel.resize(
+        wrapperRef.current.offsetWidth,
+        wrapperRef.current.offsetHeight,
+      )
+    }
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      resize()
+    })
+    resizeObserver.observe(wrapperRef.current)
+
+    const animateTrail = mainContext.animateTrail
+    const enableShadow = mainContext.enableShadow
+    const enableSun = mainContext.enableSun
+
+    if (animateTrail) {
+      newModel.playTrailAnimation()
+    }
+    newModel.setEnableShadow(enableShadow)
+    newModel.setEnableSun(enableSun)
+    setModel(newModel)
+    return newModel
+  }
+
+  const destroyModel = () => {
+    if (mainContext) {
+      mainContext.setIsLoading(true)
+    }
+    window.removeEventListener('keydown', keyEventHandler)
+    if (model) {
+      setEditingMapData((_editingMapData) => ({
+        ..._editingMapData,
+        mapModel: model.options,
+      }))
+      model.destroy()
+      setModel(null)
+    }
+  }
+
+  const recreatedModel = () => {
+    destroyModel()
+    setupModel()
+  }
+
   useEffect(() => {
     if (mainContext) {
       mainContext.setIsLoading(true)
-      setTimeout(() => {
-        mainContext.setIsLoading(false)
-      }, 5000)
     }
   }, [])
 
   useEffect(() => {
-    let newModel = null
-
-    const setup = async () => {
-      let res, resData
-      if (modelid) {
-        try {
-          res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid))
-          resData = res.data
-          setEditingMapData(resData.map)
-          resData.map.mapModel.trailGpxUrl =
-            resData.map.mapModel.trailGpxUrl ?? null
-        } catch (e) {
-          navigate('/404')
-          console.error(e)
-        }
-      }
-      newModel = new Model(
-        canvasRef.current,
-        viewHelperCanvasWrapperRef.current,
-        northArrowCanvasWrapperRef.current,
-        options ?? resData.map.mapModel,
-      )
-      if (resData.mapPoints) {
-        newModel.displayNearFeatures(JSON.parse(resData.mapPoints))
-      }
-      newModel.animate()
-      newModel.onTrailPointReachedCallback = handleOnTrailPointReached
-      setModel(newModel)
-      //const controls = new CameraControls(newModel.camera, canvasRef.current);
-      const controls = newModel.controls
-      //newModel.setControls(controls);
-
-      const keyEventHandler = (e) => {
-        const keyRotateSpeed = 0.5
-        const keyRotateAngle = (keyRotateSpeed * Math.PI) / 180
-
-        if (e.shiftKey) {
-          switch (e.keyCode) {
-            case 37: // LEFT
-              controls.rotate(-keyRotateAngle, 0)
-              break
-            case 38: // UP
-              controls.rotate(0, keyRotateAngle)
-              break
-            case 39: // RIGHT
-              controls.rotate(keyRotateAngle, 0)
-              break
-            case 40: // DOWN
-              controls.rotate(0, -keyRotateAngle)
-              break
-            case 82: // Shift + R
-              controls.reset()
-              break
-            default:
-              return
-          }
-        } else if (e.ctrlKey) {
-          switch (e.keyCode) {
-            case 37: // Ctrl + LEFT
-              newModel.cameraRotate(keyRotateAngle, 0)
-              break
-            case 38: // Ctrl + UP
-              newModel.cameraRotate(0, keyRotateAngle)
-              break
-            case 39: // Ctrl + RIGHT
-              newModel.cameraRotate(-keyRotateAngle, 0)
-              break
-            case 40: // Ctrl + DOWN
-              newModel.cameraRotate(0, -keyRotateAngle)
-              break
-            default:
-              return
-          }
-        } else {
-          const keyPanSpeed = 0.2
-
-          switch (e.keyCode) {
-            case 37: // LEFT
-              controls.truck(-keyPanSpeed, 0, true) // horizontally left
-              break
-            case 38: // UP
-              controls.forward(keyPanSpeed, true) // horizontally forward
-              break
-            case 39: // RIGHT
-              controls.truck(keyPanSpeed, 0, true)
-              break
-            case 40: // DOWN
-              controls.forward(-keyPanSpeed, true)
-              break
-            default:
-              return
-          }
-        }
-      }
-
-      window.addEventListener('keydown', (e) => keyEventHandler(e))
-
-      const resize = () => {
-        newModel.resize(
-          wrapperRef.current.offsetWidth,
-          wrapperRef.current.offsetHeight,
-        )
-      }
-
-      const resizeObserver = new ResizeObserver((entries) => {
-        resize()
-      })
-      resizeObserver.observe(wrapperRef.current)
-
-      const animateTrail = mainContext.animateTrail
-      const enableShadow = mainContext.enableShadow
-      const enableSun = mainContext.enableSun
-
-      if (animateTrail) {
-        newModel.playTrailAnimation()
-      }
-      newModel.setEnableShadow(enableShadow)
-      newModel.setEnableSun(enableSun)
-      setModel(newModel)
-    }
-
-    if (!model) {
-      setup()
+    if (!isModelLoaded) {
+      setIsModelLoaded(true)
+      setupModel()
     }
 
     return () => {
       console.log('COMPONENT UNMOUNTED')
-      window.removeEventListener('keydown', (e) => keyEventHandler(e))
-      if (newModel) {
-        newModel.destroy()
-      }
+      destroyModel()
     }
   }, [modelid])
 
@@ -585,6 +627,9 @@ const TerrainModelComponent = ({ mode, options }: any) => {
                       model.options.heightCoefficient = values[0]
                     }
                   }}
+                  onFinalChange={() => {
+                    recreatedModel()
+                  }}
                   renderTrack={({ props, children }) => (
                     <div
                       {...props}
@@ -615,11 +660,11 @@ const TerrainModelComponent = ({ mode, options }: any) => {
               </div>
             </div>
             <div className='flex justify-center items-center gap-6'>
-              <button onClick={confirm} className='primary-button'>
-                Save
-              </button>
               <button onClick={cancel} className='secondary-button'>
                 Back
+              </button>
+              <button onClick={confirm} className='primary-button'>
+                Save
               </button>
             </div>
           </div>
