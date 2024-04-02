@@ -25,7 +25,9 @@
   }
 
   &__container {
+    overflow-x: hidden;
     width: 0px;
+    opacity: 0;
     transition: all 0.4s ease;
     padding: 0;
     background: rgba(51, 60, 68, 0.9);
@@ -52,7 +54,7 @@
 
     &--opened {
       width: 80vw;
-
+      opacity: 1;
       @media only screen and (min-width: 768px) {
         width: 300px;
       }

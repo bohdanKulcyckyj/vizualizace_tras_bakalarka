@@ -33,6 +33,7 @@ import { getPinTitle } from '../../utils/pins'
 import NearbyPointsConfigPopup from '../popup/nearbyPOIsConfig/NearbyPointsConfigPopup'
 import { Range } from 'react-range'
 import routes from '../../constants/routes'
+import { textureTiles } from '../../data/TextureTypes'
 
 const TerrainModelComponent = ({ mode }) => {
   const { modelid } = useParams()
@@ -228,6 +229,11 @@ const TerrainModelComponent = ({ mode }) => {
     navigate(-1)
   }
 
+  const handleTextureStyleChange = (label: string) => {
+    model.options.textureTypeLabel = label
+    recreatedModel()
+  }
+
   const handleModelOnload = (): void => {
     if (mainContext) {
       mainContext.setIsLoading(false)
@@ -244,11 +250,13 @@ const TerrainModelComponent = ({ mode }) => {
     // get existing model options or call api
     if (editingMapData) {
       currentModelOptions = editingMapData.mapModel
+      setGpxTrailName(editingMapData.mapModel?.trailGpxUrl ?? '')
     } else {
       try {
         const res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid))
         const resData = res.data
         setEditingMapData(resData.map)
+        setGpxTrailName(resData.map.mapModel.trailGpxUrl ?? '')
         resData.map.mapModel.trailGpxUrl =
           resData.map.mapModel.trailGpxUrl ?? null
         currentModelOptions = resData.map.mapModel
@@ -457,6 +465,73 @@ const TerrainModelComponent = ({ mode }) => {
         <Toolbar>
           <div className='form flex flex-col justify-between h-full'>
             <div>
+              {/* MODEL TEXTURE STYLE TYPE */}
+              <p className='mb-2'>Texture style</p>
+              <div className='grid grid-cols-4 gap-2 mb-6'>
+                {textureTiles.map((_item, _index) => (
+                  <div
+                    className='h-[60px] cursor-pointer'
+                    title={_item.label}
+                    key={_index}
+                    onClick={() => handleTextureStyleChange(_item.label)}
+                  >
+                    <img
+                      className='w-full h-full object-cover'
+                      src={_item.image}
+                      alt={`Texture style - ${_item.label}`}
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* HEIGHT SCALE RANGE */}
+              <div className='mb-6'>
+                <div className='flex justify-between items-center my-2'>
+                  <p>Heights scale</p>
+                  <p>{heightCoefficientRangeValue}</p>
+                </div>
+                <Range
+                  step={0.1}
+                  min={1}
+                  max={10}
+                  values={[heightCoefficientRangeValue]}
+                  onChange={(values) => {
+                    console.log(model.options)
+                    if (model?.options) {
+                      setHeightCoefficientRangeValue(values[0])
+                      model.options.heightCoefficient = values[0]
+                    }
+                  }}
+                  onFinalChange={() => {
+                    recreatedModel()
+                  }}
+                  renderTrack={({ props, children }) => (
+                    <div
+                      {...props}
+                      style={{
+                        ...props.style,
+                        height: '6px',
+                        width: '100%',
+                        backgroundColor: '#2EEBC9',
+                      }}
+                    >
+                      {children}
+                    </div>
+                  )}
+                  renderThumb={({ props }) => (
+                    <div
+                      {...props}
+                      style={{
+                        ...props.style,
+                        height: '22px',
+                        width: '22px',
+                        borderRadius: '50%',
+                        backgroundColor: '#fff',
+                        outline: 'none',
+                      }}
+                    />
+                  )}
+                />
+              </div>
               {/* GPX / FIT uploading */}
               <div className='mb-6'>
                 <div className='flex justify-between flex-wrap gap-2 mb-2'>
@@ -588,6 +663,15 @@ const TerrainModelComponent = ({ mode }) => {
                   </div>
                 </div>
               </div>
+              {/* IMPORT NEARBY FEATURES */}
+              <div className='flex justify-end mt-4 mb-2'>
+                <button
+                  className='secondary-button secondary-button--small'
+                  onClick={toggleImportPOIsPopup}
+                >
+                  Import POIs
+                </button>
+              </div>
               {/* PLACED PINS */}
               {model?.options?.mapObjects?.length > 0 && (
                 <div className='mb-3'>
@@ -600,64 +684,6 @@ const TerrainModelComponent = ({ mode }) => {
                   />
                 </div>
               )}
-              {/* TOGGLE NEARBY FEATURES */}
-              <div className='flex justify-end my-4'>
-                <button
-                  className='secondary-button secondary-button--small'
-                  onClick={toggleImportPOIsPopup}
-                >
-                  Import POIs
-                </button>
-              </div>
-              {/* HEIGHT SCALE RANGE */}
-              <div>
-                <div className='flex justify-between items-center my-2'>
-                  <p>Heights scale</p>
-                  <p>{heightCoefficientRangeValue}</p>
-                </div>
-                <Range
-                  step={0.1}
-                  min={1}
-                  max={10}
-                  values={[heightCoefficientRangeValue]}
-                  onChange={(values) => {
-                    console.log(model.options)
-                    if (model?.options) {
-                      setHeightCoefficientRangeValue(values[0])
-                      model.options.heightCoefficient = values[0]
-                    }
-                  }}
-                  onFinalChange={() => {
-                    recreatedModel()
-                  }}
-                  renderTrack={({ props, children }) => (
-                    <div
-                      {...props}
-                      style={{
-                        ...props.style,
-                        height: '6px',
-                        width: '100%',
-                        backgroundColor: '#2EEBC9',
-                      }}
-                    >
-                      {children}
-                    </div>
-                  )}
-                  renderThumb={({ props }) => (
-                    <div
-                      {...props}
-                      style={{
-                        ...props.style,
-                        height: '22px',
-                        width: '22px',
-                        borderRadius: '50%',
-                        backgroundColor: '#fff',
-                        outline: 'none',
-                      }}
-                    />
-                  )}
-                />
-              </div>
             </div>
             <div className='flex justify-center items-center gap-6'>
               <button onClick={cancel} className='secondary-button'>
@@ -671,11 +697,13 @@ const TerrainModelComponent = ({ mode }) => {
         </Toolbar>
       )}
       {/* TRAIL ANIMATION CONTROLLERS */}
-      <MapTourControllers
-        onStart={() => model.playTrailAnimation()}
-        onPause={() => model.pauseTrailAnimation()}
-        onStop={() => model.stopTrailAnimation()}
-      />
+      {model?.options?.trailGpxUrl && gpxTrailName && (
+        <MapTourControllers
+          onStart={() => model.playTrailAnimation()}
+          onPause={() => model.pauseTrailAnimation()}
+          onStop={() => model.stopTrailAnimation()}
+        />
+      )}
       {/* MODEL */}
       <div className={`${mode === ComponentMode.EDIT ? 'ml-[20px]' : ''}`}>
         <div className='model-wrapper h-screen' ref={wrapperRef}>

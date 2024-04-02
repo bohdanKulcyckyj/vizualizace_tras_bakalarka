@@ -69,11 +69,5 @@ export interface IMapModelConfig {
   trailGpxUrl: string | null
   mapObjects: IMapObjectOptions[]
   heightCoefficient: number | null
-  //tilesetStyleIdentifier: string | null;
-}
-
-export interface ITilesetStyle {
-  identifier: string
-  label: string
-  image: string
+  textureTypeLabel: string | null;
 }

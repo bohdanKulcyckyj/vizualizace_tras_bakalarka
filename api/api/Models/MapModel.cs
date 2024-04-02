@@ -8,5 +8,6 @@
         public string? trailGpxUrl { get; set; }
         public List<MapModelUserAddedObject>? mapObjects { get; set; } = new List<MapModelUserAddedObject>();
         public double? heightCoefficient { get; set; } = null;
+        public string? textureTypeLabel { get; set; } = null;
     }
 }

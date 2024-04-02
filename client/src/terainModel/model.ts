@@ -86,6 +86,7 @@ import {
   isStopPoint,
   ITrailStop,
 } from '../utils/pointDistance'
+import { textureTiles } from '../data/TextureTypes'
 
 const subsetOfTHREE = {
   Vector2: Vector2,
@@ -874,7 +875,17 @@ export class Model {
     const apiKey =
       'pk.eyJ1IjoiamFub3VzZWsiLCJhIjoiY2oyYWE4cXgyMDAwZTMzbjJ2YnZsN2owaiJ9.pYpMMOZZ4Kyaaw3sUZP0hg'
     const url = `${baseUrl}v4/mapbox.terrain-rgb/${zoom}/${x}/${y}.pngraw?access_token=${apiKey}`
-    const textureUrl = `${baseUrl}v4/mapbox.satellite/${zoom}/${x}/${y}@2x.png?access_token=${apiKey}`
+
+    let textureUrl = null
+    if(this.options?.textureTypeLabel) {
+      textureUrl = textureTiles
+      .find((_item) => _item.label === this.options.textureTypeLabel)
+      .url(x, y, zoom)
+    } else {
+      textureUrl = textureTiles
+      .find((_item) => _item.label === 'Satelite')
+      .url(x, y, zoom)
+    }
 
     const [{ size: planeSize, heights }, texture] = await Promise.all([
       ElevationLoader.load(url),

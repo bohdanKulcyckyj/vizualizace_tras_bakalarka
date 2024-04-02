@@ -11,7 +11,8 @@ const Toolbar = ({ children }: Children) => {
       <div
         className={`toolbar__container ${isOpen ? 'toolbar__container--opened' : ''}`}
       >
-        <div className='toolbar__content h-[70vh] mt-8'>{children}</div>
+        {/* <div className='toolbar__content min-h-max mt-8'>{children}</div> */}
+        {children}
       </div>
       <div className='toolbar__arrow-panel'>
         <div

@@ -100,8 +100,11 @@ const LeafletMap = ({ projectId }) => {
         zoom: mapZoom,
         mapObjects: editingRecord ? editingRecord.mapModel.mapObjects : [],
         heightCoefficient: editingRecord
-          ? editingRecord.mapModel.heightCoefficient
+          ? editingRecord.mapModel?.heightCoefficient
           : null,
+        textureTypeLabel: editingRecord
+        ? editingRecord.mapModel?.textureTypeLabel
+        : null,
       },
       name: inputNameValue,
     }
