@@ -1,6 +1,7 @@
 import { FaPause, FaStop, FaPlay } from 'react-icons/fa'
 import { IconContext } from 'react-icons'
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
+import { startAnimation } from '../../utils/trailAnimation'
 
 export enum MapTourController {
   TOUR_PLAY,
@@ -35,6 +36,18 @@ const MapTourControllers: FC<{
     callback()
   }
 
+  useEffect(() => {
+    if (timingConfig && activeController === MapTourController.TOUR_PLAY) {
+      const { timestampStart, timestampEnd, animationDuration } = timingConfig
+      startAnimation(
+        timestampStart,
+        timestampEnd,
+        animationDuration,
+        '#trail-animation-time',
+      )
+    }
+  }, [activeController, timingConfig])
+
   return (
     <div
       className={`map-tour__panel ${isPanelOpened ? 'map-tour__panel--active' : ''}`}
@@ -47,7 +60,7 @@ const MapTourControllers: FC<{
           ></div>
           {timingConfig && (
             <div className='map-tour__time mb-4'>
-              <p>18:06:00 24. September 2022</p>
+              <p id='trail-animation-time'>{timingConfig.timestampStart}</p>
             </div>
           )}
           <div className='map-tour__controls'>

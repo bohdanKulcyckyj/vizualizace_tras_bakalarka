@@ -34,6 +34,7 @@ import NearbyPointsConfigPopup from '../popup/nearbyPOIsConfig/NearbyPointsConfi
 import { Range } from 'react-range'
 import routes from '../../constants/routes'
 import { textureTiles } from '../../data/TextureTypes'
+import ModelToolbar from '../toolbar/modelToolbar/ModelToolbar'
 
 const TerrainModelComponent = ({ mode }) => {
   const { modelid } = useParams()
@@ -59,7 +60,7 @@ const TerrainModelComponent = ({ mode }) => {
 
   let keyEventHandler
 
-  const fileChangeHangler = async (event): void => {
+  const fileChangeHandler = async (event): void => {
     const uploadedFile = event.target.files[0]
     if (uploadedFile) {
       const requestConfig = setHeadersConfig({
@@ -206,12 +207,12 @@ const TerrainModelComponent = ({ mode }) => {
   const handleOnTrailPointReached = (point: IMapObjectOptions): void => {
     setNewPointOptions(point)
     setIsPinPopupOpened(true)
-    model.pauseTrailAnimation()
+    model?.pauseTrailAnimation()
 
     setTimeout(() => {
       setIsPinPopupOpened(false)
       setNewPointOptions(null)
-      model.playTrailAnimation()
+      model?.playTrailAnimation()
     }, 3000)
   }
 
@@ -462,243 +463,32 @@ const TerrainModelComponent = ({ mode }) => {
       )}
       {/* TOOLBAR */}
       {mode === ComponentMode.EDIT && (
-        <Toolbar>
-          <div className='form flex flex-col justify-between h-full'>
-            <div>
-              {/* MODEL TEXTURE STYLE TYPE */}
-              <p className='mb-2'>Texture style</p>
-              <div className='grid grid-cols-4 gap-2 mb-6'>
-                {textureTiles.map((_item, _index) => (
-                  <div
-                    className='h-[60px] cursor-pointer'
-                    title={_item.label}
-                    key={_index}
-                    onClick={() => handleTextureStyleChange(_item.label)}
-                  >
-                    <img
-                      className='w-full h-full object-cover'
-                      src={_item.image}
-                      alt={`Texture style - ${_item.label}`}
-                    />
-                  </div>
-                ))}
-              </div>
-              {/* HEIGHT SCALE RANGE */}
-              <div className='mb-6'>
-                <div className='flex justify-between items-center my-2'>
-                  <p>Heights scale</p>
-                  <p>{heightCoefficientRangeValue}</p>
-                </div>
-                <Range
-                  step={0.1}
-                  min={1}
-                  max={10}
-                  values={[heightCoefficientRangeValue]}
-                  onChange={(values) => {
-                    console.log(model.options)
-                    if (model?.options) {
-                      setHeightCoefficientRangeValue(values[0])
-                      model.options.heightCoefficient = values[0]
-                    }
-                  }}
-                  onFinalChange={() => {
-                    recreatedModel()
-                  }}
-                  renderTrack={({ props, children }) => (
-                    <div
-                      {...props}
-                      style={{
-                        ...props.style,
-                        height: '6px',
-                        width: '100%',
-                        backgroundColor: '#2EEBC9',
-                      }}
-                    >
-                      {children}
-                    </div>
-                  )}
-                  renderThumb={({ props }) => (
-                    <div
-                      {...props}
-                      style={{
-                        ...props.style,
-                        height: '22px',
-                        width: '22px',
-                        borderRadius: '50%',
-                        backgroundColor: '#fff',
-                        outline: 'none',
-                      }}
-                    />
-                  )}
-                />
-              </div>
-              {/* GPX / FIT uploading */}
-              <div className='mb-6'>
-                <div className='flex justify-between flex-wrap gap-2 mb-2'>
-                  <label htmlFor='pgx'>GPX or FIT trail</label>
-                  {gpxTrailName && (
-                    <button
-                      className='secondary-button secondary-button--small'
-                      onClick={handleDeleteTrail}
-                    >
-                      delete
-                    </button>
-                  )}
-                </div>
-                <div className='form__input--file mb-2'>
-                  <label>
-                    {gpxTrailName ? (
-                      <div className='flex justify-center items-center overflow-hidden'>
-                        <span className='mx-2 oveflow-hidden'>
-                          {gpxTrailName}
-                        </span>
-                      </div>
-                    ) : (
-                      <IconContext.Provider
-                        value={{
-                          color: '#2EEBC9',
-                          size: '30px',
-                          className: 'upload-icon',
-                        }}
-                      >
-                        <span>
-                          <MdOutlineFileUpload />
-                        </span>
-                      </IconContext.Provider>
-                    )}
-                    <input
-                      name='gpx'
-                      type='file'
-                      placeholder='gpx'
-                      onChange={(e) => fileChangeHangler(e)}
-                    />
-                  </label>
-                </div>
-              </div>
-              {/* NEW PIN */}
-              <div>
-                <p className='mb-2'>New Pin</p>
-                <div className='pins-container mb-2'>
-                  {Object.values(PIN_COLORS).map((_value, _index) => (
-                    <div
-                      title={getPinTitle(PIN_TYPE.PIN_SIGN)}
-                      key={_index}
-                      className='cursor-pointer'
-                      onClick={() => {
-                        setNewPointOptions({
-                          ...newPointOptions,
-                          id: uuidv4(),
-                          pinType: PIN_TYPE.PIN_SIGN,
-                          color: _value.toString(),
-                        })
-                        toast('Click on the map to place new pin', {
-                          position: 'bottom-center',
-                        })
-                      }}
-                    >
-                      <IconContext.Provider
-                        value={{
-                          color: `${_value.toString()}`,
-                          size: '30px',
-                          className: 'pin-icon',
-                        }}
-                      >
-                        <span>
-                          <FaMapMarkerAlt />
-                        </span>
-                      </IconContext.Provider>
-                    </div>
-                  ))}
-                  <div
-                    title={getPinTitle(PIN_TYPE.PIN_LABEL)}
-                    className='cursor-pointer'
-                    onClick={() => {
-                      setNewPointOptions({
-                        ...newPointOptions,
-                        id: uuidv4(),
-                        pinType: PIN_TYPE.PIN_LABEL,
-                      })
-                      toast('Click on the map to place new pin', {
-                        position: 'bottom-center',
-                      })
-                    }}
-                  >
-                    <IconContext.Provider
-                      value={{
-                        color: 'white',
-                        size: '30px',
-                        className: 'pin-icon',
-                      }}
-                    >
-                      <span>
-                        <SlDirection />
-                      </span>
-                    </IconContext.Provider>
-                  </div>
-                  <div
-                    title={getPinTitle(PIN_TYPE.PIN_IMAGE)}
-                    className='cursor-pointer'
-                    onClick={() => {
-                      setNewPointOptions({
-                        ...newPointOptions,
-                        id: uuidv4(),
-                        pinType: PIN_TYPE.PIN_IMAGE,
-                      })
-                      toast('Click on the map to place new pin', {
-                        position: 'bottom-center',
-                      })
-                    }}
-                  >
-                    <IconContext.Provider
-                      value={{
-                        color: 'white',
-                        size: '30px',
-                        className: 'pin-icon',
-                      }}
-                    >
-                      <span>
-                        <FaImage />
-                      </span>
-                    </IconContext.Provider>
-                  </div>
-                </div>
-              </div>
-              {/* IMPORT NEARBY FEATURES */}
-              <div className='flex justify-end mt-4 mb-2'>
-                <button
-                  className='secondary-button secondary-button--small'
-                  onClick={toggleImportPOIsPopup}
-                >
-                  Import POIs
-                </button>
-              </div>
-              {/* PLACED PINS */}
-              {model?.options?.mapObjects?.length > 0 && (
-                <div className='mb-3'>
-                  <MapPinsList
-                    data={model?.options?.mapObjects ?? []}
-                    onPinSelect={(pin: IMapObjectOptions) => {
-                      setNewPointOptions(pin)
-                      setIsPinPopupOpened(true)
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className='flex justify-center items-center gap-6'>
-              <button onClick={cancel} className='secondary-button'>
-                Back
-              </button>
-              <button onClick={confirm} className='primary-button'>
-                Save
-              </button>
-            </div>
-          </div>
-        </Toolbar>
+        <ModelToolbar
+          model={model}
+          modelid={modelid}
+          editingMapData={editingMapData}
+          setEditingMapData={setEditingMapData}
+          setNewPointOptions={setNewPointOptions}
+          setIsPinPopupOpened={setIsPinPopupOpened}
+          heightCoefficientRangeValue={heightCoefficientRangeValue}
+          setHeightCoefficientRangeValue={setHeightCoefficientRangeValue}
+          recreatedModel={recreatedModel}
+          newPointOptions={newPointOptions}
+          toggleImportPOIsPopup={toggleImportPOIsPopup}
+          handleTextureStyleChange={handleTextureStyleChange}
+          gpxTrailName={gpxTrailName}
+          handleDeleteTrail={handleDeleteTrail}
+          fileChangeHandler={fileChangeHandler}
+        />
       )}
       {/* TRAIL ANIMATION CONTROLLERS */}
       {model?.options?.trailGpxUrl && gpxTrailName && (
         <MapTourControllers
+          //timingConfig={{
+          //  timestampStart: '2023-06-24T23:59:17.000Z',
+          //  timestampEnd: '2023-06-25T08:42:17.000Z',
+          //  animationDuration: 20000,
+          //}}
           onStart={() => model.playTrailAnimation()}
           onPause={() => model.pauseTrailAnimation()}
           onStop={() => model.stopTrailAnimation()}

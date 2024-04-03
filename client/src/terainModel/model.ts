@@ -755,7 +755,7 @@ export class Model {
 
             setTimeout(() => {
               this.playTrailAnimation()
-            }, 5000)
+            }, 3000)
           }
 
           const mySphere = this.scene.children.find(
