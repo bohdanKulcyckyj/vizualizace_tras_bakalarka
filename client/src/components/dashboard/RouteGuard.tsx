@@ -18,7 +18,7 @@ const RouteGuard = () => {
         replace: true,
       })
     }
-  }, [location])
+  }, [location, navigate, setLoggedUser])
 
   return <Outlet />
 }
