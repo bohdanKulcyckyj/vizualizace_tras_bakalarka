@@ -1,13 +1,42 @@
-import React from 'react'
+import { setHeadersConfig } from '../../../utils/axiosWithAuth'
+import apiEndpoints from '../../../constants/apiEndpoints'
+import axios from 'axios'
 import { IconContext } from 'react-icons'
 import { MdOutlineFileUpload } from 'react-icons/md'
+import { useModelContext } from '../../../context/ModelContext'
 
-const TrailUploader = ({ gpxTrailName, handleDeleteTrail, fileChangeHandler }) => {
+const TrailUploader = ({ handleDeleteTrail }) => {
+  const { model, trailName, setTrailName } = useModelContext()
+
+  const fileChangeHandler = async (event): Promise<void> => {
+    const uploadedFile = event.target.files[0]
+    if (uploadedFile) {
+      const requestConfig = setHeadersConfig({
+        'Content-Type': 'multipart/form-data',
+      })
+      const formData = new FormData()
+      formData.append('file', uploadedFile)
+
+      try {
+        const res = await axios.post(
+          apiEndpoints.uploadMedia,
+          formData,
+          requestConfig,
+        )
+
+        setTrailName(uploadedFile.name)
+        model.drawTrail(res.data.file)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }
+
   return (
     <div className='mb-6'>
     <div className='flex justify-between flex-wrap gap-2 mb-2'>
       <label htmlFor='pgx'>GPX or FIT trail</label>
-      {gpxTrailName && (
+      {trailName && (
         <button
           className='secondary-button secondary-button--small'
           onClick={handleDeleteTrail}
@@ -18,9 +47,9 @@ const TrailUploader = ({ gpxTrailName, handleDeleteTrail, fileChangeHandler }) =
     </div>
     <div className='form__input--file mb-2'>
       <label>
-        {gpxTrailName ? (
+        {trailName ? (
           <div className='flex justify-start items-center overflow-hidden'>
-            <span className='oveflow-hidden'>{gpxTrailName}</span>
+            <span className='oveflow-hidden'>{trailName}</span>
           </div>
         ) : (
           <IconContext.Provider

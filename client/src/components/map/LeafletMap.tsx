@@ -96,15 +96,18 @@ const LeafletMap = ({ projectId }) => {
           northEast: bounds.getNorthEast(),
           southWest: bounds.getSouthWest(),
         },
-        trailGpxUrl: editingRecord ? editingRecord.mapModel.trailGpxUrl : null,
+        trailUrl: editingRecord ? editingRecord.mapModel.trailUrl : null,
         zoom: mapZoom,
         mapObjects: editingRecord ? editingRecord.mapModel.mapObjects : [],
         heightCoefficient: editingRecord
           ? editingRecord.mapModel?.heightCoefficient
           : null,
         textureTypeLabel: editingRecord
-        ? editingRecord.mapModel?.textureTypeLabel
-        : null,
+          ? editingRecord.mapModel?.textureTypeLabel
+          : null,
+        enableSun: true,
+        enableShadow: true,
+        animateTrail: true
       },
       name: inputNameValue,
     }

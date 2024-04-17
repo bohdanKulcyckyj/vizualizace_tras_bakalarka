@@ -17,8 +17,8 @@ export interface IButton {
 export interface IDeleteButton {
   data: IButton
   rowData: any
-  setDeleteRoute: Dispatch<SetStateAction<string>>
   setShowTheDialog: Dispatch<SetStateAction<boolean>>
+  setDeleteRoute: Dispatch<SetStateAction<string>>
 }
 
 export interface IRedirectButton {

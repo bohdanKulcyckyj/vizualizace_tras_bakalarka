@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react'
 import { ButtonType } from '../../interfaces/dashboard/Button'
 import Table from '../../components/dashboard/Table'
 import Aside from '../../components/Aside'
 import routes from '../../constants/routes'
 import { UserRole } from '../../interfaces/User'
-import { IMapDTO } from '../../interfaces/dashboard/MapModel'
-import { axiosWithAuth } from '../../utils/axiosWithAuth'
 import apiEndpoints from '../../constants/apiEndpoints'
-import { toast } from 'sonner'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { deleteUserMap, getUserMaps } from '../../api/maps'
+import Loading from '../../components/Loading'
 
 const tableConfig = (userType: UserRole) => ({
   heading: '',
@@ -50,29 +49,23 @@ const tableConfig = (userType: UserRole) => ({
 })
 
 const Maps = ({ role }) => {
-  const [data, setData] = useState<IMapDTO[]>([])
+  const queryClient = useQueryClient()
 
-  const getData = async () => {
-    try {
-      const res = await axiosWithAuth.get(apiEndpoints.getUserMaps)
-      const formattedData = res.data.map((_row) => {
-        if (Object.hasOwn(_row, 'createdAt')) {
-          const tmpCreatedAt = new Date(_row.createdAt).toLocaleDateString()
-          return {
-            ..._row,
-            createdAt: tmpCreatedAt,
-          }
-        }
-      })
-      setData(formattedData as IMapDTO[])
-    } catch (e) {
-      toast.error('Unable to fetch map data')
-    }
+  const { data } = useQuery({
+    queryFn: getUserMaps,
+    queryKey: ["userMaps"],
+  })
+
+  const { mutateAsync: handleDeleteMap } = useMutation({
+    mutationFn: async (url: string) => deleteUserMap(url),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userMaps'] })
+    } 
+  })
+
+  if(!data) {
+    return <Loading />
   }
-
-  useEffect(() => {
-    getData()
-  }, [])
 
   return (
     <section className='page-section mt-[8rem]'>
@@ -80,7 +73,7 @@ const Maps = ({ role }) => {
         <h1 className='text-center mb-[6rem]'>My maps</h1>
         <div className='flex flex-col xl:flex-row'>
           <Aside role={role} />
-          <Table data={data} getData={getData} config={tableConfig(role)} />
+          <Table data={data ?? []} handleDelete={handleDeleteMap} config={tableConfig(role)} />
         </div>
       </div>
     </section>

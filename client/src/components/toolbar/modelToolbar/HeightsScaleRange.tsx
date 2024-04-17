@@ -1,21 +1,27 @@
 import { Range } from 'react-range'
+import { useModelContext } from '../../../context/ModelContext'
+import { IMapDTO } from '../../../interfaces/dashboard/MapModel'
 
-const HeightsScaleRange = ({ heightCoefficientRangeValue, setHeightCoefficientRangeValue, model, recreatedModel }) => {
+const HeightsScaleRange = ({ recreatedModel }) => {
+  const { model, projectSettings, setProjectSettings } = useModelContext()
+
   return (
     <div className='mb-6'>
     <div className='flex justify-between items-center my-2'>
       <p>Heights scale</p>
-      <p>{heightCoefficientRangeValue}</p>
+      <p>{projectSettings.mapModel.heightCoefficient}</p>
     </div>
     <Range
       step={0.1}
       min={1}
       max={10}
-      values={[heightCoefficientRangeValue]}
+      values={[projectSettings.mapModel.heightCoefficient ?? 1]}
       onChange={(values) => {
-        console.log(model.options)
         if (model?.options) {
-          setHeightCoefficientRangeValue(values[0])
+          setProjectSettings((_settings: IMapDTO) => {
+            _settings.mapModel.heightCoefficient = values[0]
+            return {..._settings}
+          })
           model.options.heightCoefficient = values[0]
         }
       }}

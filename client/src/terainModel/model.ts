@@ -204,7 +204,7 @@ export class Model {
     //const center = this.coordToModelPoint(this.map.center);
     // MAPPING PREVIOUSLY ADDED OBJECTS BY USER
     options?.mapObjects?.forEach((_obj) =>
-      this.addObjectToMap(_obj.x, _obj.y, _obj.z, _obj),
+      this.addObjectToMap(_obj.x, _obj.y, options.heightCoefficient ? _obj.z * options.heightCoefficient : _obj.z, _obj),
     )
 
     /*
@@ -316,7 +316,7 @@ export class Model {
     const loader = new GLTFLoader()
     const gltf = await loader.loadAsync(url)
 
-    const scale = 0.03
+    const scale = 0.9 // 0.03
 
     let pin = gltf.scene.clone(true)
     pin.position.setZ(z) //setZ(3.195149291587768);
@@ -380,9 +380,9 @@ export class Model {
   public async init() {
     const xyz = this.getTileXYZ(this.map.center, this.map.zoom)
     const trail =
-      this.options.trailGpxUrl == null
+      this.options.trailUrl == null
         ? null
-        : await this.loadTrail(this.options.trailGpxUrl)
+        : await this.loadTrail(this.options.trailUrl)
     //@ts-ignore
     const tileDecorator: TileTextureDecorator =
       trail == null ? null : new TileTextureDecorator(trail, this.map)
@@ -487,7 +487,7 @@ export class Model {
   public async drawTrail(source: string) {
     const xyz = this.getTileXYZ(this.map.center, this.map.zoom)
     let trail: ILatLngAlt[] = await this.loadTrail(source)
-    this.options.trailGpxUrl = source
+    this.options.trailUrl = source
     //@ts-ignore
     const tileDecorator: TileTextureDecorator =
       trail == null ? null : new TileTextureDecorator(trail, this.map)
@@ -877,14 +877,14 @@ export class Model {
     const url = `${baseUrl}v4/mapbox.terrain-rgb/${zoom}/${x}/${y}.pngraw?access_token=${apiKey}`
 
     let textureUrl = null
-    if(this.options?.textureTypeLabel) {
+    if (this.options?.textureTypeLabel) {
       textureUrl = textureTiles
-      .find((_item) => _item.label === this.options.textureTypeLabel)
-      .url(x, y, zoom)
+        .find((_item) => _item.label === this.options.textureTypeLabel)
+        .url(x, y, zoom)
     } else {
       textureUrl = textureTiles
-      .find((_item) => _item.label === 'Satelite')
-      .url(x, y, zoom)
+        .find((_item) => _item.label === 'Satelite')
+        .url(x, y, zoom)
     }
 
     const [{ size: planeSize, heights }, texture] = await Promise.all([
@@ -1438,14 +1438,12 @@ export class Model {
   }
 
   public click(e: MouseEvent, options: IMapObjectOptions): void {
-    console.log('EVENT TRIGGERED WITH OPTIONS:')
-    console.log(options)
     if (!options || !options?.pinType) return
 
     const intersectedObjects = this.clickedObjects(e)
-    console.log(intersectedObjects)
     if (intersectedObjects.length === 0) return
     const map = intersectedObjects.find((x) => x.object.name === 'map')
+    if(!map) return
     this.addObjectToMap(map.point.x, map.point.y, map.point.z, options)
     this.options.mapObjects.push({
       ...options,
@@ -1469,10 +1467,10 @@ export class Model {
       e.clientX - parent.left,
       e.clientY - parent.top,
     )
-    const map = objs.find((x) => x.object.name === 'map')
-    if (map == null) {
-      return []
-    }
+    //const map = objs.find((x) => x.object.name === 'map')
+    //if (map == null) {
+    //  return []
+    //}
     return objs
   }
 
@@ -1484,7 +1482,7 @@ export class Model {
   ) {
     console.log('ADDING OBJECT TO MAP')
 
-    z = this.options.heightCoefficient ? z * this.options.heightCoefficient : z
+    //z = this.options.heightCoefficient ? z * this.options.heightCoefficient : z
 
     if (options.pinType === PIN_TYPE.PIN_SIGN) {
       this.addMarker(

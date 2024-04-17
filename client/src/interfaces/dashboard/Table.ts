@@ -15,5 +15,5 @@ export interface ITableConfig {
 export interface ITableProps {
   config: ITableConfig
   data: IMapDTO[]
-  getData: () => void
+  handleDelete: (url: string) => void
 }

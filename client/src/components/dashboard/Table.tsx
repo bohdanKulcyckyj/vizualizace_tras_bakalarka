@@ -11,7 +11,7 @@ import UnpackButton from './buttons/UnpackButton'
 //components
 import ConfirmDialog from './ConfirmDialog'
 
-const Table: FC<ITableProps> = ({ data, getData, config }) => {
+const Table: FC<ITableProps> = ({ data, handleDelete, config }) => {
   const [showTheDialog, setShowTheDialog] = useState<boolean>(false)
   const [deleteRoute, setDeleteRoute] = useState<string>('')
 
@@ -54,10 +54,8 @@ const Table: FC<ITableProps> = ({ data, getData, config }) => {
     if (showTheDialog) {
       toast(
         <ConfirmDialog
-          showTheDialog={setShowTheDialog}
-          setShowTheDialog={setShowTheDialog}
-          update={getData}
-          deleteRoute={deleteRoute}
+          handleDelete={async () => await handleDelete(deleteRoute)}
+          onSuccess={() => setDeleteRoute('')}
         />,
         {
           position: 'bottom-center',

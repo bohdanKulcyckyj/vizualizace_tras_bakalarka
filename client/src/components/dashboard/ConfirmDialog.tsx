@@ -1,18 +1,27 @@
-import { useRef } from 'react'
+import { FC, useRef } from 'react'
 import { axiosWithAuth } from '../../utils/axiosWithAuth'
 import gsap from 'gsap'
 import { toast } from 'sonner'
 
-const ConfirmDialog = (props) => {
+type DialogProps = {
+  handleDelete: () => Promise<void>
+  onSuccess?: () => void
+}
+
+const ConfirmDialog: FC<DialogProps> = ({ handleDelete, onSuccess }) => {
   const deleteBarRef = useRef()
 
-  const hideTheBar = (deleteItem) => {
+  const hideTheBar = async (deleteItem) => {
     toast.dismiss()
-    props.setShowTheDialog(false)
     if (deleteItem) {
-      axiosWithAuth.delete(props.deleteRoute).then((res) => {
-        props.update()
-      })
+      try {
+        await handleDelete()
+        if(onSuccess) {
+          onSuccess()
+        }
+      } catch(e) {
+        console.error(e)
+      }
     }
   }
 

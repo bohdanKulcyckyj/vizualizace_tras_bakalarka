@@ -1,92 +1,59 @@
-//@ts-nocheck
-import { useEffect, useRef, useState } from 'react'
-import axios from 'axios'
-import { axiosWithAuth, setHeadersConfig } from '../../utils/axiosWithAuth'
+import { useEffect, useRef, useState, MouseEvent, useCallback } from 'react'
+import { axiosWithAuth } from '../../utils/axiosWithAuth'
 import { Model } from '../../terainModel/model'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useMainContext } from '../../context/MainContext'
 import apiEndpoints from '../../constants/apiEndpoints'
-import Toolbar from '../toolbar/Toolbar'
 import {
   IMapObjectOptions,
-  PIN_TYPE,
-  PIN_COLORS,
-  IMapDTO,
   IMapPointDTO,
   IMapModelConfig,
 } from '../../interfaces/dashboard/MapModel'
-import { MdOutlineFileUpload } from 'react-icons/md'
-import { FaMapMarkerAlt, FaImage } from 'react-icons/fa'
-import { SlDirection } from 'react-icons/sl'
-import { IconContext } from 'react-icons'
 import { ComponentMode } from '../../interfaces/dashboard/ComponentProps'
 import Popup from '../popup/Popup'
-import { v4 as uuidv4 } from 'uuid'
 import PinPopup from '../popup/PinPopup'
 import PinPreviewPopup from '../popup/PinPreviewPopup'
 import { Gallery } from '../Gallery'
 import { Group } from 'three'
 import MapTourControllers from './MapTourControllers'
-import MapPinsList from '../toolbar/MapPinsList'
-import { toast } from 'sonner'
-import { getPinTitle } from '../../utils/pins'
 import NearbyPointsConfigPopup from '../popup/nearbyPOIsConfig/NearbyPointsConfigPopup'
-import { Range } from 'react-range'
 import routes from '../../constants/routes'
-import { textureTiles } from '../../data/TextureTypes'
 import ModelToolbar from '../toolbar/modelToolbar/ModelToolbar'
+import { useModelContext } from '../../context/ModelContext'
 
 const TerrainModelComponent = ({ mode }) => {
   const { modelid } = useParams()
   const navigate = useNavigate()
-  const wrapperRef = useRef(null)
-  const canvasRef = useRef(null)
-  const viewHelperCanvasWrapperRef = useRef(null)
-  const northArrowCanvasWrapperRef = useRef(null)
-  const [model, setModel] = useState<unknown>(null)
-  const [editingMapData, setEditingMapData] = useState<IMapDTO>(null)
-  const [gpxTrailName, setGpxTrailName] = useState<string>('')
+  // main context
+  const { setIsLoading } = useMainContext()
+  // model context
+  const {
+    model,
+    setModel,
+    projectSettings,
+    setProjectSettings,
+    trailName,
+    setTrailName,
+  } = useModelContext()
   const [newPointOptions, setNewPointOptions] =
     useState<IMapObjectOptions>(null)
-  const mainContext = useMainContext()
   const [isPinPopupOpened, setIsPinPopupOpened] = useState<boolean>(false)
   const [isImportPOIsPopupOpened, setIsImportPOIsPopupOpened] =
     useState<boolean>(false)
   const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1)
   const [isMapBeeingDragged, setIsMapBeeingDragged] = useState<boolean>(false)
-  const [heightCoefficientRangeValue, setHeightCoefficientRangeValue] =
-    useState<number>(1)
   const [isModelLoaded, setIsModelLoaded] = useState<boolean>(false)
-
-  let keyEventHandler
-
-  const fileChangeHandler = async (event): void => {
-    const uploadedFile = event.target.files[0]
-    if (uploadedFile) {
-      const requestConfig = setHeadersConfig({
-        'Content-Type': 'multipart/form-data',
-      })
-      const formData = new FormData()
-      formData.append('file', uploadedFile)
-
-      try {
-        const res = await axios.post(
-          apiEndpoints.uploadMedia,
-          formData,
-          requestConfig,
-        )
-
-        setGpxTrailName(uploadedFile.name)
-        model.drawTrail(res.data.file)
-      } catch (e) {
-        console.error(e)
-      }
-    }
-  }
+  // refs
+  const wrapperRef = useRef(null)
+  const canvasRef = useRef(null)
+  const viewHelperCanvasWrapperRef = useRef(null)
+  const northArrowCanvasWrapperRef = useRef(null)
+  // event ref
+  const keyEventHandler = useRef(null)
 
   const handleMapClick = (e: MouseEvent): void => {
     if (isMapBeeingDragged) return
-
+    // @ts-ignore
     const clickedObjects = model.clickedObjects(e)
 
     if (!newPointOptions || !newPointOptions?.pinType) {
@@ -126,7 +93,7 @@ const TerrainModelComponent = ({ mode }) => {
       }
     } else {
       if (clickedObjects.length > 0) {
-        if (!newPointOptions || !newPointOptions?.pinType) return
+        if (!newPointOptions || !newPointOptions?.pinType || !(clickedObjects.find((x) => x.object.name === 'map'))) return
         setNewPointOptions((newPointOptions) => ({
           ...newPointOptions,
           event: e,
@@ -138,9 +105,9 @@ const TerrainModelComponent = ({ mode }) => {
   }
 
   const handleNewPin = (): void => {
-    if (!Object.hasOwn(newPointOptions, 'event') || !newPointOptions?.event) {
-      return
-    }
+    //if (!Object.hasOwn(newPointOptions, 'event') || !newPointOptions?.event) {
+    //  return
+    //}
 
     const indexOfObject = model.options.mapObjects.findIndex(
       (_item) => _item.id === newPointOptions.id,
@@ -154,10 +121,11 @@ const TerrainModelComponent = ({ mode }) => {
       model.options.mapObjects[indexOfObject] = { ...currentObject, ...rest }
     } else {
       const { event, ...restOptions } = newPointOptions
+      // @ts-ignore
       model.click(event, restOptions)
     }
 
-    setEditingMapData((_currData) => ({
+    setProjectSettings((_currData) => ({
       ..._currData,
       mapModel: model.options,
     }))
@@ -176,31 +144,16 @@ const TerrainModelComponent = ({ mode }) => {
 
   const handleDeleteTrail = () => {
     axiosWithAuth
-      .delete(apiEndpoints.deleteUploadedMedia(gpxTrailName))
+      .delete(apiEndpoints.deleteUploadedMedia(trailName))
       .then((res) => {
         let currentOptions = model.options
-        currentOptions.trailGpxUrl = null
-        setEditingMapData({ ...editingMapData, mapModel: currentOptions })
-        setGpxTrailName('')
+        currentOptions.trailUrl = null
+        setProjectSettings({ ...projectSettings, mapModel: currentOptions })
+        setTrailName('')
         recreatedModel()
       })
       .catch((err) => {
         console.error(err)
-      })
-  }
-
-  const confirm = () => {
-    const newMapConfiguration = {
-      ...editingMapData,
-      mapModel: model.options,
-    }
-
-    axiosWithAuth
-      .post(apiEndpoints.editMap(modelid), newMapConfiguration)
-      .then((res) => {
-        if (res.data.map) {
-          navigate(-1)
-        }
       })
   }
 
@@ -226,22 +179,16 @@ const TerrainModelComponent = ({ mode }) => {
     setIsImportPOIsPopupOpened(!currState)
   }
 
-  const cancel = () => {
-    navigate(-1)
-  }
-
   const handleTextureStyleChange = (label: string) => {
     model.options.textureTypeLabel = label
     recreatedModel()
   }
 
   const handleModelOnload = (): void => {
-    if (mainContext) {
-      mainContext.setIsLoading(false)
-    }
+    setIsLoading(false)
   }
 
-  const setupModel = async () => {
+  const setupModel = useCallback(async () => {
     // modelid should always exist
     if (!modelid) {
       return navigate(routes.notFound)
@@ -249,17 +196,16 @@ const TerrainModelComponent = ({ mode }) => {
     // model options
     let currentModelOptions: IMapModelConfig = null
     // get existing model options or call api
-    if (editingMapData) {
-      currentModelOptions = editingMapData.mapModel
-      setGpxTrailName(editingMapData.mapModel?.trailGpxUrl ?? '')
+    if (projectSettings) {
+      currentModelOptions = projectSettings.mapModel
+      setTrailName(projectSettings.mapModel?.trailUrl ?? '')
     } else {
       try {
         const res = await axiosWithAuth.get(apiEndpoints.getMapDetail(modelid))
         const resData = res.data
-        setEditingMapData(resData.map)
-        setGpxTrailName(resData.map.mapModel.trailGpxUrl ?? '')
-        resData.map.mapModel.trailGpxUrl =
-          resData.map.mapModel.trailGpxUrl ?? null
+        setProjectSettings(resData.map)
+        setTrailName(resData.map.mapModel.trailUrl ?? '')
+        resData.map.mapModel.trailUrl = resData.map.mapModel.trailUrl ?? null
         currentModelOptions = resData.map.mapModel
       } catch (e) {
         navigate('/404')
@@ -275,12 +221,11 @@ const TerrainModelComponent = ({ mode }) => {
     )
     newModel.animate()
     newModel.onTrailPointReachedCallback = handleOnTrailPointReached
-    setModel(newModel)
     //const controls = new CameraControls(newModel.camera, canvasRef.current);
     const controls = newModel.controls
     //newModel.setControls(controls);
 
-    keyEventHandler = (e) => {
+    keyEventHandler.current = (e) => {
       const keyRotateSpeed = 0.5
       const keyRotateAngle = (keyRotateSpeed * Math.PI) / 180
 
@@ -343,7 +288,7 @@ const TerrainModelComponent = ({ mode }) => {
       }
     }
 
-    window.addEventListener('keydown', keyEventHandler)
+    window.addEventListener('keydown', keyEventHandler.current)
 
     const resize = () => {
       newModel.resize(
@@ -357,44 +302,45 @@ const TerrainModelComponent = ({ mode }) => {
     })
     resizeObserver.observe(wrapperRef.current)
 
-    const animateTrail = mainContext.animateTrail
-    const enableShadow = mainContext.enableShadow
-    const enableSun = mainContext.enableSun
-
-    if (animateTrail) {
+    if (currentModelOptions.animateTrail) {
       newModel.playTrailAnimation()
     }
-    newModel.setEnableShadow(enableShadow)
-    newModel.setEnableSun(enableSun)
+    newModel.setEnableShadow(currentModelOptions.enableShadow)
+    newModel.setEnableSun(currentModelOptions.enableSun)
     setModel(newModel)
-    return newModel
-  }
+  }, [
+    handleModelOnload,
+    handleOnTrailPointReached,
+    modelid,
+    navigate,
+    projectSettings,
+    setModel,
+    setProjectSettings,
+    setTrailName,
+  ])
 
-  const destroyModel = () => {
-    if (mainContext) {
-      mainContext.setIsLoading(true)
-    }
-    window.removeEventListener('keydown', keyEventHandler)
+  const destroyModel = useCallback(() => {
+    setIsLoading(true)
+
+    window.removeEventListener('keydown', keyEventHandler.current)
     if (model) {
-      setEditingMapData((_editingMapData) => ({
+      setProjectSettings((_editingMapData) => ({
         ..._editingMapData,
         mapModel: model.options,
       }))
       model.destroy()
       setModel(null)
     }
-  }
+  }, [keyEventHandler, model, setModel, setProjectSettings])
 
   const recreatedModel = () => {
     destroyModel()
     setupModel()
   }
 
-  useEffect(() => {
-    if (mainContext) {
-      mainContext.setIsLoading(true)
-    }
-  }, [])
+  //useEffect(() => {
+  //  setIsLoading(!isModelLoaded)
+  //}, [isModelLoaded])
 
   useEffect(() => {
     if (!isModelLoaded) {
@@ -450,45 +396,36 @@ const TerrainModelComponent = ({ mode }) => {
         </Popup>
       )}
       {/* IMPORT POIs POPUP */}
-      {mode === ComponentMode.EDIT && editingMapData && (
+      {mode === ComponentMode.EDIT && projectSettings && (
         <Popup
           isPopupOpened={isImportPOIsPopupOpened}
           setIsPopupOpened={setIsImportPOIsPopupOpened}
         >
           <NearbyPointsConfigPopup
-            modelConfig={editingMapData.mapModel}
             onSubmit={handleSubmitImportPOIS}
           />
         </Popup>
       )}
       {/* TOOLBAR */}
-      {mode === ComponentMode.EDIT && (
+      {projectSettings && mode === ComponentMode.EDIT && (
         <ModelToolbar
-          model={model}
-          modelid={modelid}
-          editingMapData={editingMapData}
-          setEditingMapData={setEditingMapData}
           setNewPointOptions={setNewPointOptions}
           setIsPinPopupOpened={setIsPinPopupOpened}
-          heightCoefficientRangeValue={heightCoefficientRangeValue}
-          setHeightCoefficientRangeValue={setHeightCoefficientRangeValue}
           recreatedModel={recreatedModel}
           newPointOptions={newPointOptions}
           toggleImportPOIsPopup={toggleImportPOIsPopup}
           handleTextureStyleChange={handleTextureStyleChange}
-          gpxTrailName={gpxTrailName}
           handleDeleteTrail={handleDeleteTrail}
-          fileChangeHandler={fileChangeHandler}
         />
       )}
       {/* TRAIL ANIMATION CONTROLLERS */}
-      {model?.options?.trailGpxUrl && gpxTrailName && (
+      {model?.options?.trailUrl && trailName && (
         <MapTourControllers
-          //timingConfig={{
-          //  timestampStart: '2023-06-24T23:59:17.000Z',
-          //  timestampEnd: '2023-06-25T08:42:17.000Z',
-          //  animationDuration: 20000,
-          //}}
+          timingConfig={{
+            timestampStart: '2023-06-24T23:59:17.000Z',
+            timestampEnd: '2023-06-25T08:42:17.000Z',
+            animationDuration: 20000,
+          }}
           onStart={() => model.playTrailAnimation()}
           onPause={() => model.pauseTrailAnimation()}
           onStop={() => model.stopTrailAnimation()}

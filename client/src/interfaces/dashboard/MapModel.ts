@@ -1,4 +1,5 @@
 import { Color } from 'three'
+import { MouseEvent } from 'react'
 
 export enum PIN_TYPE {
   PIN_IMAGE = 'PIN_IMAGE',
@@ -66,8 +67,11 @@ export interface IMapModelConfig {
   }
   bbox: IBbox
   zoom: number
-  trailGpxUrl: string | null
+  trailUrl: string | null
   mapObjects: IMapObjectOptions[]
   heightCoefficient: number | null
-  textureTypeLabel: string | null;
+  textureTypeLabel: string | null
+  animateTrail: boolean
+  enableShadow: boolean
+  enableSun: boolean
 }

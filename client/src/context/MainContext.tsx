@@ -1,19 +1,16 @@
 import { createContext, useContext, useState } from 'react'
-import IContextProvider, { Children } from '../interfaces/ContextProvider'
+import IMainContextProvider, {
+  Children,
+} from '../interfaces/context/MainContextProvider'
 import { ILoggedUser } from '../interfaces/User'
 
-const MainContext = createContext<IContextProvider>(null)
+const MainContext = createContext<IMainContextProvider>(null)
 
 export const useMainContext = () => {
   return useContext(MainContext)
 }
 
 export const MainProvider = ({ children }: Children) => {
-  const [config, setConfig] = useState({
-    animateTrail: false,
-    enableShadow: false,
-    enableSun: true,
-  })
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [loggedUser, setLoggedUser] = useState<ILoggedUser>(
     sessionStorage.getItem('loggedUser')
@@ -24,8 +21,6 @@ export const MainProvider = ({ children }: Children) => {
   return (
     <MainContext.Provider
       value={{
-        config,
-        setConfig,
         isLoading,
         setIsLoading,
         loggedUser,

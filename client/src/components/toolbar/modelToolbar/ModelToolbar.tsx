@@ -13,27 +13,21 @@ import MapPinsList from '../MapPinsList'
 import { IMapObjectOptions } from '../../../interfaces/dashboard/MapModel'
 // enums
 import { useNavigate } from 'react-router-dom'
+import { useModelContext } from '../../../context/ModelContext'
 
 // data
 
 const ModelToolbar = ({
-  model,
-  modelid,
-  editingMapData,
-  setEditingMapData,
   setNewPointOptions,
   setIsPinPopupOpened,
-  heightCoefficientRangeValue,
-  setHeightCoefficientRangeValue,
   recreatedModel,
   newPointOptions,
   toggleImportPOIsPopup,
   handleTextureStyleChange,
-  gpxTrailName,
   handleDeleteTrail,
-  fileChangeHandler,
 }) => {
   const navigate = useNavigate()
+  const { model, projectSettings } = useModelContext()
 
   const handleCancel = (): void => {
     navigate(-1)
@@ -41,12 +35,12 @@ const ModelToolbar = ({
 
   const handleSubmit = (): void => {
     const newMapConfiguration = {
-      ...editingMapData,
+      ...projectSettings,
       mapModel: model.options,
     }
 
     axiosWithAuth
-      .post(apiEndpoints.editMap(modelid), newMapConfiguration)
+      .post(apiEndpoints.editMap(projectSettings.id), newMapConfiguration)
       .then((res) => {
         if (res.data.map) {
           navigate(-1)
@@ -62,15 +56,10 @@ const ModelToolbar = ({
             handleTextureStyleChange={handleTextureStyleChange}
           />
           <HeightsScaleRange
-            model={model}
             recreatedModel={recreatedModel}
-            heightCoefficientRangeValue={heightCoefficientRangeValue}
-            setHeightCoefficientRangeValue={setHeightCoefficientRangeValue}
           />
           <TrailUploader
-            gpxTrailName={gpxTrailName}
             handleDeleteTrail={handleDeleteTrail}
-            fileChangeHandler={fileChangeHandler}
           />
           <NewPinPanel
             newPointOptions={newPointOptions}
@@ -82,6 +71,7 @@ const ModelToolbar = ({
               <MapPinsList
                 data={model?.options?.mapObjects ?? []}
                 onPinSelect={(pin: IMapObjectOptions) => {
+                  console.log(pin)
                   setNewPointOptions(pin)
                   setIsPinPopupOpened(true)
                 }}

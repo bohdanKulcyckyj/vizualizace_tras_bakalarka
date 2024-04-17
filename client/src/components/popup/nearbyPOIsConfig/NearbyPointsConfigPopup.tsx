@@ -2,7 +2,6 @@ import { FC, useState } from 'react'
 
 // interfaces
 import {
-  IMapModelConfig,
   IMapObjectOptions,
   IMapPointDTO,
 } from '../../../interfaces/dashboard/MapModel'
@@ -15,11 +14,12 @@ import NearbyPointsStepSecond from './NearbyPointsStepSecond'
 // utils
 import { getNearbyPointsFromAPI } from '../../../utils/openstreetApi'
 import { MapPointTypeDefaultValue } from '../../../utils/mappingPOIs'
+import { useModelContext } from '../../../context/ModelContext'
 
 const NearbyPointsConfigPopup: FC<{
-  modelConfig: IMapModelConfig
   onSubmit: (points: IMapPointDTO[]) => void
-}> = ({ modelConfig, onSubmit }) => {
+}> = ({ onSubmit }) => {
+  const { projectSettings } = useModelContext()
   const [selectedPointCategories, setSelectedPointCategories] = useState<
     INearbyPointType[]
   >([])
@@ -43,7 +43,9 @@ const NearbyPointsConfigPopup: FC<{
             data={fetchedPoints}
             selectedOptions={selectedPoints}
             setSelectedOptions={setSelectedPoints}
-            excludedPointsIds={modelConfig.mapObjects.map((_item: IMapObjectOptions) => _item.id)}
+            excludedPointsIds={projectSettings.mapModel.mapObjects.map(
+              (_item: IMapObjectOptions) => _item.id,
+            )}
           />
         )
       default:
@@ -63,7 +65,7 @@ const NearbyPointsConfigPopup: FC<{
       // call to openstreet api
       const pointsFromApi = await getNearbyPointsFromAPI(
         selectedPointCategories,
-        modelConfig.bbox,
+        projectSettings.mapModel.bbox,
       )
       setFetchedPoints(MapPointTypeDefaultValue(pointsFromApi))
     }
@@ -93,7 +95,10 @@ const NearbyPointsConfigPopup: FC<{
               </button>
             )}
             {currentStep === finalStep && (
-              <button className='primary-button' onClick={() => onSubmit(selectedPoints)}>
+              <button
+                className='primary-button'
+                onClick={() => onSubmit(selectedPoints)}
+              >
                 Save
               </button>
             )}
