@@ -157,7 +157,7 @@ const TerrainModelComponent = ({ mode }) => {
       })
   }
 
-  const handleOnTrailPointReached = (point: IMapObjectOptions): void => {
+  const handleOnTrailPointReached = useCallback((point: IMapObjectOptions): void => {
     setNewPointOptions(point)
     setIsPinPopupOpened(true)
     model?.pauseTrailAnimation()
@@ -167,7 +167,7 @@ const TerrainModelComponent = ({ mode }) => {
       setNewPointOptions(null)
       model?.playTrailAnimation()
     }, 3000)
-  }
+  }, [model])
 
   const handleSubmitImportPOIS = (points: IMapPointDTO[]) => {
     model?.addNearbyPOIs(points)
@@ -184,9 +184,9 @@ const TerrainModelComponent = ({ mode }) => {
     recreatedModel()
   }
 
-  const handleModelOnload = (): void => {
+  const handleModelOnload = useCallback((): void => {
     setIsLoading(false)
-  }
+  }, [setIsLoading])
 
   const setupModel = useCallback(async () => {
     // modelid should always exist
@@ -331,7 +331,7 @@ const TerrainModelComponent = ({ mode }) => {
       model.destroy()
       setModel(null)
     }
-  }, [keyEventHandler, model, setModel, setProjectSettings])
+  }, [keyEventHandler, model, setModel, setProjectSettings, setIsLoading])
 
   const recreatedModel = () => {
     destroyModel()
@@ -352,7 +352,7 @@ const TerrainModelComponent = ({ mode }) => {
       console.log('COMPONENT UNMOUNTED')
       destroyModel()
     }
-  }, [modelid])
+  }, [modelid, destroyModel, isModelLoaded, setupModel])
 
   return (
     <>
