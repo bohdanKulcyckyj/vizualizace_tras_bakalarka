@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import apiEndpoints from '../constants/apiEndpoints'
 import axios from 'axios'
 import { IForgottenPasswordForm } from '../interfaces/Form'
@@ -27,7 +27,7 @@ export default function ForgottenPassword() {
       })
       .catch((err) => {
         console.error(err)
-        toast.error('Logging in failed')
+        toast.error('Something went wrong. Try again later')
       })
       .finally(() => {
         setDisable(false)
@@ -47,7 +47,8 @@ export default function ForgottenPassword() {
               Forgotten password
             </h1>
             <p className='text-[15px]'>
-              Don't worry we will send you an e-mail with instructions to reset password
+              Don't worry we will send you an e-mail with instructions to reset
+              password
             </p>
           </div>
           <div className='mb-4 form__input'>

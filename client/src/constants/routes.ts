@@ -6,7 +6,7 @@ const routes = {
   login: '/login',
   register: '/register',
   forgottenPasword: '/forgotten-password',
-  restorePassword: '/restore-password',
+  resetPassword: '/reset-password',
   notFound: '/404',
   forbidden: '/403',
   mapPreview: (_id: string = '') => `/map-model/${_id}`,

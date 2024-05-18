@@ -16,6 +16,7 @@ import ExtendedPageLayoutDefault from './components/layout/ExtendedPageLayoutDef
 import ExtendedPageLayoutDashboard from './components/layout/ExtendedPageLayoutDashboard'
 import Loading from './components/Loading'
 import ErrorPage from './pages/errors/ErrorPage'
+import ResetPassword from './pages/ResetPassword'
 
 // pages
 const Home = lazy(() => import('./pages/Home'))
@@ -51,7 +52,7 @@ function App() {
                     path={routes.forgottenPasword}
                     element={<ForgottenPassword />}
                   />
-                  <Route path={routes.restorePassword} element={<Home />} />
+                  <Route path={routes.resetPassword} element={<ResetPassword />} />
                 </Route>
 
                 <Route

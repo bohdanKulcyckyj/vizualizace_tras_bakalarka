@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Serialization.HybridRow;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections;
@@ -112,14 +113,14 @@ public class AuthController : ControllerBase
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var resetToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-                var resetLink = $"{_configuration.GetValue<string>("FrontendUrl")}/restore-password?token={resetToken}&email={model.Email}";
+                var resetLink = $"{_configuration.GetValue<string>("FrontendUrl")}/reset-password?token={resetToken}";
                 var emailSubject = "Password Restore";
                 var emailMessage = $"Use this lik for setting new password: {resetLink}";
 
                 try
                 {
                     await _emailSender.SendEmailAsync(model.Email, emailSubject, emailMessage);
-                    return Ok(new { Message = "The password reset email has been sent.", Token = token });
+                    return Ok(new { Message = "The password reset email has been sent.", resetToken });
                 }
                 catch (Exception ex)
                 {
@@ -142,11 +143,11 @@ public class AuthController : ControllerBase
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             var tokenBytes = WebEncoders.Base64UrlDecode(model.Token);
-            var token = Encoding.UTF8.GetString(tokenBytes);
+            var decordedToken = Encoding.UTF8.GetString(tokenBytes);
 
             if (user != null)
             {
-                var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+                var result = await _userManager.ResetPasswordAsync(user, decordedToken, model.NewPassword);
 
                 if (result.Succeeded)
                 {

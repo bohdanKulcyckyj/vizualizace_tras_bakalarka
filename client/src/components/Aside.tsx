@@ -33,9 +33,9 @@ const Aside: FC<ISidebar> = () => {
       .catch((err) => console.error(err))
   }
 
-  //useEffect(() => {
-  //  
-  //}, [windowWidth])
+  useEffect(() => {
+    setSidebarOpened(windowWidth >= 1250)
+  }, [windowWidth])
 
   return (
     <>

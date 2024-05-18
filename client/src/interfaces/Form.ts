@@ -10,6 +10,13 @@ export interface IRegistrationForm {
   confirmPassword: string
 }
 
+export interface IResetPasswordForm {
+  email: string
+  newPassword: string
+  confirmPassword: string
+  token?: string
+}
+
 export interface IForgottenPasswordForm {
   email: string
 }
