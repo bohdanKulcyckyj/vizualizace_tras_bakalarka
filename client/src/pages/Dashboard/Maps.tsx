@@ -7,6 +7,7 @@ import apiEndpoints from '../../constants/apiEndpoints'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { deleteUserMap, getUserMaps } from '../../api/maps'
 import Loading from '../../components/Loading'
+import { useMainContext } from '../../context/MainContext'
 
 const tableConfig = (userType: UserRole) => ({
   heading: '',
@@ -48,7 +49,8 @@ const tableConfig = (userType: UserRole) => ({
   ],
 })
 
-const Maps = ({ role }) => {
+const Maps = () => {
+  const { loggedUser } = useMainContext()
   const queryClient = useQueryClient()
 
   const { data } = useQuery({
@@ -72,8 +74,8 @@ const Maps = ({ role }) => {
       <div className='page-section__container'>
         <h1 className='text-center mb-[6rem]'>My maps</h1>
         <div className='flex flex-col xl:flex-row'>
-          <Aside role={role} />
-          <Table data={data ?? []} handleDelete={handleDeleteMap} config={tableConfig(role)} />
+          <Aside />
+          <Table data={data ?? []} handleDelete={handleDeleteMap} config={tableConfig(loggedUser.role)} />
         </div>
       </div>
     </section>

@@ -2,20 +2,18 @@ import { useState } from 'react'
 import apiEndpoints from '../constants/apiEndpoints'
 import routes from '../constants/routes'
 import axios from 'axios'
-import { saveTokenToCookie } from '../utils/jwt'
 import { IRegistrationForm } from '../interfaces/Form'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router-dom'
-import { UserRoleMapper } from '../interfaces/User'
-import { useMainContext } from '../context/MainContext'
+import { Link} from 'react-router-dom'
 import SubmitButton from '../components/dashboard/SubmitButton'
 import { toast } from 'sonner'
+import useSignIn from '../hooks/useSignIn'
+import { UserRoleMapper } from '../interfaces/User'
 
 export default function SignUp() {
   const [loading, setLoading] = useState<boolean>(false)
   const [disable, setDisable] = useState<boolean>(false)
-  const { setLoggedUser } = useMainContext()
-  const navigate = useNavigate()
+  const { storeSignIn } = useSignIn()
 
   const {
     register,
@@ -32,12 +30,9 @@ export default function SignUp() {
     axios
       .post(apiEndpoints.registration, data)
       .then((res) => {
-        const { token, role } = res.data
-        saveTokenToCookie(token)
-        setLoggedUser(() => ({
-          role: UserRoleMapper[role],
-        }))
-        navigate(routes.dashboard.maps(UserRoleMapper[role]))
+        const { token, user } = res.data
+        user.role = UserRoleMapper[user.role]
+        storeSignIn(token, user, true)
         toast.success('Registration was successful')
       })
       .catch((err) => {

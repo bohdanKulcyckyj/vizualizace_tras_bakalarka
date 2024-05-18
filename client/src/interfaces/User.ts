@@ -9,5 +9,8 @@ export const UserRoleMapper: { [key: string]: UserRole } = {
 }
 
 export interface ILoggedUser {
-  role: UserRole
+  id: string,
+  role: UserRole,
+  name: string,
+  email: string
 }

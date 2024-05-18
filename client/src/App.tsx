@@ -14,9 +14,8 @@ import RouteGuard from './components/dashboard/RouteGuard'
 import PageLayout from './components/layout/PageLayout'
 import ExtendedPageLayoutDefault from './components/layout/ExtendedPageLayoutDefault'
 import ExtendedPageLayoutDashboard from './components/layout/ExtendedPageLayoutDashboard'
-import PageNotFound from './pages/errors/404'
-import Forbidden from './pages/errors/403'
 import Loading from './components/Loading'
+import ErrorPage from './pages/errors/ErrorPage'
 
 // pages
 const Home = lazy(() => import('./pages/Home'))
@@ -55,7 +54,10 @@ function App() {
                   <Route path={routes.restorePassword} element={<Home />} />
                 </Route>
 
-                <Route path='/admin' element={<RouteGuard />}>
+                <Route
+                  path='/admin'
+                  element={<RouteGuard allowedRoles={[UserRole.ADMIN]} />}
+                >
                   <Route
                     path={routes.dashboard.editMapModel(
                       UserRole.ADMIN,
@@ -74,17 +76,20 @@ function App() {
                   <Route element={<ExtendedPageLayoutDashboard />}>
                     <Route
                       path={routes.dashboard.maps(UserRole.ADMIN)}
-                      element={<Maps role={UserRole.ADMIN} />}
+                      element={<Maps />}
                     />
                     <Route path={routes.admin.users} element={<Users />} />
                     <Route
                       path={routes.dashboard.profile(UserRole.ADMIN)}
-                      element={<Profile role={UserRole.ADMIN} />}
+                      element={<Profile />}
                     />
                   </Route>
                 </Route>
 
-                <Route path='/user' element={<RouteGuard />}>
+                <Route
+                  path='/user'
+                  element={<RouteGuard allowedRoles={[UserRole.USER]} />}
+                >
                   <Route
                     path={routes.dashboard.editMapModel(
                       UserRole.USER,
@@ -103,17 +108,37 @@ function App() {
                   <Route element={<ExtendedPageLayoutDashboard />}>
                     <Route
                       path={routes.dashboard.maps(UserRole.USER)}
-                      element={<Maps role={UserRole.USER} />}
+                      element={<Maps />}
                     />
                     <Route
                       path={routes.dashboard.profile(UserRole.USER)}
-                      element={<Profile role={UserRole.USER} />}
+                      element={<Profile />}
                     />
                   </Route>
                 </Route>
                 <Route element={<ExtendedPageLayoutDefault />}>
-                  <Route path='/401' element={<Forbidden />} />
-                  <Route path='/*' element={<PageNotFound />} />
+                  <Route
+                    path='/403'
+                    element={
+                      <ErrorPage
+                        errorCode={403}
+                        subheading='Forbidden'
+                        link={routes.login}
+                        linkText='Sign in'
+                      />
+                    }
+                  />
+                  <Route
+                    path='/*'
+                    element={
+                      <ErrorPage
+                        errorCode={404}
+                        subheading='Page not found'
+                        link={routes.home}
+                        linkText='Home'
+                      />
+                    }
+                  />
                 </Route>
               </Route>
             </Routes>

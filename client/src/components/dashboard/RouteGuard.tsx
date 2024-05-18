@@ -5,20 +5,31 @@ import { useNavigate } from 'react-router-dom'
 import routes from '../../constants/routes'
 import { useMainContext } from '../../context/MainContext'
 
-const RouteGuard = () => {
+type TProps = {
+  allowedRoles?: string[]
+}
+
+const RouteGuard = ({ allowedRoles }: TProps) => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { setLoggedUser } = useMainContext()
+  const { loggedUser, setLoggedUser } = useMainContext()
 
   useEffect(() => {
-    if (!getTokenFromCookie()) {
+    try {
+      if (!getTokenFromCookie()) throw new Error('Token not found')
+      if(allowedRoles && !(allowedRoles.includes(loggedUser.role))) {
+        navigate(routes.forbidden, {
+          replace: true
+        })
+      }
+    } catch (e) {
       setLoggedUser(null)
       sessionStorage.removeItem('loggedUser')
       navigate(routes.login, {
         replace: true,
       })
     }
-  }, [location, navigate, setLoggedUser])
+  }, [allowedRoles, location, navigate, loggedUser, setLoggedUser])
 
   return <Outlet />
 }

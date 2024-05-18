@@ -12,7 +12,7 @@ export const useMainContext = () => {
 
 export const MainProvider = ({ children }: Children) => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [loggedUser, setLoggedUser] = useState<ILoggedUser>(
+  const [loggedUser, setLoggedUser] = useState<ILoggedUser | null>(
     sessionStorage.getItem('loggedUser')
       ? JSON.parse(sessionStorage.getItem('loggedUser'))
       : null,

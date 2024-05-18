@@ -1,21 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import apiEndpoints from '../constants/apiEndpoints'
-import { saveTokenToCookie } from '../utils/jwt'
 import axios from 'axios'
 import { ILoginForm } from '../interfaces/Form'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import routes from '../constants/routes'
-import { UserRoleMapper } from '../interfaces/User'
-import { useMainContext } from '../context/MainContext'
 import SubmitButton from '../components/dashboard/SubmitButton'
 import { toast } from 'sonner'
+import useSignIn from '../hooks/useSignIn'
+import { UserRoleMapper } from '../interfaces/User'
+import { useMainContext } from '../context/MainContext'
 
 export default function SignIn() {
   const [loading, setLoading] = useState<boolean>(false)
   const [disable, setDisable] = useState<boolean>(false)
-  const { setLoggedUser } = useMainContext()
+  const { loggedUser } = useMainContext()
   const navigate = useNavigate()
+  const { storeSignIn } = useSignIn()
 
   const {
     register,
@@ -30,14 +31,9 @@ export default function SignIn() {
     axios
       .post(apiEndpoints.login, data)
       .then((res) => {
-        const { token, role } = res.data
-        saveTokenToCookie(token)
-        const userObj = {
-          role: UserRoleMapper[role],
-        }
-        setLoggedUser(userObj)
-        sessionStorage.setItem('loggedUser', JSON.stringify(userObj))
-        navigate(routes.dashboard.profile(UserRoleMapper[role]))
+        const { token, user } = res.data
+        user.role = UserRoleMapper[user.role]
+        storeSignIn(token, user, true)
       })
       .catch((err) => {
         toast.error('Logging in failed')
@@ -47,6 +43,14 @@ export default function SignIn() {
         setLoading(false)
       })
   }
+
+  useEffect(() => {
+    if(loggedUser) {
+      navigate(routes.dashboard.profile(loggedUser.role), {
+        replace: true
+      })
+    }
+  }, [loggedUser, navigate])
 
   return (
     <section className='welcome-section'>

@@ -1,61 +1,41 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import defaultProfileImage from '../../assets/images/profile.png'
 import { useForm } from 'react-hook-form'
 import { IProfileForm } from '../../interfaces/Form'
 import { Link } from 'react-router-dom'
-import { getTokenFromCookie } from '../../utils/jwt'
 import apiEndpoints from '../../constants/apiEndpoints'
+import { toast } from 'sonner'
+import { axiosWithAuth } from '../../utils/axiosWithAuth'
 
-const Profile = () => {
+const ProfileForm = () => {
   const [data, setData] = useState<any>({})
-  const [isFieldsDisabled, setIsFieldsDisabled] = useState<boolean>(true)
-  const [successMsg, setSuccessMsg] = useState<string>('')
-  const [errorMsg, setErrorMsg] = useState<string>('')
+  const [fieldsDisabled, setFieldsDisabled] = useState<boolean>(true)
 
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<IProfileForm>()
 
   const sendData = (data) => {
-    let token = getTokenFromCookie()
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-    axios
-      .post(apiEndpoints.updateUserDetail, data, config)
+    axiosWithAuth
+      .post(apiEndpoints.updateUserDetail("1"), data)
       .then((res) => {
         console.log(res)
-        setSuccessMsg('Your profile was successfully changed')
+        toast.success('Your profile was successfully changed!')
       })
       .catch((err) => {
         console.error(err)
-        setErrorMsg('Something went wrong. Try again')
+        toast.error('Something went wrong. Try again!')
       })
   }
 
   useEffect(() => {
-    let token = getTokenFromCookie()
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-    axios
-      .get(apiEndpoints.getUserDetail, config)
+    axiosWithAuth
+      .get(apiEndpoints.getUserDetail("1"))
       .then((res) => setData({ ...res.data }))
       .catch((err) => console.error(err))
   }, [])
-
-  useEffect(() => {
-    setValue('email', data.email)
-    setValue('name', data.name)
-  }, [data])
 
   return (
     <div className='profile__container'>
@@ -68,7 +48,7 @@ const Profile = () => {
             className={`${errors.name ? 'mb-1' : 'mb-0'}`}
             placeholder='Name'
             type='text'
-            disabled={isFieldsDisabled}
+            disabled={fieldsDisabled}
             {...register('name', {
               required: 'Name is required',
             })}
@@ -82,7 +62,7 @@ const Profile = () => {
             className={`${errors.email ? 'mb-1' : 'mb-0'}`}
             placeholder='Email'
             type='text'
-            disabled={isFieldsDisabled}
+            disabled={fieldsDisabled}
             {...register('email', {
               required: 'Email is required',
               pattern: {
@@ -96,13 +76,13 @@ const Profile = () => {
           )}
         </div>
         <div
-          className={`${successMsg || errorMsg ? 'mb-4' : 'mb-0'} transition-all flex gap-6 flex-wrap mt-10`}
+          className="transition-all flex gap-6 flex-wrap mt-10"
         >
-          {isFieldsDisabled ? (
+          {fieldsDisabled ? (
             <button
               onClick={(e) => {
                 e.preventDefault()
-                setIsFieldsDisabled(false)
+                setFieldsDisabled(false)
               }}
               className='primary-button'
             >
@@ -119,21 +99,9 @@ const Profile = () => {
             </>
           )}
         </div>
-
-        {errorMsg ? (
-          <div className={'w-full'}>
-            <p className={'alert errorAlert text-center w-full'}>{errorMsg}</p>
-          </div>
-        ) : null}
-
-        {successMsg ? (
-          <div className={'w-full'}>
-            <p className={'success text-center w-full'}>{successMsg}</p>
-          </div>
-        ) : null}
       </form>
     </div>
   )
 }
 
-export default Profile
+export default ProfileForm

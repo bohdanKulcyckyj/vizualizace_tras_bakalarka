@@ -4,6 +4,5 @@ export interface ISidebarLink {
 }
 
 export interface ISidebar {
-  role: string
   data?: ISidebarLink[]
 }

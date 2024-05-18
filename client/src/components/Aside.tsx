@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import routes from '../constants/apiEndpoints'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
@@ -7,16 +7,18 @@ import { Link } from 'react-router-dom'
 import { ISidebar } from '../interfaces/Sidebar'
 import { saveTokenToCookie } from '../utils/jwt'
 import { useMainContext } from '../context/MainContext'
+import useWindowSize from '../hooks/useWindowSize'
 
-const Aside: FC<ISidebar> = (props) => {
+const Aside: FC<ISidebar> = () => {
   const [sidebarOpened, setSidebarOpened] = useState(window.innerWidth >= 1250)
-  const { setLoggedUser } = useMainContext()
+  const { width: windowWidth } = useWindowSize()
+  const { loggedUser, setLoggedUser } = useMainContext()
   const toggleSidebar = () => {
     setSidebarOpened(!sidebarOpened)
   }
   const navigate = useNavigate()
   const sidebarData =
-    props.role === 'admin' ? adminSidebarData : userSidebarData
+    loggedUser.role === 'admin' ? adminSidebarData : userSidebarData
 
   const handleLogout = () => {
     axios
@@ -30,6 +32,10 @@ const Aside: FC<ISidebar> = (props) => {
       })
       .catch((err) => console.error(err))
   }
+
+  //useEffect(() => {
+  //  
+  //}, [windowWidth])
 
   return (
     <>

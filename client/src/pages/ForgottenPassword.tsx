@@ -47,7 +47,7 @@ export default function ForgottenPassword() {
               Forgotten password
             </h1>
             <p className='text-[15px]'>
-              Don't worry we will send you an e-mail with a reset password
+              Don't worry we will send you an e-mail with instructions to reset password
             </p>
           </div>
           <div className='mb-4 form__input'>

@@ -8,21 +8,21 @@ const apiEndpoints = {
   forgottenPassword: `${BASE_URL}/api/auth/forgot-password`,
   resetPassword: `${BASE_URL}/api/auth/reset-password`,
   //dashboard
-  getUserDetail: `${BASE_URL}/api/user`,
-  updateUserDetail: `${BASE_URL}/api/user`,
-  deleteUser: (_id: string = '') => `${BASE_URL}/api/user/${_id}`, // admin only
-  getUsers: `${BASE_URL}/api/user/users`, // admin only
+  getUserDetail: (_id: string) => `${BASE_URL}/api/users/${_id}`,
+  updateUserDetail: (_id: string) => `${BASE_URL}/api/users/${_id}`,
+  deleteUser: (_id: string = '') => `${BASE_URL}/api/users/${_id}`, // admin only
+  getUsers: `${BASE_URL}/api/users/`, // admin only
   //maps
-  newMap: `${BASE_URL}/api/map`,
-  getUserMaps: `${BASE_URL}/api/map`,
-  getMapDetail: (_id: string) => `${BASE_URL}/api/map/${_id}`,
-  editMap: (_id: string) => `${BASE_URL}/api/map/${_id}`,
-  deleteMap: (_id: string = '') => `${BASE_URL}/api/map/${_id}`,
-  getAllUsersMaps: `${BASE_URL}/api/map/all-maps`, // admin only
+  newMap: `${BASE_URL}/api/maps`,
+  getUserMaps: `${BASE_URL}/api/maps`,
+  getMapDetail: (_id: string) => `${BASE_URL}/api/maps/${_id}`,
+  editMap: (_id: string) => `${BASE_URL}/api/maps/${_id}`,
+  deleteMap: (_id: string = '') => `${BASE_URL}/api/maps/${_id}`,
+  getAllUsersMaps: `${BASE_URL}/api/maps/admin-maps`, // admin only
   //uploads
-  uploadMedia: `${BASE_URL}/api/blob`,
-  getUploadedMedia: (_name: string) => `${BASE_URL}/api/blob/${_name}`,
-  deleteUploadedMedia: (_name: string) => `${BASE_URL}/api/blob/${_name}`,
+  uploadMedia: `${BASE_URL}/api/blobs`,
+  getUploadedMedia: (_name: string) => `${BASE_URL}/api/blobs/${_name}`,
+  deleteUploadedMedia: (_name: string) => `${BASE_URL}/api/blobs/${_name}`,
 }
 
 export default apiEndpoints

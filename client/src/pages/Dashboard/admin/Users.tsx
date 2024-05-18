@@ -26,7 +26,7 @@ const Users = () => {
       <div className='page-section__container'>
         <h1 className='text-center mb-[6rem]'>Users</h1>
         <div className='flex flex-col xl:flex-row'>
-          <Aside role='admin' />
+          <Aside />
           {/* <Table config={tableConfig} /> */}
         </div>
       </div>
