@@ -120,7 +120,7 @@ public class AuthController : ControllerBase
                 try
                 {
                     await _emailSender.SendEmailAsync(model.Email, emailSubject, emailMessage);
-                    return Ok(new { Message = "The password reset email has been sent.", resetToken });
+                    return Ok(new { Message = "The password reset email has been sent." });
                 }
                 catch (Exception ex)
                 {

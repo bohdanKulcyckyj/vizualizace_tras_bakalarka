@@ -52,7 +52,10 @@ function App() {
                     path={routes.forgottenPasword}
                     element={<ForgottenPassword />}
                   />
-                  <Route path={routes.resetPassword} element={<ResetPassword />} />
+                  <Route
+                    path={routes.resetPassword}
+                    element={<ResetPassword />}
+                  />
                 </Route>
 
                 <Route
@@ -81,7 +84,7 @@ function App() {
                     />
                     <Route path={routes.admin.users} element={<Users />} />
                     <Route
-                      path={routes.dashboard.profile(UserRole.ADMIN)}
+                      path={routes.dashboard.profile(UserRole.ADMIN, ':userId')}
                       element={<Profile />}
                     />
                   </Route>
@@ -112,7 +115,7 @@ function App() {
                       element={<Maps />}
                     />
                     <Route
-                      path={routes.dashboard.profile(UserRole.USER)}
+                      path={routes.dashboard.profile(UserRole.USER, ':userId')}
                       element={<Profile />}
                     />
                   </Route>

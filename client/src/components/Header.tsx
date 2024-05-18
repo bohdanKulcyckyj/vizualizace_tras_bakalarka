@@ -106,7 +106,7 @@ const Header: React.FC = (props) => {
             <li className='px-3 lg:px-4'>
               {loggedUser ? (
                 <Link
-                  to={routes.dashboard.profile(loggedUser.role)}
+                  to={routes.dashboard.profile(loggedUser.role, loggedUser.id)}
                   className='tracking-widest lg:tracking-wider w-full header__nav-link header__nav-link--account'
                 >
                   <IconContext.Provider

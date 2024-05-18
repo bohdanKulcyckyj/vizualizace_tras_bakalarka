@@ -85,7 +85,13 @@ namespace api.Controllers
             currentUser.Email = um.Email;
             _context.SaveChanges();
 
-            return Ok(new {Message = "Your profile was successfully updated"});
+            var userRoles = await _userManager.GetRolesAsync(currentUser);
+            if (userRoles.Count() <= 0)
+            {
+                return BadRequest(new { Message = "User has no assigned role" });
+            }
+
+            return Ok(new {Message = "Your profile was successfully updated", user= new UserDTO(currentUser, userRoles[0])});
         }
 
         [HttpDelete("{userId}")]

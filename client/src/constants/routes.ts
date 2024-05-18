@@ -17,7 +17,7 @@ const routes = {
       `/${_role.toString()}/map/${_id}`,
     newMap: (_role: UserRole) => `/${_role.toString()}/map/new`,
     maps: (_role: UserRole) => `/${_role.toString()}/maps`,
-    profile: (_role: UserRole) => `/${_role.toString()}/profile`,
+    profile: (_role: UserRole, _id: string) => `/${_role.toString()}/profile/${_id}`,
   },
   admin: {
     users: '/admin/users',

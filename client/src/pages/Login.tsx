@@ -46,7 +46,7 @@ export default function SignIn() {
 
   useEffect(() => {
     if(loggedUser) {
-      navigate(routes.dashboard.profile(loggedUser.role), {
+      navigate(routes.dashboard.profile(loggedUser.role, loggedUser.id), {
         replace: true
       })
     }

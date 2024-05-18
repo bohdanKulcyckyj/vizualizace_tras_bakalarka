@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react'
 import defaultProfileImage from '../../assets/images/profile.png'
 import { useForm } from 'react-hook-form'
 import { IProfileForm } from '../../interfaces/Form'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import apiEndpoints from '../../constants/apiEndpoints'
 import { toast } from 'sonner'
 import { axiosWithAuth } from '../../utils/axiosWithAuth'
+import { useMainContext } from '../../context/MainContext'
+import { ILoggedUser } from '../../interfaces/User'
 
 const ProfileForm = () => {
+  const { setLoggedUser } = useMainContext()
+  const { userId } = useParams()
   const [data, setData] = useState<any>({})
-  const [fieldsDisabled, setFieldsDisabled] = useState<boolean>(true)
+  const [fieldsDisabled, setFieldsDisabled] = useState<boolean>()
 
   const {
     register,
@@ -19,10 +23,11 @@ const ProfileForm = () => {
 
   const sendData = (data) => {
     axiosWithAuth
-      .post(apiEndpoints.updateUserDetail("1"), data)
+      .post(apiEndpoints.updateUserDetail(userId), data)
       .then((res) => {
         console.log(res)
         toast.success('Your profile was successfully changed!')
+        setLoggedUser(res.data.user)
       })
       .catch((err) => {
         console.error(err)
@@ -32,10 +37,10 @@ const ProfileForm = () => {
 
   useEffect(() => {
     axiosWithAuth
-      .get(apiEndpoints.getUserDetail("1"))
+      .get(apiEndpoints.getUserDetail(userId))
       .then((res) => setData({ ...res.data }))
       .catch((err) => console.error(err))
-  }, [])
+  }, [userId])
 
   return (
     <div className='profile__container'>

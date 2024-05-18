@@ -19,7 +19,7 @@ export const useSignIn = () => {
       sessionStorage.setItem('loggedUser', JSON.stringify(user))
 
       if (dashboardRedirect) {
-        navigate(routes.dashboard.profile(user.role))
+        navigate(routes.dashboard.profile(user.role, user.id))
       }
     } catch (e) {
       console.error(e)
