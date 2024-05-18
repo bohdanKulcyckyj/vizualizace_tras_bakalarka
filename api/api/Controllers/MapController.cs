@@ -85,8 +85,6 @@ namespace api.Controllers
             }
 
             return Ok(currentUser.Maps);
-
-            return BadRequest(new { Message = "Something went wrong" });
         }
 
         [HttpGet("admin-maps")]

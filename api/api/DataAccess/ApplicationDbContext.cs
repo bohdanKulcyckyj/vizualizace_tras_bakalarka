@@ -68,7 +68,7 @@ namespace api.DataAccess
         }
         public Map? getMapById(string id)
         {
-            return Users
+            return Users.ToList()
                 .SelectMany(u => u.Maps)
                 .FirstOrDefault(m => m.Id == id);
         }
