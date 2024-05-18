@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 
 namespace api.Controllers
 {
-    [Route("api/blob")]
+    [Route("api/blobs")]
     [ApiController]
     [Authorize]
     public class MediaBlobController : ControllerBase

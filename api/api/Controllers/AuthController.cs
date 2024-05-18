@@ -1,5 +1,6 @@
 ﻿using api.DataAccess;
 using api.Models;
+using api.Models.DTO;
 using api.Models.Forms;
 using api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -50,7 +51,7 @@ public class AuthController : ControllerBase
             };
 
             var savingUser = await _userManager.CreateAsync(user, model.Password);
-
+            
             if (savingUser.Succeeded)
             {
                 var token = GenerateJwtToken(user, "USER");
@@ -60,9 +61,9 @@ public class AuthController : ControllerBase
                 var userRoles = await _userManager.GetRolesAsync(user);
                 if (userRoles.Count() <= 0)
                 {
-                    return BadRequest(new { Message = "Uživatel nemá přiřazenou roli." });
+                    return BadRequest(new { Message = "User has no assigned role" });
                 }
-                return Ok(new { token, role = userRoles[0] });
+                return Ok(new { token, user = new UserDTO(user, userRoles[0])});
             }
             else
             {
@@ -84,15 +85,16 @@ public class AuthController : ControllerBase
                 var userRoles = await _userManager.GetRolesAsync(user);
                 if(userRoles.Count() <= 0)
                 {
-                    return BadRequest(new { Message = "Uživatel nemá přiřazenou roli." });
+                    return BadRequest(new { Message = "User has no assigned role" });
                 }
                 var token = GenerateJwtToken(user, userRoles[0]);
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return Ok(new { token, role= userRoles[0] });
+
+                return Ok(new { token, user = new UserDTO(user, userRoles[0]) });
             }
             else
             {
-                return BadRequest(new { Message = "Nesprávné přihlašovací údaje." });
+                return BadRequest(new { Message = "Incorrect credentials" });
             }
         }
 
@@ -110,25 +112,23 @@ public class AuthController : ControllerBase
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var resetToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-                var resetLink = $"http://localhost:3000/obnova-hesla?token={resetToken}&email={model.Email}";
-                var emailSubject = "Obnova hesla";
-                var emailMessage = $"Pro obnovu hesla použijte tento odkaz: {resetLink}";
+                var resetLink = $"{_configuration.GetValue<string>("FrontendUrl")}/restore-password?token={resetToken}&email={model.Email}";
+                var emailSubject = "Password Restore";
+                var emailMessage = $"Use this lik for setting new password: {resetLink}";
 
                 try
                 {
                     await _emailSender.SendEmailAsync(model.Email, emailSubject, emailMessage);
-                    return Ok(new { Message = "E-mail pro obnovu hesla byl odeslán." });
+                    return Ok(new { Message = "The password reset email has been sent.", Token = token });
                 }
                 catch (Exception ex)
                 {
-                    return BadRequest(new { Message = $"Nepodařilo se odeslat e-mail: {ex.Message}" });
+                    return BadRequest(new { Message = $"Failed to send e-mail: {ex.Message}" });
                 }
-
-                return Ok(new { Message = "E-mail pro obnovu hesla byl odeslán. ", Token = token });
             }
             else
             {
-                return BadRequest(new { Message = "Uživatel s tímto e-mailem neexistuje." });
+                return BadRequest(new { Message = "The user with this email does not exist." });
             }
         }
 
@@ -182,7 +182,6 @@ public class AuthController : ControllerBase
             new Claim(JwtRegisteredClaimNames.NameId, user.Id),
             new Claim(ClaimTypes.Role, role),
         };
-
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

@@ -68,18 +68,9 @@ namespace api.DataAccess
         }
         public Map? getMapById(string id)
         {
-            foreach(ApplicationUser u in Users)
-            {
-                foreach(Map m in u.Maps)
-                {
-                    if(m.Id == id)
-                    {
-                        return m;
-                    }
-                }
-            }
-
-            return null;
+            return Users
+                .SelectMany(u => u.Maps)
+                .FirstOrDefault(m => m.Id == id);
         }
     }
 }

@@ -17,7 +17,7 @@ using System.Text;
 
 namespace api.Controllers
 {
-    [Route("api/map")]
+    [Route("api/maps")]
     [ApiController]
     public class MapController : ControllerBase
     {
@@ -89,7 +89,7 @@ namespace api.Controllers
             return BadRequest(new { Message = "Something went wrong" });
         }
 
-        [HttpGet("all-maps")]
+        [HttpGet("admin-maps")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> getAllMaps()
         {
@@ -121,8 +121,7 @@ namespace api.Controllers
             {
                 return NotFound();
             }
-            string mapPoints = ""; //await new OverpassApi(map.MapModel.bbox).GetMapPoints();
-            return Ok(new { map, mapPoints });
+            return Ok(new { map });
         }
 
         [HttpPost("{mapId}")]

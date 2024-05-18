@@ -1,5 +1,6 @@
 ﻿using api.DataAccess;
 using api.Models;
+using api.Models.DTO;
 using api.Models.Forms;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +11,7 @@ using System.Data;
 namespace api.Controllers
 {
     [ApiController]
-    [Route("api/user")]
+    [Route("api/users")]
     public class UserController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -28,8 +29,8 @@ namespace api.Controllers
             this._signInManager = signInManager;
         }
 
-        [HttpGet("users")]
-        [Authorize(Roles = "User")]
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUsers()
         {
             var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
@@ -52,22 +53,34 @@ namespace api.Controllers
             return Ok(items);
         }
 
-        [HttpGet]
+        [HttpGet("{userId}")]
         [Authorize]
-        public async Task<IActionResult> userDetail()
+        public async Task<IActionResult> userProfile(string userId)
         {
             var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
-            if (currentUser == null) return Unauthorized();
+            if (currentUser == null) return NotFound();
 
-            return Ok(currentUser);
+            var userRoles = await _userManager.GetRolesAsync(currentUser);
+            if (userRoles.Count() <= 0)
+            {
+                return BadRequest(new { Message = "User has no assigned role" });
+            }
+            if (currentUser.Id == userId || userRoles[0] == "Admin")
+            {
+                UserDTO userData = new UserDTO(currentUser, userRoles[0]);
+
+                return Ok(userData);
+            }
+
+            return Unauthorized();
         }
 
-        [HttpPost]
+        [HttpPost("{userId}")]
         [Authorize]
-        public async Task<IActionResult> userDetailChange([FromBody] UserProfileViewModel um)
+        public async Task<IActionResult> userDetailChange(string userId, [FromBody] UserProfileViewModel um)
         {
             var currentUser = await _userManager.FindByEmailAsync(User.Identity.Name);
-            if (currentUser == null) return Unauthorized();
+            if (currentUser == null || currentUser.Id != userId) return Unauthorized();
             currentUser.Name = um.Name;
             currentUser.Email = um.Email;
             _context.SaveChanges();
