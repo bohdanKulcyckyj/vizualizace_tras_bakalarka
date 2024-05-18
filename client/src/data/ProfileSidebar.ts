@@ -1,4 +1,4 @@
-export const adminSidebarData = [
+export const adminSidebarData = (id: string) => ([
   {
     label: 'Users',
     url: '/admin/users',
@@ -9,25 +9,25 @@ export const adminSidebarData = [
   },
   {
     label: 'Profile',
-    url: '/admin/profile',
+    url: '/admin/profile/' + id,
   },
   {
     label: 'Logout',
     url: '/logout',
   },
-]
+])
 
-export const userSidebarData = [
+export const userSidebarData = (id:string) => ([
   {
     label: 'Maps',
     url: '/user/maps',
   },
   {
     label: 'Profile',
-    url: '/user/profile',
+    url: '/user/profile/' + id,
   },
   {
     label: 'Logout',
     url: '/logout',
   },
-]
+])

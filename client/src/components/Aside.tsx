@@ -18,7 +18,7 @@ const Aside: FC<ISidebar> = () => {
   }
   const navigate = useNavigate()
   const sidebarData =
-    loggedUser.role === 'admin' ? adminSidebarData : userSidebarData
+    loggedUser.role === 'admin' ? adminSidebarData(loggedUser.id) : userSidebarData(loggedUser.id)
 
   const handleLogout = () => {
     axios
