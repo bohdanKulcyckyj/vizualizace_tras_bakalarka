@@ -1,4 +1,3 @@
-import React from 'react'
 import apiEndpoints from '../../../constants/apiEndpoints'
 import { axiosWithAuth } from '../../../utils/axiosWithAuth'
 // components
@@ -8,15 +7,12 @@ import HeightsScaleRange from './HeightsScaleRange'
 import TrailUploader from './TrailUploader'
 import NewPinPanel from './NewPinPanel'
 import MapPinsList from '../MapPinsList'
-
 // interfaces
 import { IMapObjectOptions } from '../../../interfaces/dashboard/MapModel'
 // enums
 import { useNavigate } from 'react-router-dom'
 import { useModelContext } from '../../../context/ModelContext'
-
 // data
-
 const ModelToolbar = ({
   setNewPointOptions,
   setIsPinPopupOpened,

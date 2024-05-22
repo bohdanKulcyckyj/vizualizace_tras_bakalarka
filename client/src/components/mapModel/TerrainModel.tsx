@@ -56,7 +56,7 @@ const TerrainModelComponent = ({ mode }) => {
     // @ts-ignore
     const clickedObjects = model.clickedObjects(e)
 
-    if (!newPointOptions || !newPointOptions?.pinType) {
+    if (!newPointOptions || !(newPointOptions?.pinType)) {
       let currObject = null
       for (let i = 0; i < clickedObjects.length; i++) {
         let tmp = clickedObjects[i]
@@ -196,7 +196,7 @@ const TerrainModelComponent = ({ mode }) => {
     // model options
     let currentModelOptions: IMapModelConfig = null
     // get existing model options or call api
-    if (projectSettings) {
+    if (projectSettings?.id === modelid) {
       currentModelOptions = projectSettings.mapModel
       setTrailName(projectSettings.mapModel?.trailUrl ?? '')
     } else {

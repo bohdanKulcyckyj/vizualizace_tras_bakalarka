@@ -316,7 +316,7 @@ export class Model {
     const loader = new GLTFLoader()
     const gltf = await loader.loadAsync(url)
 
-    const scale = 0.9 // 0.03
+    const scale = 0.03
 
     let pin = gltf.scene.clone(true)
     pin.position.setZ(z) //setZ(3.195149291587768);
