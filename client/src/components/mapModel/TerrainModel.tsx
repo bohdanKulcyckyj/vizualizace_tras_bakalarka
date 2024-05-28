@@ -42,7 +42,7 @@ const TerrainModelComponent = ({ mode }) => {
     useState<boolean>(false)
   const [previewImageIndex, setPreviewImageIndex] = useState<number>(-1)
   const [isMapBeeingDragged, setIsMapBeeingDragged] = useState<boolean>(false)
-  const [isModelLoaded, setIsModelLoaded] = useState<boolean>(false)
+  // const [isModelLoaded, setIsModelLoaded] = useState<boolean>(false)
   // refs
   const wrapperRef = useRef(null)
   const canvasRef = useRef(null)
@@ -50,13 +50,15 @@ const TerrainModelComponent = ({ mode }) => {
   const northArrowCanvasWrapperRef = useRef(null)
   // event ref
   const keyEventHandler = useRef(null)
+  // observer ref
+  const resizeObserver = useRef(null)
 
   const handleMapClick = (e: MouseEvent): void => {
     if (isMapBeeingDragged) return
     // @ts-ignore
     const clickedObjects = model.clickedObjects(e)
 
-    if (!newPointOptions || !(newPointOptions?.pinType)) {
+    if (!newPointOptions || !newPointOptions?.pinType) {
       let currObject = null
       for (let i = 0; i < clickedObjects.length; i++) {
         let tmp = clickedObjects[i]
@@ -93,7 +95,12 @@ const TerrainModelComponent = ({ mode }) => {
       }
     } else {
       if (clickedObjects.length > 0) {
-        if (!newPointOptions || !newPointOptions?.pinType || !(clickedObjects.find((x) => x.object.name === 'map'))) return
+        if (
+          !newPointOptions ||
+          !newPointOptions?.pinType ||
+          !clickedObjects.find((x) => x.object.name === 'map')
+        )
+          return
         setNewPointOptions((newPointOptions) => ({
           ...newPointOptions,
           event: e,
@@ -157,17 +164,20 @@ const TerrainModelComponent = ({ mode }) => {
       })
   }
 
-  const handleOnTrailPointReached = useCallback((point: IMapObjectOptions): void => {
-    setNewPointOptions(point)
-    setIsPinPopupOpened(true)
-    model?.pauseTrailAnimation()
+  const handleOnTrailPointReached = useCallback(
+    (point: IMapObjectOptions): void => {
+      setNewPointOptions(point)
+      setIsPinPopupOpened(true)
+      model?.pauseTrailAnimation()
 
-    setTimeout(() => {
-      setIsPinPopupOpened(false)
-      setNewPointOptions(null)
-      model?.playTrailAnimation()
-    }, 3000)
-  }, [model])
+      setTimeout(() => {
+        setIsPinPopupOpened(false)
+        setNewPointOptions(null)
+        model?.playTrailAnimation()
+      }, 3000)
+    },
+    [model],
+  )
 
   const handleSubmitImportPOIS = (points: IMapPointDTO[]) => {
     model?.addNearbyPOIs(points)
@@ -189,6 +199,7 @@ const TerrainModelComponent = ({ mode }) => {
   }, [setIsLoading])
 
   const setupModel = useCallback(async () => {
+    console.log('SETTING UP MODEL...')
     // modelid should always exist
     if (!modelid) {
       return navigate(routes.notFound)
@@ -291,16 +302,20 @@ const TerrainModelComponent = ({ mode }) => {
     window.addEventListener('keydown', keyEventHandler.current)
 
     const resize = () => {
-      newModel.resize(
-        wrapperRef.current.offsetWidth,
-        wrapperRef.current.offsetHeight,
-      )
+      const h = wrapperRef.current?.offsetHeight ?? 0
+      const w = wrapperRef.current?.offsetWidth ?? 0
+      if (w && h) {
+        newModel.resize(
+          wrapperRef.current.offsetWidth,
+          wrapperRef.current.offsetHeight,
+        )
+      }
     }
 
-    const resizeObserver = new ResizeObserver((entries) => {
+    resizeObserver.current = new ResizeObserver((entries) => {
       resize()
     })
-    resizeObserver.observe(wrapperRef.current)
+    resizeObserver.current.observe(wrapperRef.current)
 
     if (currentModelOptions.animateTrail) {
       newModel.playTrailAnimation()
@@ -320,9 +335,8 @@ const TerrainModelComponent = ({ mode }) => {
   ])
 
   const destroyModel = useCallback(() => {
-    setIsLoading(true)
-
-    window.removeEventListener('keydown', keyEventHandler.current)
+    console.log('DESTROYING MODEL...')
+    //setIsLoading(true)
     if (model) {
       setProjectSettings((_editingMapData) => ({
         ..._editingMapData,
@@ -331,6 +345,7 @@ const TerrainModelComponent = ({ mode }) => {
       model.destroy()
       setModel(null)
     }
+    window.removeEventListener('keydown', keyEventHandler.current)
   }, [keyEventHandler, model, setModel, setProjectSettings, setIsLoading])
 
   const recreatedModel = () => {
@@ -343,16 +358,17 @@ const TerrainModelComponent = ({ mode }) => {
   //}, [isModelLoaded])
 
   useEffect(() => {
-    if (!isModelLoaded) {
-      setIsModelLoaded(true)
-      setupModel()
-    }
+    setupModel()
 
     return () => {
-      console.log('COMPONENT UNMOUNTED')
+      resizeObserver.current.disconnect()
       destroyModel()
     }
-  }, [modelid, destroyModel, isModelLoaded, setupModel])
+  }, [])
+
+  useEffect(() => {
+    window.customCache = {}
+  }, [modelid])
 
   return (
     <>
@@ -401,9 +417,7 @@ const TerrainModelComponent = ({ mode }) => {
           isPopupOpened={isImportPOIsPopupOpened}
           setIsPopupOpened={setIsImportPOIsPopupOpened}
         >
-          <NearbyPointsConfigPopup
-            onSubmit={handleSubmitImportPOIS}
-          />
+          <NearbyPointsConfigPopup onSubmit={handleSubmitImportPOIS} />
         </Popup>
       )}
       {/* TOOLBAR */}

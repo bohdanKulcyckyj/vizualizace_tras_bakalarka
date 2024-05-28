@@ -10,8 +10,10 @@ import MapPinsList from '../MapPinsList'
 // interfaces
 import { IMapObjectOptions } from '../../../interfaces/dashboard/MapModel'
 // enums
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useModelContext } from '../../../context/ModelContext'
+import { useMainContext } from '../../../context/MainContext'
+import routes from '../../../constants/routes'
 // data
 const ModelToolbar = ({
   setNewPointOptions,
@@ -24,10 +26,7 @@ const ModelToolbar = ({
 }) => {
   const navigate = useNavigate()
   const { model, projectSettings } = useModelContext()
-
-  const handleCancel = (): void => {
-    navigate(-1)
-  }
+  const { loggedUser } = useMainContext()
 
   const handleSubmit = (): void => {
     const newMapConfiguration = {
@@ -76,9 +75,7 @@ const ModelToolbar = ({
           )}
         </div>
         <div className='flex justify-center items-center gap-6'>
-          <button onClick={handleCancel} className='secondary-button'>
-            Back
-          </button>
+          <Link to={routes.dashboard.maps(loggedUser.role)} className='secondary-button'>Back</Link>
           <button onClick={handleSubmit} className='primary-button'>
             Save
           </button>

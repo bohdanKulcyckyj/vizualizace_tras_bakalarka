@@ -112,7 +112,7 @@ const NewPinPanel = ({ newPointOptions, setNewPointOptions, toggleImportPOIsPopu
           className='secondary-button secondary-button--small'
           onClick={toggleImportPOIsPopup}
         >
-          Import POIs
+          Import POI
         </button>
       </div>
     </>

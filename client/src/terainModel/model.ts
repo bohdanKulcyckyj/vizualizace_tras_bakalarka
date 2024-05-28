@@ -87,6 +87,7 @@ import {
   ITrailStop,
 } from '../utils/pointDistance'
 import { textureTiles } from '../data/TextureTypes'
+import { getCachedData, setCachedData } from '../utils/modelCache'
 
 const subsetOfTHREE = {
   Vector2: Vector2,
@@ -204,7 +205,12 @@ export class Model {
     //const center = this.coordToModelPoint(this.map.center);
     // MAPPING PREVIOUSLY ADDED OBJECTS BY USER
     options?.mapObjects?.forEach((_obj) =>
-      this.addObjectToMap(_obj.x, _obj.y, options.heightCoefficient ? _obj.z * options.heightCoefficient : _obj.z, _obj),
+      this.addObjectToMap(
+        _obj.x,
+        _obj.y,
+        options.heightCoefficient ? _obj.z * options.heightCoefficient : _obj.z,
+        _obj,
+      ),
     )
 
     /*
@@ -714,9 +720,6 @@ export class Model {
         path.add(new LineCurve3(p1, p2))
       }
     }
-
-    //const vectors: Vector3[] = points.map(x => new Vector3(x.x, x.y, x.z));
-
     const geometry = new BufferGeometry().setFromPoints(vectors)
 
     const line = new Line(geometry, material)
@@ -887,10 +890,13 @@ export class Model {
         .url(x, y, zoom)
     }
 
-    const [{ size: planeSize, heights }, texture] = await Promise.all([
-      ElevationLoader.load(url),
-      new TextureLoader().loadAsync(textureUrl),
-    ])
+    let texture = getCachedData('TEXTURE_INSTANCE_FROM__' + textureUrl)
+    if(!texture) {
+      texture = await new TextureLoader().loadAsync(textureUrl)
+      setCachedData('TEXTURE_INSTANCE_FROM__' + textureUrl, texture)
+    }
+
+    const { size: planeSize, heights } = await ElevationLoader.load(url)
 
     //nejvetsi alt na mape
     this.options.center.alt = Math.max(this.options.center.alt, ...heights)
@@ -1443,7 +1449,7 @@ export class Model {
     const intersectedObjects = this.clickedObjects(e)
     if (intersectedObjects.length === 0) return
     const map = intersectedObjects.find((x) => x.object.name === 'map')
-    if(!map) return
+    if (!map) return
     this.addObjectToMap(map.point.x, map.point.y, map.point.z, options)
     this.options.mapObjects.push({
       ...options,

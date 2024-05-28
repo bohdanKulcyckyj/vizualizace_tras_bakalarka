@@ -1,3 +1,5 @@
+import { getCachedData, setCachedData } from '../utils/modelCache'
+
 function rgbToHeight(r: number, g: number, b: number): number {
   return -10000 + (r * 256 * 256 + g * 256 + b) * 0.1
 }
@@ -6,7 +8,8 @@ export class ElevationLoader {
   public static async load(
     url: string,
   ): Promise<{ size: number; heights: number[] }> {
-    const pixels = await ElevationLoader.getPixels(url)
+    getCachedData(url)
+    const pixels = getCachedData(url) ?? (await ElevationLoader.getPixels(url))
     const planeSize = Math.sqrt(pixels.length / 4)
 
     const heights: number[] = []
@@ -40,7 +43,7 @@ export class ElevationLoader {
           context.drawImage(img, 0, 0, img.width, img.height)
 
           const imgData = context.getImageData(0, 0, img.width, img.height)
-
+          setCachedData(url, imgData.data)
           resolve(imgData.data)
         } else {
           reject(new Error('Canvas context not available'))
