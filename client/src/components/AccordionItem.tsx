@@ -21,8 +21,8 @@ const AccordionItem = ({
         onClick={() => onOpenIdenfier(identifier)}
         className='flex justify-between items-center w-full'
       >
-        <h3 className='text-18px font-medium uppercase'>{title}</h3>
-        <span>+</span>
+        <h3 className='text-16px font-medium uppercase'>{title}</h3>
+        <span>{openedIdenfier === identifier ? '-' : '+'}</span>
       </button>
       <div
         className={`grid overflow-hidden transition-all duration-300 ease-in-out ${openedIdenfier === identifier ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0  mt-0'}`}
