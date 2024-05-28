@@ -20,7 +20,7 @@ const NewPinPanel = ({ newPointOptions, setNewPointOptions, toggleImportPOIsPopu
     <>
       {/* NEW PIN */}
       <div>
-        <p className='mb-2'>New Pin</p>
+        <p className='mb-2 subsection-title'>New Pin</p>
         <div className='pins-container mb-2'>
           {Object.values(PIN_COLORS).map((_value, _index) => (
             <div

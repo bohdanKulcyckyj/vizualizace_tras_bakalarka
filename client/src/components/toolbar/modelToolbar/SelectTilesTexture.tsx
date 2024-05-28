@@ -5,7 +5,7 @@ import { textureTiles } from '../../../data/TextureTypes'
 const SelectTilesTexture = ({ handleTextureStyleChange }) => {
   return (
     <>
-      <p className='mb-2'>Texture style</p>
+      <p className='mb-2 subsection-title'>Texture style</p>
       <div className='grid grid-cols-4 gap-2 mb-6'>
         {textureTiles.map((_item, _index) => (
           <div

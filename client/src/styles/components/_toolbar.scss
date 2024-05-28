@@ -100,16 +100,24 @@
       transform: rotateY(-180deg);
     }
   }
+
+  .accordion-item {
+    background-color: #333c44e6;
+    border-radius: 4px;
+    box-shadow: 0px 0px 1px $secondary-color;
+  }
 }
 
 .pins-container {
   display: flex;
   flex-direction: row;
   gap: 0.25rem;
-  padding: 0.5rem;
+  padding: 0.25rem;
   background: rgba(51, 60, 68, 0.88);
   border-radius: $border-radius;
   box-shadow: 0px 0px 1px $secondary-color;
+  margin-left: 1px;
+  margin-right: 1px;
   & > div {
     width: 50px;
     height: 50px;
@@ -129,6 +137,14 @@
     }
     &.active {
       background: darken($secondary-color, 15%);
+    }
+  }
+
+  .subsection-title {
+    font-size: 14px;
+    font-weight: 500;
+    @media only screen and (min-width: 1024px) {
+      font-size: 15px;
     }
   }
 }

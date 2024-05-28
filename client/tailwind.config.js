@@ -105,6 +105,7 @@ module.exports = {
         primaryColor: '#11161c',
         secondaryColor: '#2EEBC9',
         white: '#FFFFFF',
+        primaryColorAlfa: '#333C44E6',
       },
     },
   },

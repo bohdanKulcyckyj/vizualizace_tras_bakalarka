@@ -35,7 +35,7 @@ const TrailUploader = ({ handleDeleteTrail }) => {
   return (
     <div className='mb-6'>
     <div className='flex justify-between flex-wrap gap-2 mb-2'>
-      <label htmlFor='pgx'>GPX or FIT trail</label>
+      <label className="subsection-title" htmlFor='pgx'>GPX or FIT trail</label>
       {trailName && (
         <button
           className='secondary-button secondary-button--small'
