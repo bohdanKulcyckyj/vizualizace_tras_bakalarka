@@ -9,11 +9,14 @@ export interface ITileTextureDecorator {
 
 export class TileTextureDecorator implements ITileTextureDecorator {
   private projectedTrail: IPoint[]
+  private color: string
 
   constructor(
     private trail: ILatLngAlt[],
     private map: Map,
+    private color?: string = '#00ff00',
   ) {
+    this.color = color
     this.projectedTrail = trail.map((x) =>
       this.map.project({
         lat: x.lat,
@@ -41,8 +44,7 @@ export class TileTextureDecorator implements ITileTextureDecorator {
     canvas.width = img.width
     canvas.height = img.height
     let ctx = canvas.getContext('2d')
-
-    ctx.strokeStyle = 'red'
+    ctx.strokeStyle = this.color
     ctx.lineWidth = 6
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'

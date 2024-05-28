@@ -5,13 +5,14 @@ import {
 } from '../../utils/handleFileUpload'
 import { MdOutlineFileUpload } from 'react-icons/md'
 import { IconContext } from 'react-icons'
-import { FaMapMarkerAlt } from 'react-icons/fa'
+import { FaMapMarkerAlt, FaSearchLocation } from 'react-icons/fa'
 import {
   IMapObjectOptions,
   PIN_TYPE,
 } from '../../interfaces/dashboard/MapModel'
 import { PIN_COLORS } from '../../interfaces/dashboard/MapModel'
 import { toast } from 'sonner'
+import { useModelContext } from '../../context/ModelContext'
 
 const PinPopup: React.FC<{
   formState: IMapObjectOptions
@@ -19,6 +20,7 @@ const PinPopup: React.FC<{
   onSubmit: () => void
   onDelete: () => void
 }> = ({ formState, setFormState, onSubmit, onDelete }) => {
+  const { model, projectSettings } = useModelContext()
   const handleUploadImage = async (e) => {
     const options: IHandleFileUploadOptions = {
       allowedFormats: ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'],
@@ -181,6 +183,23 @@ const PinPopup: React.FC<{
             <button className='delete-button' onClick={toggleConfirmDelete}>
               Delete
             </button>
+            {projectSettings?.mapModel?.mapObjects.find(
+              (_obj) => _obj.id === formState.id,
+            ) && (
+              <button onClick={() => model.moveCameraToPoint(formState)}>
+                <IconContext.Provider
+                  value={{
+                    color: 'white',
+                    size: '30px',
+                    className: 'pin-icon',
+                  }}
+                >
+                  <span>
+                    <FaSearchLocation />
+                  </span>
+                </IconContext.Provider>
+              </button>
+            )}
           </div>
         </div>
       </div>

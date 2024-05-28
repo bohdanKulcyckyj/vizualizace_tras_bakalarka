@@ -66,7 +66,7 @@ import {
 import { simplify3D } from './simplify'
 import { Sky } from './Sky'
 import CameraControls from 'camera-controls'
-
+import { computeModelInMeters } from '../utils/pointDistance'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import {
   ITileTextureDecorator,
@@ -321,27 +321,72 @@ export class Model {
     const url = '/assets/pin.gltf'
     const loader = new GLTFLoader()
     const gltf = await loader.loadAsync(url)
+    const desiredSizeInMeters = 20
+    const modelSizeInMeters = computeModelInMeters(this.options.bbox)
+    // rozmery markeru na mape
+    const markerBox = new Box3().setFromObject(gltf.scene)
+    const markerSize = new Vector3()
+    markerBox.getSize(markerSize)
+    // rozmery mapy
 
-    const scale = 0.03
+    //const mapBox = new Box3().setFromObject(this.map)
+    //const mapSize = new Vector3()
+    //mapBox.getSize(mapSize)
+    let mapSize = [this.width, this.height]
+    console.log(this.scene)
+    const map = this.scene.getObjectByName('model')
+    console.log(map)
+    if (map) {
+      const mapBox = new Box3().setFromObject(map)
+      mapSize = new Vector3()
+      mapBox.getSize(mapSize)
+    }
+    // kolik je 20 metrů procentuálně k nejdelší straně
+    const percentage =
+      desiredSizeInMeters / (Math.max(...modelSizeInMeters) / 100)
+    // promítnutí procent na velikosti mapy
+    const sizeOnMap = (Math.max(...mapSize) / 100) * percentage
+    // koeficient škalování velikosti markeru
+    const scale = sizeOnMap / Math.max(...markerSize)
 
     let pin = gltf.scene.clone(true)
-    pin.position.setZ(z) //setZ(3.195149291587768);
+    pin.position.setZ(z)
 
     if (color != null) {
       const mesh = pin.getObjectByName('Curve') as Mesh
       const mat = mesh.material as MeshStandardMaterial
       mat.color = color
     }
-    /*
-		var box = new Box3().setFromObject(pin);
-		let t = new Vector3();
-		console.log('box',  box.getCenter(t), t);
-		*/
+
     let pinGroup = new Group()
     pinGroup.name = 'PIN_COLORED'
     pinGroup.add(pin)
 
     pin.rotateX(Math.PI)
+
+    pinGroup.position.set(x, y, z)
+    pinGroup.scale.set(scale, scale, scale)
+    pinGroup.pinId = pinId
+    pinGroup.isClickable = true
+
+    this.scene.add(pinGroup)
+    this.markers.push(pinGroup)
+  }
+
+  private async addPerson(x: number, y: number, z: number, pinId: string) {
+    const url = '/assets/hiker.gltf'
+    const loader = new GLTFLoader()
+    const gltf = await loader.loadAsync(url)
+
+    const scale = 0.001
+
+    let pin = gltf.scene.clone(true)
+    pin?.position?.setZ(z)
+    let pinGroup = new Group()
+    pinGroup.name = 'HIKER'
+    pinGroup.add(pin)
+
+    pin.rotateX(Math.PI / 2)
 
     pinGroup.scale.x = scale
     pinGroup.scale.y = scale
@@ -354,7 +399,6 @@ export class Model {
     this.scene.add(pinGroup)
 
     this.markers.push(pinGroup)
-    //pinGroup.quaternion.copy( this.camera.quaternion );
   }
 
   private addSphere(x: number, y: number, z: number, id: string = null) {
@@ -385,13 +429,20 @@ export class Model {
 
   public async init() {
     const xyz = this.getTileXYZ(this.map.center, this.map.zoom)
-    const trail =
-      this.options.trailUrl == null
-        ? null
-        : await this.loadTrail(this.options.trailUrl)
+    let trail: ILatLngAlt[] | null = getCachedData(this.options?.trailUrl)
+    if (!trail && this.options?.trailUrl) {
+      trail = await this.loadTrail(this.options.trailUrl)
+      setCachedData(this.options.trailUrl, trail)
+    }
     //@ts-ignore
     const tileDecorator: TileTextureDecorator =
-      trail == null ? null : new TileTextureDecorator(trail, this.map)
+      trail == null
+        ? null
+        : new TileTextureDecorator(
+            trail,
+            this.map,
+            this.options?.trailColor ?? 'red',
+          )
 
     const tilesGroup = new Group()
     tilesGroup.name = 'model'
@@ -491,12 +542,23 @@ export class Model {
   }
 
   public async drawTrail(source: string) {
+    this.scene.remove((obj) => obj.name === 'model')
     const xyz = this.getTileXYZ(this.map.center, this.map.zoom)
-    let trail: ILatLngAlt[] = await this.loadTrail(source)
+    let trail: ILatLngAlt[] | null = getCachedData(source)
+    if (!trail) {
+      trail = await this.loadTrail(source)
+      setCachedData(source, trail)
+    }
     this.options.trailUrl = source
     //@ts-ignore
     const tileDecorator: TileTextureDecorator =
-      trail == null ? null : new TileTextureDecorator(trail, this.map)
+      trail == null
+        ? null
+        : new TileTextureDecorator(
+            trail,
+            this.map,
+            this.options?.trailColor ?? 'red',
+          )
 
     const tilesGroup = new Group()
     tilesGroup.name = 'model'
@@ -572,24 +634,31 @@ export class Model {
       await this.addTrail(trail)
     }
 
-    const heightScale = this.getHeightScale()
+    //const heightScale = this.getHeightScale()
 
-    const tmpPoint = this.map.project({
-      lat: 45.85493,
-      lng: 6.8175289,
-    })
+    // const tmpPoint = this.map.project({
+    //   lat: 45.85493F,
+    //   lng: 6.8175289,
+    // })
 
-    this.addSphere(
-      (tmpPoint.x - origin.x) / 256 - 0.5,
-      (origin.y - tmpPoint.y) / 256 + 0.5,
-      3167 / heightScale + 0.006,
-    )
+    // this.addSphere(
+    //   (tmpPoint.x - origin.x) / 256 - 0.5,
+    //   (origin.y - tmpPoint.y) / 256 + 0.5,
+    //   3167 / heightScale + 0.006,
+    // )
 
     this.fixTileEdges(tileMatrix)
 
     setTimeout(() => {
       this.fitCameraTo(new Box3().setFromObject(tilesGroup), this.camera as any)
     }, 1000)
+  }
+
+  public changeTrailColor() {
+    const modelObj = this.scene.children.find((obj) => obj.name === 'model')
+    if (!modelObj) throw new Error("Scene has no child named 'model'")
+
+    console.log(modelObj)
   }
 
   public resetCamera() {
@@ -641,11 +710,6 @@ export class Model {
 
   private async addTrail(gpxPoints: ILatLngAlt[]) {
     // https://stackoverflow.com/questions/2651099/convert-long-lat-to-pixel-x-y-on-a-given-picture
-
-    const material = new LineBasicMaterial({
-      color: 0x0000ff,
-    })
-
     const heightScale = this.getHeightScale()
 
     let points: IPoint3D[] = []
@@ -720,10 +784,6 @@ export class Model {
         path.add(new LineCurve3(p1, p2))
       }
     }
-    const geometry = new BufferGeometry().setFromPoints(vectors)
-
-    const line = new Line(geometry, material)
-    this.scene.add(line)
 
     this.setTrailAnimation(path, allTrailStops)
   }
@@ -731,6 +791,7 @@ export class Model {
   private setTrailAnimation(path: CurvePath<Vector>, stops: ITrailStop[] = []) {
     const { x, y, z } = path.getPointAt(0) as Vector3
     this.addSphere(x, y, z, 'TRAIL_SPHERE')
+    //this.addPerson(x, y, z, 'HIKER')
 
     const animationProgress = { value: 0 }
     const pathAnimation = gsap.fromTo(
@@ -891,7 +952,7 @@ export class Model {
     }
 
     let texture = getCachedData('TEXTURE_INSTANCE_FROM__' + textureUrl)
-    if(!texture) {
+    if (!texture) {
       texture = await new TextureLoader().loadAsync(textureUrl)
       setCachedData('TEXTURE_INSTANCE_FROM__' + textureUrl, texture)
     }
@@ -1316,18 +1377,17 @@ export class Model {
     pinId: string = '',
     txt: string = 'TEST',
   ) {
-    const size = 0.01
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
 
-    const fontSize = 16
+    const fontSize = 12
 
     ctx.font = `${fontSize}px Arial`
     ctx.textBaseline = 'middle' // pro vycentrování textu ve výšce
     const textWidth = ctx.measureText(txt).width
 
-    const width = textWidth + 10
-    const height = fontSize + 4
+    const width = textWidth * 1.5
+    const height = fontSize * 1.5
 
     ctx.fillStyle = '#fff'
     ctx.strokeStyle = '#000'
@@ -1699,6 +1759,13 @@ export class Model {
       result /= heightCoeffitient
     }
     return result
+  }
+
+  public moveCameraToPoint(opts: IMapObjectOptions) {
+    this.fitCameraTo(
+      new Box3().setFromPoints(new Vector3(opts.x, opts.y, opts.z)),
+      this.camera as any,
+    )
   }
 }
 

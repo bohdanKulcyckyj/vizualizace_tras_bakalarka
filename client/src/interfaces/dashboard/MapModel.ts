@@ -59,6 +59,20 @@ export interface IBbox {
   southWest: IModelCoord
 }
 
+// export interface ILights {
+//   x?: number,
+//   y?: number,
+//   z?: number,
+//   enableShadow: boolean,
+//   enableSun: boolean
+// }
+
+// export interface ITrail {
+//   url: string | null,
+//   color: string,
+//   animate: boolean
+// }
+
 export interface IMapModelConfig {
   center: {
     lat: number
@@ -68,10 +82,18 @@ export interface IMapModelConfig {
   bbox: IBbox
   zoom: number
   trailUrl: string | null
+  trailColor?: string // pak zmenit na mandatory
   mapObjects: IMapObjectOptions[]
   heightCoefficient: number | null
   textureTypeLabel: string | null
   animateTrail: boolean
   enableShadow: boolean
   enableSun: boolean
+
+  lightX?: number
+  lightY?: number
+  lightZ?: number
+
+  //trail: ITrail
+  //lights: ILights
 }

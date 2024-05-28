@@ -20,6 +20,7 @@ import NearbyPointsConfigPopup from '../popup/nearbyPOIsConfig/NearbyPointsConfi
 import routes from '../../constants/routes'
 import ModelToolbar from '../toolbar/modelToolbar/ModelToolbar'
 import { useModelContext } from '../../context/ModelContext'
+import { computeModelInMeters } from '../../utils/pointDistance'
 
 const TerrainModelComponent = ({ mode }) => {
   const { modelid } = useParams()

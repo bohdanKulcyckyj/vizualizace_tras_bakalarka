@@ -1,5 +1,5 @@
 import { Vector3 } from 'three'
-import { IMapObjectOptions } from '../interfaces/dashboard/MapModel'
+import { IBbox, IMapObjectOptions } from '../interfaces/dashboard/MapModel'
 
 export interface ITrailStop {
   stopPoint: Vector3
@@ -60,6 +60,16 @@ export const isStopPoint = (
   }
 
   return result
+}
+
+export const computeModelInMeters = (bbox: IBbox): [number, number] => {
+  const ne = Object.values(bbox.northEast)
+  const sw = Object.values(bbox.southWest)
+
+  return [
+    coordinatesDistanceToMeters(ne[0], ne[1], ne[0], sw[1]),
+    coordinatesDistanceToMeters(ne[0], sw[1], sw[0], sw[1]),
+  ]
 }
 
 export const coordinatesDistanceToMeters = (

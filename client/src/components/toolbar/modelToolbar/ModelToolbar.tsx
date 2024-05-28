@@ -16,6 +16,8 @@ import { useMainContext } from '../../../context/MainContext'
 import routes from '../../../constants/routes'
 import AccordionItem from '../../AccordionItem'
 import { useState } from 'react'
+import TrailColor from './TrailColor'
+import LightPositioning from './LightPositioning'
 // data
 const ModelToolbar = ({
   setNewPointOptions,
@@ -53,7 +55,9 @@ const ModelToolbar = ({
     <Toolbar>
       <div className='form flex flex-col justify-between h-full'>
         <div>
-          <h3 className='mb-8 uppercase text-center text-24px font-medium'>Model settings</h3>
+          <h3 className='mb-8 uppercase text-center text-24px font-medium'>
+            Model settings
+          </h3>
           <AccordionItem
             identifier={1}
             title='Trail'
@@ -61,6 +65,7 @@ const ModelToolbar = ({
             onOpenIdenfier={handleOpenAccordion}
           >
             <TrailUploader handleDeleteTrail={handleDeleteTrail} />
+            <TrailColor />
           </AccordionItem>
           <AccordionItem
             identifier={2}
@@ -92,7 +97,7 @@ const ModelToolbar = ({
             openedIdenfier={openedAccordionId}
             onOpenIdenfier={handleOpenAccordion}
           >
-            LIGHTS SETTINGS
+            <LightPositioning />
           </AccordionItem>
           <AccordionItem
             identifier={4}

@@ -6,16 +6,23 @@ export function MapPointTypeDefaultValue(
   points: IMapPointDTO[],
 ): IMapPointDTO[] {
   points.forEach((point) => {
-    if (point.tags?.name) return
-
-    for (const _pointOpt of pointsOptions) {
-      if (Object.hasOwn(point.tags, _pointOpt.node)) {
-        const [firstLetter, ...rest] = _pointOpt.value
-        const defaultName = [firstLetter.toUpperCase(), ...rest]
-          .join("")
-          .replaceAll('_', ' ')
-        point.tags.name = defaultName
-        break
+    if (point.tags?.name) {
+      if (point.tags?.natural === 'peak') {
+        point.tags.name += ` - ${point.tags.ele} m`
+      }
+    } else {
+      for (const _pointOpt of pointsOptions) {
+        if (Object.hasOwn(point.tags, _pointOpt.node)) {
+          const [firstLetter, ...rest] = _pointOpt.value
+          const defaultName = [firstLetter.toUpperCase(), ...rest]
+            .join('')
+            .replaceAll('_', ' ')
+          point.tags.name =
+            point.tags?.natural === 'peak'
+              ? `${defaultName} - ${point.tags.ele} m`
+              : defaultName
+          break
+        }
       }
     }
   })
@@ -39,7 +46,7 @@ export function mappingPointsToSelectOptionsGroups(
         )
         const newOption = {
           label: point.tags.name,
-          value: point
+          value: point,
         }
         if (indexOfGroup === -1) {
           pointGroups.push({

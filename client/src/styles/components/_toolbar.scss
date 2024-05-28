@@ -139,12 +139,4 @@
       background: darken($secondary-color, 15%);
     }
   }
-
-  .subsection-title {
-    font-size: 14px;
-    font-weight: 400;
-    @media only screen and (min-width: 1024px) {
-      font-size: 15px;
-    }
-  }
 }
